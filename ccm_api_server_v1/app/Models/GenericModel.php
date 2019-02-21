@@ -41,7 +41,7 @@ class GenericModel {
         return DB::table($tableName)
             -> select('*')
             -> where($columnName, $operator ,$data)
-            ->orderBy($orderby, 'DESC')
+            ->orderBy($orderby, 'ASC')
             ->get();
     }
 
@@ -49,8 +49,9 @@ class GenericModel {
         return DB::table($tableName)
             -> select('*')
             -> where($columnName, $operator ,$data)
+            ->orWhere('like', '%' . Input::get('name') . '%')
             ->offset($offset)->limit($limit)
-            ->orderBy($orderby, 'DESC')
+            ->orderBy($orderby, 'ASC')
             ->get();
     }
 

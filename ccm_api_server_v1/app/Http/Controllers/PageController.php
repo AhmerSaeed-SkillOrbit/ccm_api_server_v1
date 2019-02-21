@@ -627,7 +627,7 @@ class PageController extends BaseController {
         $val = GenericModel::simpleFetchGenericCount
         ('role', '=', 'IsActive', true);
 
-            return response()->json(['data' => $val, 'message' => 'Roles not found'], 200);
+            return response()->json(['data' => $val, 'message' => 'Roles count'], 200);
     }
 
     public function Index(){
