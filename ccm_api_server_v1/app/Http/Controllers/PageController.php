@@ -592,10 +592,11 @@ class PageController extends BaseController {
 
     function testFunction(){
         $val = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', 'true');
+        
         $resultArray = json_decode(json_encode($val), true);
         $data['allRoles'] = $resultArray;
         if(count($data) > 0){
-            return $data;
+            echo $data;
         }
         return ("An error occurred while performing an action!");
     }

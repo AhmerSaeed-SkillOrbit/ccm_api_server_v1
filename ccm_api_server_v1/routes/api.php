@@ -21,11 +21,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/role/list', 'PageController@testFunction');
+Route::get('/role/list', 'PageController@testFunction', function (Request $request){
+    return response()->json(['data' => $request, 'message' => 'Roles fetched'], 400);
+});
+
 Route::get('/', function (){
     return 'Hello';
 });
 
-Route::get('/test', function (Request $request) {
-    return "test";
-});
