@@ -590,15 +590,18 @@ class PageController extends BaseController {
             return view('forms.forgetpassword_form') -> withErrors('No Token Found, Enter Email Again');
     }
 
-    function testFunction(){
+    function testFunction(Request $request){
+
         $val = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', 'true');
         
         $resultArray = json_decode(json_encode($val), true);
         $data['allRoles'] = $resultArray;
         if(count($data) > 0){
-            echo $data;
+            return response()->json(['data' => $data, 'message' => 'Roles fetched'], 200);
         }
-        return ("An error occurred while performing an action!");
+        else{
+            return response()->json(['data' => null, 'message' => 'Roles not found'], 400);
+        }
     }
 
     public function Index(){
