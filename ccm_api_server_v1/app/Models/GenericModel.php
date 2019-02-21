@@ -37,9 +37,28 @@ class GenericModel {
             return false;
     }
 
-    static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data){
-        return DB::table($tableName)-> select('*') -> where($columnName, $operator ,$data)->get();
+    static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data, $orderby){
+        return DB::table($tableName)
+            -> select('*')
+            -> where($columnName, $operator ,$data)
+            ->orderBy($orderby, 'DESC')
+            ->get();
     }
 
+    static public function simpleFetchGenericWithPaginationByWhereWithSortOrder($tableName, $operator, $columnName, $data, $offset, $limit, $orderby){
+        return DB::table($tableName)
+            -> select('*')
+            -> where($columnName, $operator ,$data)
+            ->offset($offset)->limit($limit)
+            ->orderBy($orderby, 'DESC')
+            ->get();
+    }
+
+    static public function simpleFetchGenericCount($tableName, $operator, $columnName, $data){
+        return DB::table($tableName)
+            -> select('*')
+            -> where($columnName, $operator ,$data)
+            -> count();
+    }
 
 }

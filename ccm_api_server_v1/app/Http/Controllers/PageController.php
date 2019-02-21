@@ -591,9 +591,11 @@ class PageController extends BaseController {
             return view('forms.forgetpassword_form') -> withErrors('No Token Found, Enter Email Again');
     }
 
-    function testFunction(Request $request){
+    //Role list via pagination
+    function roleListViaPagination($offset, $limit){
 
-        $val = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true);
+        $val = GenericModel::simpleFetchGenericWithPaginationByWhereWithSortOrder
+        ('role', '=', 'IsActive', true, $offset,$limit, 'SortOrder');
         
         $resultArray = json_decode(json_encode($val), true);
         $data['allRoles'] = $resultArray;
@@ -603,6 +605,29 @@ class PageController extends BaseController {
         else{
             return response()->json(['data' => null, 'message' => 'Roles not found'], 400);
         }
+    }
+
+    function roleList(){
+
+        $val = GenericModel::simpleFetchGenericByWhere
+        ('role', '=', 'IsActive', true, 'SortOrder');
+
+        $resultArray = json_decode(json_encode($val), true);
+        $data['allRoles'] = $resultArray;
+        if(count($data) > 0){
+            return response()->json(['data' => $data, 'message' => 'Roles fetched'], 200);
+        }
+        else{
+            return response()->json(['data' => null, 'message' => 'Roles not found'], 400);
+        }
+    }
+
+    function roleCount(){
+
+        $val = GenericModel::simpleFetchGenericCount
+        ('role', '=', 'IsActive', true);
+
+            return response()->json(['data' => $val, 'message' => 'Roles not found'], 200);
     }
 
     public function Index(){
