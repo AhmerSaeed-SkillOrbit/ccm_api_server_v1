@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use View;
+use Illuminate\Http\Request;
 use App\Models\SystemSettingsModel;
 use App\Models\MenuBarModel;
 use App\Models\UserRolesModel;
