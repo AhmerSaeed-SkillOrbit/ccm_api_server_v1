@@ -38,7 +38,7 @@ class GenericModel {
     }
 
     static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data){
-        return DB::table($tableName) -> select($columnName) -> where($columnName, $operator ,$data)->get();
+        return DB::table($tableName)-> select('*') -> where($columnName, $operator ,$data)->get();
     }
 
 

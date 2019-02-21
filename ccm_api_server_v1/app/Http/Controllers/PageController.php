@@ -593,7 +593,7 @@ class PageController extends BaseController {
 
     function testFunction(Request $request){
 
-        $val = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', 'true');
+        $val = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true);
         
         $resultArray = json_decode(json_encode($val), true);
         $data['allRoles'] = $resultArray;
