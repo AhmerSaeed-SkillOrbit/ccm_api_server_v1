@@ -56,7 +56,6 @@ class GenericModel {
 
     static public function simpleFetchGenericCount($tableName, $operator, $columnName, $data){
         return DB::table($tableName)
-            -> select('*')
             -> where($columnName, $operator ,$data)
             -> count();
     }
