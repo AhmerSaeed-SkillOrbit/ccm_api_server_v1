@@ -631,9 +631,9 @@ class PageController extends BaseController
     }
 
     //Role list via pagination
-    function roleListViaPagination(Request $request)
+    function RoleListViaPagination(Request $request)
     {
-        $offset = $request->input('pageNo');
+        $offset = $request->input('p');
         $limit = $request->input('c');
         $keyword = $request->input('s');
 
@@ -650,7 +650,9 @@ class PageController extends BaseController
         }
     }
 
-    function roleList()
+    //ROle list for combo box
+
+    function RoleList()
     {
 
         $val = GenericModel::simpleFetchGenericByWhere
@@ -665,7 +667,9 @@ class PageController extends BaseController
         }
     }
 
-    function roleCount(Request $request)
+    //role list count API
+
+    function RoleCount(Request $request)
     {
         $keyword = $request->input('s');
 

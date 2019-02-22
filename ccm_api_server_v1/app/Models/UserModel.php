@@ -260,4 +260,53 @@ class UserModel {
             return 'failed';
     }
 
+    static public function FetchUserWithSearchAndPagination
+    ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword)
+    {
+
+        if ($keyword != null && $keyword != "null") {
+
+            return DB::table($tableName)
+                ->select('*')
+                ->where($columnName, $operator, $data)
+                ->Where('FirstName', 'like', '%' . $keyword . '%')
+                ->orWhere('LastName', 'like', '%' . $keyword . '%')
+                ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
+                ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
+                ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
+                ->offset($offset)->limit($limit)
+                ->orderBy($orderBy, 'ASC')
+                ->get();
+        } else {
+            return DB::table($tableName)
+                ->select('*')
+                ->where($columnName, $operator, $data)
+                ->offset($offset)->limit($limit)
+                ->orderBy($orderBy, 'ASC')
+                ->get();
+        }
+    }
+
+    static public function UserCountWithSearch
+    ($tableName, $operator, $columnName, $data, $keyword)
+    {
+
+        if ($keyword != null && $keyword != "null") {
+
+            return DB::table($tableName)
+                ->select('*')
+                ->where($columnName, $operator, $data)
+                ->Where('FirstName', 'like', '%' . $keyword . '%')
+                ->orWhere('LastName', 'like', '%' . $keyword . '%')
+                ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
+                ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
+                ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
+                ->count();
+        } else {
+            return DB::table($tableName)
+                ->where($columnName, $operator, $data)
+                ->count();
+        }
+    }
+
 }

@@ -55,12 +55,12 @@ class GenericModel
     ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $searchColumnName)
     {
 
-        if ($keyword != null || $keyword != "null") {
+        if ($keyword != null && $keyword != "null") {
 
             return DB::table($tableName)
                 ->select('*')
                 ->where($columnName, $operator, $data)
-                ->orWhere($searchColumnName, 'like', '%' . $keyword . '%')
+                ->Where($searchColumnName, 'like', '%' . $keyword . '%')
                 ->offset($offset)->limit($limit)
                 ->orderBy($orderBy, 'ASC')
                 ->get();
@@ -88,11 +88,11 @@ class GenericModel
 
     static public function simpleFetchGenericCountWIthKeyword($tableName, $operator, $columnName, $data, $searchColumnName, $keyword)
     {
-        if ($keyword == null || $keyword == "null") {
+        if ($keyword != null && $keyword != "null") {
 
             return DB::table($tableName)
                 ->where($columnName, $operator, $data)
-                ->orWhere($searchColumnName, 'like', '%' . $keyword . '%')
+                ->Where($searchColumnName, 'like', '%' . $keyword . '%')
                 ->count();
         } else {
 
