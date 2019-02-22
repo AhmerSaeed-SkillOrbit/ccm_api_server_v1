@@ -18,21 +18,33 @@ class LoginModel {
         $password = Input::get('password');
 
         $hashedPassword = md5($password);
-        $loginRedirect = url('/login');
-        $homeRedirect = url('/');
+        // $loginRedirect = url('/login');
+        // $homeRedirect = url('/');
 
-        $login = DB::table('users')
-            ->select('user_id', 'email', 'password')
-            ->where('email', '=', $email)->where('password', '=', $hashedPassword)
+        $login = DB::table('user')
+            ->select('ID', 'FirstName', 'LastName','EmailAddress','MobileNumber','TelephoneNumber','Gender','FunctionalTitle','FunctionalTitle')
+            ->where('EmailAddress', '=', $email)->where('Password', '=', $hashedPassword)
             ->get();
 
         $checkLogin = json_decode(json_encode($login), true);
 
         if (count($checkLogin) > 0) {
-            $session = LoginModel::createLoginSession($request, $checkLogin);
-            return redirect( $homeRedirect )->with($session);
+            // $session = LoginModel::createLoginSession($request, $checkLogin);
+            // return redirect( $homeRedirect )->with($session);
+
+
+            return array("status"=>true, "data"=>$checkLogin[0]);
+
+            // return response()->json(['data' => $checkLogin, 'message' => 'Successfully Login'], 200);
         }
-        return redirect($loginRedirect)->withErrors(['email or password is incorrect']);
+        else{
+            // return redirect($loginRedirect)->withErrors(['email or password is incorrect']);
+
+            return array("status"=>false, "data"=>null);
+
+            // return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
+        }
+        
     }
 
     static public function getAdminLogin(Request $request) {
