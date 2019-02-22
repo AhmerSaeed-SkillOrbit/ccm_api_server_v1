@@ -17,7 +17,7 @@ Route::get('/test', function (Request $request) {
     return response()->json(['data' => "Hello World", 'message' => 'Hello World'], 400);
 });
 //Role list with pagination
-Route::get('/role/list/{pageNo}/{limit}', 'PageController@roleListViaPagination');
+Route::get('/role/list/search', 'PageController@roleListViaPagination');
 //Role list without pagination
 Route::get('/role/list', 'PageController@roleList');
 //Role list count
