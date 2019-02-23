@@ -19,9 +19,7 @@ Route::get('/test', function (Request $request) {
 
 Route::get('/test/list', 'PageController@testFunction');
 
-Route::get('/', function (){
-    return 'Hello';
-});
+Route::get('/test/email', 'PageController@TestEmail');
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
