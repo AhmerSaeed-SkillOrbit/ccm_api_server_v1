@@ -9,9 +9,11 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\HelperModel;
 
-class UserModel {
+class UserModel
+{
 
-    static function addUser() {
+    static function addUser()
+    {
 
         $sessionNotFoundRedirectUrl = url('/login');
         $redirectUserForm = url('/user_form/add/0');
@@ -31,9 +33,9 @@ class UserModel {
 //
 //        $selectedRoles = Input::get('selectedRoles');
 
-    //    $createdBy = HelperModel::getUserSessionID();
+        //    $createdBy = HelperModel::getUserSessionID();
 
-      //  if ($createdBy == -1)
+        //  if ($createdBy == -1)
         //    return redirect($sessionNotFoundRedirectUrl);
 
 
@@ -62,14 +64,15 @@ class UserModel {
 //            else
 //                return 'failed';
 
-            if ($userID > 0)
-                return 'success';
-            else
-                return 'failed';
+        if ($userID > 0)
+            return 'success';
+        else
+            return 'failed';
 
     }
 
-    static function addPatient() {
+    static function addPatient()
+    {
 
         $sessionNotFoundRedirectUrl = url('/login');
         $redirectUserForm = url('/admin/add/0');
@@ -88,25 +91,26 @@ class UserModel {
 //            return redirect($redirectUserForm)->withErrors(['Duplication Error! This First Name and Last Name is already exist']);
 
         $hashedPassword = md5($password);
-        $data = array("name" => $name,"password" => $hashedPassword, "email" => $email,
+        $data = array("name" => $name, "password" => $hashedPassword, "email" => $email,
             "created_date" => Carbon::now(), "created_by" => 1);
 
         $genericModel = new GenericModel;
         $userID = $genericModel->insertGenericAndReturnID('patients', $data);
 
-        $data = array("user_type_id" => 1, "first_name" => $name,"password" => $hashedPassword, "email" => $email,
+        $data = array("user_type_id" => 1, "first_name" => $name, "password" => $hashedPassword, "email" => $email,
             "status_id" => 3, "created_date" => Carbon::now(), "created_by" => 1);
 
         $userID = $genericModel->insertGenericAndReturnID('users', $data);
 
-            if ($userID > 0)
-                return 'success';
-            else
-                return 'failed';
+        if ($userID > 0)
+            return 'success';
+        else
+            return 'failed';
 
     }
 
-    static function updateUser(Request $request) {
+    static function updateUser(Request $request)
+    {
         $locked = UserModel::convertLockToInteger(Input::get('locked'));
         $userID = Input::get('userID');
         $firstName = Input::get('firstName');
@@ -140,7 +144,8 @@ class UserModel {
         }
     }
 
-    static function searchUser(){
+    static function searchUser()
+    {
 
         $userName = Input::get('userName');
         $phone = Input::get('phone');
@@ -148,24 +153,25 @@ class UserModel {
 
         $query = DB::table('user');
 
-        if( empty($userName) && empty($phone) && empty($email) )
+        if (empty($userName) && empty($phone) && empty($email))
             return array();
 
-        if(isset($userName) && !empty($userName) )
-            $query -> where( DB::raw( "CONCAT(FirstName,' ', LastName)" ), 'LIKE', $userName.'%');
-        if(isset($phone) && !empty($phone) )
-            $query -> where('Phone1', 'LIKE', $phone. '%') -> orWhere('Phone2', 'LIKE', $phone. '%');
-        if(isset($email) && !empty($email) )
-            $query -> where('Email', 'LIKE', $email. '%');
+        if (isset($userName) && !empty($userName))
+            $query->where(DB::raw("CONCAT(FirstName,' ', LastName)"), 'LIKE', $userName . '%');
+        if (isset($phone) && !empty($phone))
+            $query->where('Phone1', 'LIKE', $phone . '%')->orWhere('Phone2', 'LIKE', $phone . '%');
+        if (isset($email) && !empty($email))
+            $query->where('Email', 'LIKE', $email . '%');
 
-        $searched = $query -> select('user.*', DB::raw('GROUP_CONCAT(role.RoleID SEPARATOR "," ) as RoleID'), DB::raw('GROUP_CONCAT(role.Name SEPARATOR "," ) as RoleName'))
-            -> leftjoin('userrole', 'userrole.UserID', '=', 'user.UserID')
-            -> leftjoin('role', 'role.RoleID', '=', 'userrole.RoleID')
-            -> get();
+        $searched = $query->select('user.*', DB::raw('GROUP_CONCAT(role.RoleID SEPARATOR "," ) as RoleID'), DB::raw('GROUP_CONCAT(role.Name SEPARATOR "," ) as RoleName'))
+            ->leftjoin('userrole', 'userrole.UserID', '=', 'user.UserID')
+            ->leftjoin('role', 'role.RoleID', '=', 'userrole.RoleID')
+            ->get();
         return json_decode(json_encode($searched), true);
     }
 
-    static private function addUserRoleToTable($userID, $selectedRoles) {
+    static private function addUserRoleToTable($userID, $selectedRoles)
+    {
         $createUserArray = array();
         foreach ($selectedRoles as $roles) {
             array_push($createUserArray, array("UserID" => $userID, "RoleID" => $roles));
@@ -175,7 +181,8 @@ class UserModel {
         return $row;
     }
 
-    static private function updateUserRoleToTable($userID, $selectedRoles) {
+    static private function updateUserRoleToTable($userID, $selectedRoles)
+    {
         $genericModel = new GenericModel;
         $del = $genericModel->deleteGeneric('userrole', 'UserID', $userID);
         if (count($selectedRoles) > 0) {
@@ -195,7 +202,8 @@ class UserModel {
         }
     }
 
-    static private function isDuplicateName($firstName, $lastName) {
+    static private function isDuplicateName($firstName, $lastName)
+    {
 //        $isDuplicate = DB::table('users')->select('user_id')->where('FirstName', '=', $firstName)->where('last_name', '=', $lastName)->get();
         $isDuplicate = DB::table('users')->select('user_id')->where('email', '=', $firstName)->get();
         if (count($isDuplicate)) {
@@ -204,7 +212,8 @@ class UserModel {
         return false;
     }
 
-    static private function isDuplicateNameForUpdate($firstName, $lastName, $id) {
+    static private function isDuplicateNameForUpdate($firstName, $lastName, $id)
+    {
         $isDuplicate = DB::table('users')->select('UserID')->where('FirstName', '=', $firstName)->where('LastName', '=', $lastName)->where('UserID', '!=', $id)->get();
         if (count($isDuplicate)) {
             return true;
@@ -212,14 +221,16 @@ class UserModel {
         return false;
     }
 
-    static private function convertLockToInteger($value) {
+    static private function convertLockToInteger($value)
+    {
         if (isset($value))
             return 1;
         else
             return 0;
     }
 
-    static function getUsersList() {
+    static function getUsersList()
+    {
         $result = DB::table('user')->select(DB::raw("user.*,GROUP_CONCAT(role.RoleID SEPARATOR ',') as `RoleID`,GROUP_CONCAT(role.Name SEPARATOR ',') as `roleName`"))
             ->leftjoin('userrole', 'userrole.UserID', '=', 'user.UserID')
             ->leftjoin('role', 'role.RoleID', '=', 'userrole.RoleID')
@@ -231,7 +242,8 @@ class UserModel {
             return null;
     }
 
-    static function find($id) {
+    static function find($id)
+    {
         $result = DB::table('user')->select(DB::raw("user.*,GROUP_CONCAT(role.RoleID SEPARATOR ',') as `RoleID`,GROUP_CONCAT(role.Name SEPARATOR ',') as `roleName`"))
             ->leftjoin('userrole', 'userrole.UserID', '=', 'user.UserID')
             ->leftjoin('role', 'role.RoleID', '=', 'userrole.RoleID')
@@ -244,12 +256,12 @@ class UserModel {
             return null;
     }
 
-    static function lock($id,$value){
+    static function lock($id, $value)
+    {
 
-        if($value['Status']== '1'){
+        if ($value['Status'] == '1') {
             $data = array("Status" => '0');
-        }
-        else{
+        } else {
             $data = array("Status" => '1');
         }
         $genericModel = new GenericModel;
@@ -258,6 +270,133 @@ class UserModel {
             return 'success';
         else
             return 'failed';
+    }
+
+    static public function FetchUserWithSearchAndPagination
+    ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $roleCode)
+    {
+        if ($roleCode != null && $roleCode != "null") {
+            if ($keyword != null && $keyword != "null") {
+                error_log('Both are NOT NULL');
+                $query = DB::table($tableName)
+                    ->join('user_access', $tableName . '.Id', '=', 'user_access.UserId')
+                    ->join('role', 'user_access.RoleId', '=', 'role.Id')
+                    ->select($tableName . '.*')
+                    ->where($tableName . '.' . $columnName, $operator, $data)
+                    ->where('role.CodeName', '=', $roleCode)
+                    ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                    ->offset($offset)->limit($limit)
+                    ->orderBy($tableName . '.' . $orderBy, 'ASC')
+                    ->get();
+
+                error_log($query);
+
+                return $query;
+            } else {
+                error_log('keyword is NULL and role is NOT NULL');
+                $query = DB::table($tableName)
+                    ->join('user_access', $tableName . '.Id', '=', 'user_access.UserId')
+                    ->join('role', 'user_access.RoleId', '=', 'role.Id')
+                    ->select($tableName . '.*')
+                    ->where($tableName . '.' . $columnName, $operator, $data)
+                    ->where('role.CodeName', '=', $roleCode)
+                    ->offset($offset)->limit($limit)
+                    ->orderBy($tableName . '.' . $orderBy, 'ASC')
+                    ->get();
+
+                error_log($query);
+
+                return $query;
+            }
+        } else {
+            if ($keyword != null && $keyword != "null") {
+                error_log('Role is NULL and keyword is NOT NULL');
+                return DB::table($tableName)
+                    ->select('*')
+                    ->where($columnName, $operator, $data)
+                    ->Where('FirstName', 'like', '%' . $keyword . '%')
+                    ->orWhere('LastName', 'like', '%' . $keyword . '%')
+                    ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
+                    ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere('FunctionalTitle', 'like', '%' . $keyword . '%')
+                    ->offset($offset)->limit($limit)
+                    ->orderBy($orderBy, 'ASC')
+                    ->get();
+
+            } else {
+                error_log('Role is NULL and keyword also NULL');
+                return DB::table($tableName)
+                    ->select('*')
+                    ->where($columnName, $operator, $data)
+                    ->offset($offset)->limit($limit)
+                    ->orderBy($orderBy, 'ASC')
+                    ->get();
+            }
+        }
+    }
+
+    static public function UserCountWithSearch
+    ($tableName, $operator, $columnName, $data, $keyword, $roleCode)
+    {
+
+        if ($roleCode != null && $roleCode != "null") {
+            if ($keyword != null && $keyword != "null") {
+                error_log('role code and keyword both are not null');
+                $query = DB::table($tableName)
+                    ->join('user_access', $tableName . '.Id', '=', 'user_access.UserId')
+                    ->join('role', 'user_access.RoleId', '=', 'role.Id')
+                    ->where($tableName . '.' . $columnName, $operator, $data)
+                    ->where('role.CodeName', '=', $roleCode)
+                    ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                    ->count();
+
+                error_log($query);
+
+                return $query;
+            } else {
+                error_log('role code not null and keyword null');
+                $query = DB::table($tableName)
+                    ->join('user_access', $tableName . '.Id', '=', 'user_access.UserId')
+                    ->join('role', 'user_access.RoleId', '=', 'role.Id')
+                    ->where($tableName . '.' . $columnName, $operator, $data)
+                    ->where('role.CodeName', '=', $roleCode)
+                    ->count();
+
+                error_log($query);
+
+                return $query;
+            }
+        } else {
+            if ($keyword != null && $keyword != "null") {
+                error_log('Role NULL and keyword not null');
+                return DB::table($tableName)
+                    ->where($columnName, $operator, $data)
+                    ->Where('FirstName', 'like', '%' . $keyword . '%')
+                    ->orWhere('LastName', 'like', '%' . $keyword . '%')
+                    ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
+                    ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
+                    ->orWhere('FunctionalTitle', 'like', '%' . $keyword . '%')
+                    ->count();
+
+            } else {
+                error_log('Role NULL and keyword also null');
+                return DB::table($tableName)
+                    ->where($columnName, $operator, $data)
+                    ->count();
+            }
+        }
     }
 
 }

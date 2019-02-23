@@ -16,8 +16,24 @@ use Illuminate\Http\Request;
 Route::get('/test', function (Request $request) {
     return response()->json(['data' => "Hello World", 'message' => 'Hello World'], 400);
 });
+//Role list with pagination
+Route::get('/role/list/search', 'PageController@RoleListViaPagination');
+//Role list without pagination
+Route::get('/role/list', 'PageController@RoleList');
+//Role list count
+Route::get('/role/count', 'PageController@RoleCount');
 
-Route::get('/test/list', 'PageController@testFunction');
+
+//Role list with pagination
+Route::get('/user/list/search', 'UserController@UserListViaPagination');
+//Role list without pagination
+Route::get('/user/list', 'UserController@UserList');
+//Role list count
+Route::get('/user/count', 'UserController@UserCount');
+
+
+
+
 
 Route::get('/', function (){
     return 'Hello';
