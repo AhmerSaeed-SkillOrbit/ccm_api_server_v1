@@ -643,7 +643,7 @@ class PageController extends BaseController
         ('role', '=', 'IsActive', true, $offset, $limit, 'SortOrder', $keyword, 'Name');
 
         $resultArray = json_decode(json_encode($val), true);
-        $data['allRoles'] = $resultArray;
+        $data = $resultArray;
         if (count($data) > 0) {
             return response()->json(['data' => $data, 'message' => 'Roles fetched'], 200);
         } else {
@@ -660,7 +660,7 @@ class PageController extends BaseController
         ('role', '=', 'IsActive', true, 'SortOrder');
 
         $resultArray = json_decode(json_encode($val), true);
-        $data['allRoles'] = $resultArray;
+        $data = $resultArray;
         if (count($data) > 0) {
             return response()->json(['data' => $data, 'message' => 'Roles fetched'], 200);
         } else {
