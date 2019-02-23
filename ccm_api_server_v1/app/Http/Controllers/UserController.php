@@ -211,7 +211,7 @@ class UserController extends Controller
         return $rules;
     }
 
-    //Role list via pagination
+    //user list via pagination
     function UserListViaPagination(Request $request)
     {
         $offset = $request->input('p');
@@ -235,7 +235,7 @@ class UserController extends Controller
         }
     }
 
-    //ROle list for combo box
+    //user list for combo box
 
     function UserList()
     {
@@ -252,7 +252,7 @@ class UserController extends Controller
         }
     }
 
-    //role list count API
+    //user list count API
 
     function UserCount(Request $request)
     {
@@ -264,6 +264,34 @@ class UserController extends Controller
         ('user', '=', 'IsActive', true, $keyword, $roleCode);
 
         return response()->json(['data' => $val, 'message' => 'Users count'], 200);
+    }
+
+    function UserUpdate(Request $request)
+    {
+        $name = $request->post('FirstName');
+        $id = $request->get('id');
+
+        error_log($id);
+        error_log($name);
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $request->all());
+
+        error_log($update);
+
+        return response()->json(['data' => $update, 'message' => 'User successfully updated'], 200);
+    }
+
+    function GetSingleUserViaId(Request $request)
+    {
+        $id = $request->get('id');
+
+        $val['userDetail'] = UserModel::GetSingleUserViaId($id);
+        
+        if ($val != null) {
+            return response()->json(['data' => $val, 'message' => 'User detail fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
+        }
     }
 
 }

@@ -399,4 +399,17 @@ class UserModel
         }
     }
 
+    static public function GetSingleUserViaId($id)
+    {
+        error_log('in model');
+
+        $query = DB::table('user')
+            ->select('user.*')
+            ->where('user.Id', '=', $id)
+            ->where('user.IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
 }
