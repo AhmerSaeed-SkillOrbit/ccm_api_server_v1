@@ -24,18 +24,19 @@ Route::get('/role/list', 'PageController@RoleList');
 Route::get('/role/count', 'PageController@RoleCount');
 
 
-//Role list with pagination
+//user list with pagination
 Route::get('/user/list/search', 'UserController@UserListViaPagination');
-//Role list without pagination
+//user list without pagination
 Route::get('/user/list', 'UserController@UserList');
-//Role list count
+//user list count
 Route::get('/user/count', 'UserController@UserCount');
+//User update route
+Route::post('/user/update', 'UserController@UserUpdate');
+//Get single user via id
+Route::get('/user/single', 'UserController@GetSingleUserViaId');
 
 
-
-
-
-Route::get('/', function (){
+Route::get('/', function () {
     return 'Hello';
 });
 
