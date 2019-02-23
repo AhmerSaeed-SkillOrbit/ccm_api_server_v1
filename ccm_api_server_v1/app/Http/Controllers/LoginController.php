@@ -13,6 +13,7 @@ use App\Models\HelperModel;
 use Illuminate\Http\Request;
 
 use Log;
+use mysql_xdevapi\Exception;
 
 class LoginController extends Controller
 {
@@ -61,29 +62,62 @@ class LoginController extends Controller
 
     function login(Request $request)
     {
-        // return LoginModel::getLogin($request);
-        // Log::info('hit login.');
 
-        // $name = $request->query('name');
-        $name = $request->input('name');
-        $email = $request->input('email');
-        return response()->json(['data' =>  $name, 'message' => 'Testing'], 200);
+        try {
+            // Log::info('hit login.');
 
-        $check = LoginModel::getLoginTrans($request);
+            // $name = $request->query('name');
+            // $name = $request->input('name');
+            // $email = $request->input('email');
+            // return response()->json(['data' => $name, 'message' => 'Testing'], 200);
 
-        if ($check['status'] == "success") {
+            $check = LoginModel::getLoginTrans($request);
 
-            // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-            return response()->json(['data' =>  $check['data'], 'message' => 'Successfully Login'], 200);
-        }
-        else if($check['status'] == "failed"){
-            return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
-        }
-        else {
+            if ($check['status'] == "success") {
+
+                // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
+                return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
+            } else if ($check['status'] == "failed") {
+                return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
+            } else {
+                return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+            }
+        } catch (Exception $e) {
             return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+
         }
 
-        // return LoginModel::getLogin($request);
+
+    }
+
+    function register(Request $request)
+    {
+
+        try {
+            // Log::info('hit login.');
+
+            $name = $request->query('name');
+            // $name = $request->input('name');
+            // $email = $request->input('email');
+            
+            return response()->json(['data' => $name, 'message' => 'Testing'], 200);
+
+            $check = LoginModel::getLoginTrans($request);
+
+            if ($check['status'] == "success") {
+                // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
+                return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
+            } else if ($check['status'] == "failed") {
+                return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
+            } else {
+                return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+            }
+        } catch (Exception $e) {
+            return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+
+        }
+
+
     }
 
     function adminLogin(Request $request)

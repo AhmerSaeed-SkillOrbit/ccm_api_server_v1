@@ -60,7 +60,7 @@ class LoginModel
 
                         $tokenData = DB::table('access_token')
                             ->select()
-                            ->where('id', '=', $checkInsertTokenId)
+                            ->where('Id', '=', $checkInsertTokenId)
                             ->get();
 
                         $checkTokenData = json_decode(json_encode($tokenData), true);

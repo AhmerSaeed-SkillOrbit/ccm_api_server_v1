@@ -15,6 +15,7 @@ use App\Models\HelperModel;
 use App\Models\ServicesModel;
 use App\Models\PaymentTermsModel;
 use App\Models\GenericModel;
+use App\Models\ForgetPasswordModel;
 use Config;
 
 class PageController extends BaseController
@@ -682,6 +683,12 @@ class PageController extends BaseController
     public function Index()
     {
         echo "Hi";
+    }
+
+    public function TestEmail()
+    {
+        $result = ForgetPasswordModel::forgetPassword();
+        return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
     }
 
 }
