@@ -92,7 +92,6 @@ class LoginController extends Controller
 
     function register(Request $request)
     {
-
         try {
             // Log::info('hit login.');
 
@@ -114,10 +113,7 @@ class LoginController extends Controller
             }
         } catch (Exception $e) {
             return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
-
         }
-
-
     }
 
     function adminLogin(Request $request)
