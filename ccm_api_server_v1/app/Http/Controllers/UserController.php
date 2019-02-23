@@ -268,27 +268,58 @@ class UserController extends Controller
 
     function UserUpdate(Request $request)
     {
-        $name = $request->post('FirstName');
         $id = $request->get('id');
 
-        error_log($id);
-        error_log($name);
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
 
-        $update = GenericModel::updateGeneric('user', 'Id', $id, $request->all());
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
 
-        error_log($update);
+        //Binding data to variable.
 
-        return response()->json(['data' => $update, 'message' => 'User successfully updated'], 200);
+        $firstName = $request->post('FirstName');
+        $lastName = $request->post('LastName');
+        $mobileNumber = $request->post('MobileNumber');
+        $telephoneNumber = $request->post('TelephoneNumber');
+        $officeAddress = $request->post('OfficeAddress');
+        $residentialAddress = $request->post('ResidentialAddress');
+        $gender = $request->post('Gender');
+        $functionalTitle = $request->post('FunctionalTitle');
+        $age = $request->post('Age');
+        $ageGroup = $request->post('AgeGroup');
+
+        $dataToUpdate = array(
+            "FirstName" => $firstName,
+            "LastName" => $lastName,
+            "MobileNumber" => $mobileNumber,
+            "TelephoneNumber" => $telephoneNumber,
+            "OfficeAddress" => $officeAddress,
+            "ResidentialAddress" => $residentialAddress,
+            "Gender" => $gender,
+            "FunctionalTitle" => $functionalTitle,
+            "Age" => $age,
+            "AgeGroup" => $ageGroup,
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
+        }
     }
 
     function GetSingleUserViaId(Request $request)
     {
         $id = $request->get('id');
 
-        $val['userDetail'] = UserModel::GetSingleUserViaId($id);
-        
-        if ($val != null) {
-            return response()->json(['data' => $val, 'message' => 'User detail fetched successfully'], 200);
+        $val = UserModel::GetSingleUserViaId($id);
+
+        if (!empty($val)) {
+            return response()->json(['data' => $val[0], 'message' => 'User detail fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
         }

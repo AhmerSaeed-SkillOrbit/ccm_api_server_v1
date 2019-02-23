@@ -24,22 +24,16 @@ class GenericModel
         return $result;
     }
 
-    function updateGeneric($table, $whereField, $whereFieldValue, $data)
+    static public function updateGeneric($table, $whereField, $whereFieldValue, $data)
     {
         $result = DB::table($table)->where($whereField, '=', $whereFieldValue)->update($data);
-        if (count($result) > 0)
-            return true;
-        else
-            return false;
+        return $result;
     }
 
     function deleteGeneric($table, $whereField, $whereFieldValue)
     {
         $result = DB::table($table)->where($whereField, '=', $whereFieldValue)->delete();
-        if (count($result) > 0)
-            return true;
-        else
-            return false;
+        return $result;
     }
 
     static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data, $orderby)
