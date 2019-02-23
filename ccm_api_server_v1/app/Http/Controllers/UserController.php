@@ -226,7 +226,7 @@ class UserController extends Controller
         ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
         $resultArray = json_decode(json_encode($val), true);
-        $data['allUsers'] = $resultArray;
+        $data = $resultArray;
         error_log(count($data));
         if (count($data) > 0) {
             return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
@@ -244,7 +244,7 @@ class UserController extends Controller
         ('user', '=', 'IsActive', true, 'Id');
 
         $resultArray = json_decode(json_encode($val), true);
-        $data['allUsers'] = $resultArray;
+        $data = $resultArray;
         if (count($data) > 0) {
             return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
         } else {
