@@ -217,10 +217,13 @@ class UserController extends Controller
         $offset = $request->input('p');
         $limit = $request->input('c');
         $keyword = $request->input('s');
+        $roleCode = $request->input('r');
+
+        error_log($roleCode);
 
         //error_log($keyword);
         $val = UserModel::FetchUserWithSearchAndPagination
-        ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword);
+        ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
         $resultArray = json_decode(json_encode($val), true);
         $data['allUsers'] = $resultArray;
@@ -254,10 +257,11 @@ class UserController extends Controller
     function UserCount(Request $request)
     {
         $keyword = $request->input('s');
+        $roleCode = $request->input('r');
         error_log($keyword);
 
         $val = UserModel::UserCountWithSearch
-        ('user', '=', 'IsActive', true, $keyword);
+        ('user', '=', 'IsActive', true, $keyword, $roleCode);
 
         return response()->json(['data' => $val, 'message' => 'Users count'], 200);
     }
