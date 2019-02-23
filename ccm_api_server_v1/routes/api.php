@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 Route::get('/test', function (Request $request) {
     return response()->json(['data' => "Hello World", 'message' => 'Hello World'], 400);
 });
+
 //Role list with pagination
 Route::get('/role/list/search', 'PageController@RoleListViaPagination');
 //Role list without pagination
@@ -39,6 +40,10 @@ Route::get('/user/single', 'UserController@GetSingleUserViaId');
 Route::get('/', function () {
     return 'Hello';
 });
+
+Route::get('/test/list', 'PageController@testFunction');
+
+Route::get('/test/email', 'PageController@TestEmail');
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
