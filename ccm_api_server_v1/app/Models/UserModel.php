@@ -412,4 +412,24 @@ class UserModel
         return $query;
     }
 
+    static public function isDuplicateEmail($userEmail)
+    {
+        $isDuplicate = DB::table('user')
+            ->select('*')
+            ->where('EmailAddress', '=', $userEmail)
+            ->get();
+
+        return $isDuplicate;
+    }
+
+    public static function sendEmail($email, $emailMessage, $url) {
+        $urlForEmail = url($url);
+
+        Mail::raw($emailMessage , function ($message) use ($email) {
+            $message ->to($email) ->subject("Invitation");
+        });
+
+        return true;
+    }
+
 }

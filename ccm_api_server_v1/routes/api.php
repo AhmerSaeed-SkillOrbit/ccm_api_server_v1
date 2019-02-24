@@ -35,6 +35,8 @@ Route::get('/user/count', 'UserController@UserCount');
 Route::post('/user/update', 'UserController@UserUpdate');
 //Get single user via id
 Route::get('/user/single', 'UserController@GetSingleUserViaId');
+//User registration
+Route::post('/user/add', 'UserController@UserRegistration');
 
 
 Route::get('/', function () {
