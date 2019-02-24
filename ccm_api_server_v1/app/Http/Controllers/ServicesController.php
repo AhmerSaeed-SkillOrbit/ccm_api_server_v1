@@ -56,7 +56,7 @@ class ServicesController extends Controller
     function inviteUpdate(Request $request)
     {
        try {
-             $token = $request->input('token');
+             $token = $request->input('Token');
 
             if ($token) {
                 $check = ServicesModel::inviteUpdate($request);

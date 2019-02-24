@@ -94,7 +94,7 @@ class ServicesModel
     static public function inviteUpdate(Request $request)
     {
 
-        $token = Input::get('token');
+        $token = Input::get('Token');
 
         try {
 
