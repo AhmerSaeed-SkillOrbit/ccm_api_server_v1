@@ -283,8 +283,11 @@ class UserModel
                     ->join('role', 'user_access.RoleId', 'role.Id')
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                     ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
-                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                        'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                        'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
                     ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
@@ -307,8 +310,11 @@ class UserModel
                     ->join('role', 'user_access.RoleId', 'role.Id')
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                     ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
-                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                        'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                        'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
                     ->offset($offset)->limit($limit)
@@ -327,8 +333,11 @@ class UserModel
                     ->join('role', 'user_access.RoleId', 'role.Id')
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                     ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
-                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                        'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                        'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where('user.IsActive', '=', true)
                     ->Where('FirstName', 'like', '%' . $keyword . '%')
                     ->orWhere('LastName', 'like', '%' . $keyword . '%')
@@ -347,8 +356,11 @@ class UserModel
                     ->join('role', 'user_access.RoleId', 'role.Id')
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                     ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
-                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                        'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                        'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where('user.IsActive', '=', true)
                     ->offset($offset)->limit($limit)
                     ->orderBy($orderBy, 'ASC')
@@ -424,8 +436,11 @@ class UserModel
             ->join('role', 'user_access.RoleId', 'role.Id')
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+            ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
             ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
-                'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                'destinationUser.EmailAddress as DestinationUserEmailAddress')
             ->where('user.Id', '=', $id)
             ->where('user.IsActive', '=', true)
             ->get();
@@ -470,11 +485,71 @@ class UserModel
             ->join('role', 'user_access.RoleId', 'role.Id')
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+            ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
             ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
-                'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                'destinationUser.EmailAddress as DestinationUserEmailAddress')
             ->where('user.IsActive', '=', true)
             ->orderBy('user.Id', 'ASC')
             ->get();
     }
 
+    static public function getUserInvitationLink($offset, $limit, $keyword)
+    {
+        if ($keyword != null && $keyword != "null") {
+            return DB::table('account_invitation')
+                ->leftjoin('user', 'account_invitation.ByUserId', 'user.Id')
+                ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+                ->leftjoin('role', 'user_access.RoleId', 'role.Id')
+                ->select('user.EmailAddress as ByUserEmail', 'user.FirstName as ByUserFirstName', 'user.LastName as ByUserLastName',
+                    'account_invitation.ToEmailAddress', 'account_invitation.ToMobileNumber', 'account_invitation.Status_')
+                ->where('account_invitation.IsActive', '=', true)
+                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+                ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
+                ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
+                ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%')
+                ->offset($offset)->limit($limit)
+                ->orderBy('account_invitation.Id', 'ASC')
+                ->get();
+        } else {
+            return DB::table('account_invitation')
+                ->leftjoin('user', 'account_invitation.ByUserId', 'user.Id')
+                ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+                ->leftjoin('role', 'user_access.RoleId', 'role.Id')
+                ->select('user.EmailAddress as ByUserEmail', 'user.FirstName as ByUserFirstName', 'user.LastName as ByUserLastName',
+                    'account_invitation.ToEmailAddress', 'account_invitation.ToMobileNumber', 'account_invitation.Status_')
+                ->where('account_invitation.IsActive', '=', true)
+                ->offset($offset)->limit($limit)
+                ->orderBy('account_invitation.Id', 'ASC')
+                ->get();
+        }
+    }
+
+    static public function getUserInvitationLinkCount($keyword)
+    {
+        if ($keyword != null && $keyword != "null") {
+            return DB::table('account_invitation')
+                ->leftjoin('user', 'account_invitation.ByUserId', 'user.Id')
+                ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+                ->leftjoin('role', 'user_access.RoleId', 'role.Id')
+                ->where('account_invitation.IsActive', '=', true)
+                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+                ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
+                ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
+                ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%')
+                ->count();
+        } else {
+            return DB::table('account_invitation')
+                ->leftjoin('user', 'account_invitation.ByUserId', 'user.Id')
+                ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+                ->leftjoin('role', 'user_access.RoleId', 'role.Id')
+                ->where('account_invitation.IsActive', '=', true)
+                ->count();
+        }
+    }
 }

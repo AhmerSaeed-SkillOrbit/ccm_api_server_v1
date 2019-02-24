@@ -489,4 +489,97 @@ class UserController extends Controller
         return response()->json(['data' => $data, 'message' => 'Role wise user count'], 200);
     }
 
+    function GetUserInvitationListWithPaginationAndSearch(Request $request)
+    {
+        error_log('In controller');
+
+        $pageNo = $request->get('p');
+        $limit = $request->get('c');
+        $searchKeyword = $request->get('s');
+
+        $data = UserModel::getUserInvitationLink($pageNo, $limit, $searchKeyword);
+
+        error_log('Count of data is : ' . count($data));
+
+        if (count($data) > 0) {
+            return response()->json(['data' => $data, 'message' => 'User invitation list found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'User invitation list not found'], 200);
+        }
+    }
+
+    function GetUserInvitationListCount(Request $request)
+    {
+        error_log('In controller');
+
+        $searchKeyword = $request->get('s');
+
+        $data = UserModel::getUserInvitationLinkCount($searchKeyword);
+
+        return response()->json(['data' => $data, 'message' => 'User invitation count'], 200);
+    }
+
+    function UserBlock(Request $request)
+    {
+        error_log('in controller');
+        $id = $request->get('id');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        if ($data[0]->IsBlock == true) {
+            return response()->json(['data' => null, 'message' => 'User is already blocked'], 400);
+        }
+
+        //Binding data to variable.
+
+        $dataToUpdate = array(
+            "IsBlock" => true,
+            "BlockReason" => $request->get('BlockReason')
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => $id, 'message' => 'User successfully blocked'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in blocking user'], 400);
+        }
+    }
+
+    function UserUnblock(Request $request)
+    {
+        error_log('in controller');
+        $id = $request->get('id');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        if ($data[0]->IsBlock == false) {
+            return response()->json(['data' => null, 'message' => 'User is already unblocked'], 400);
+        }
+
+        //Binding data to variable.
+
+        $dataToUpdate = array(
+            "IsBlock" => false
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => $id, 'message' => 'User successfully unblocked'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in unblocking user'], 400);
+        }
+    }
+
 }
