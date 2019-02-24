@@ -149,7 +149,10 @@ class ServicesModel
 
     private static function sendEmail($email, $type, $token)
     {
-        $url = url('registration') . '?type=' . $type . '&token=' . $token;
+//        url('registration') . '?type=' . $type . '&token=' . $token;
+
+        $url = 'https://api.businessdirectory360.com/registration?type='. $type . '&token=' . $token;
+
         Mail::raw('Invitation URL ' . $url, function ($message) use ($email) {
             $message->to($email)->subject("Invitation");
         });
