@@ -18,29 +18,35 @@ use App\Models\GenericModel;
 use App\Models\ForgetPasswordModel;
 use Config;
 
-class PageController extends BaseController {
+class PageController extends BaseController
+{
 
 //    General Pages //
 
-    function adminHome() {
+    function adminHome()
+    {
         return view('admin_home');
     }
 
-    function adminLogin() {
+    function adminLogin()
+    {
         return view('admin_login');
     }
 
-    function home() {
+    function home()
+    {
         return view('home');
     }
 
-    function login() {
+    function login()
+    {
         return view('login');
     }
 
 //    List Pages //
 
-    function systemSettingsList() {
+    function systemSettingsList()
+    {
 
         if (HelperModel::getRoleNameFromSessionData() == 'Super User') {
             $val = SystemSettingsModel::getsystemsettingslist();
@@ -61,36 +67,42 @@ class PageController extends BaseController {
         }
     }
 
-    function menuBarList() {
+    function menuBarList()
+    {
         $data['menubars'] = MenuBarModel::getMenuBarslist();
         return View::make('lists.menubar_list')->with($data);
     }
 
-    function userRolesList() {
+    function userRolesList()
+    {
         $data['Roles'] = UserRolesModel::loadRolesDetails();
         return View::make('lists.userroles_list')->with($data);
     }
 
-    function userList() {
+    function userList()
+    {
         $val = UserModel::getUsersList();
         $resultArray = json_decode(json_encode($val), true);
         $data['users'] = $resultArray;
         return View::make('lists.user_list')->with($data);
     }
 
-    function portList() {
+    function portList()
+    {
         $val = PortModel::getPortlist();
         $resultArray = json_decode(json_encode($val), true);
         $data['ports'] = $resultArray;
         return View::make('lists.port_list')->with($data);
     }
 
-    function servicesList() {
+    function servicesList()
+    {
         $data['services'] = ServicesModel::getServicelist();
         return View::make('lists.services_list')->with($data);
     }
 
-    function portTypeList() {
+    function portTypeList()
+    {
 
         $val = DB::table('port_type')->select()
             ->get();
@@ -100,7 +112,8 @@ class PageController extends BaseController {
         return View::make('lists.porttype_list')->with($data);
     }
 
-    function serviceTypeList() {
+    function serviceTypeList()
+    {
         $val = DB::table('service_type')->select()
             ->get();
         $resultArray = json_decode(json_encode($val), true);
@@ -109,7 +122,8 @@ class PageController extends BaseController {
         return View::make('lists.servicetype_list')->with($data);
     }
 
-    function paymentTermsList() {
+    function paymentTermsList()
+    {
 //        $val = PaymentTermsModel::getPaymentTermList();
 //        $resultArray = json_decode(json_encode($val), true);
 //        $data['paymentTerms'] = $resultArray;
@@ -118,20 +132,21 @@ class PageController extends BaseController {
 //        return View::make('lists.paymentterms_list');
     }
 
-    function taskApproverList() {
+    function taskApproverList()
+    {
         $taskApprover = HelperModel::getTaskApproverFromSession();
         if ($taskApprover == 1) {
             $customerQuery = DB::table('customer_actions')
                 ->join('user', 'user.UserID', '=', 'customer_actions.CreatedBy')
-                ->select('ActionID', DB::raw('"Customer" as TaskType'), 'ActionType', 'State', 'customer_actions.Created', 'CompletedDate', 'FirstName','ContactPerson');
+                ->select('ActionID', DB::raw('"Customer" as TaskType'), 'ActionType', 'State', 'customer_actions.Created', 'CompletedDate', 'FirstName', 'ContactPerson');
 
             $billingFileQuery = DB::table('bookingfile_action')
                 ->join('user', 'user.UserID', '=', 'bookingfile_action.CreatedBy')
-                ->select('ActionID', DB::raw('"File" as TaskType'), 'ActionType', 'State', 'bookingfile_action.Created', 'CompletedDate', 'FirstName','FileNumber as ContactPerson');
+                ->select('ActionID', DB::raw('"File" as TaskType'), 'ActionType', 'State', 'bookingfile_action.Created', 'CompletedDate', 'FirstName', 'FileNumber as ContactPerson');
 
             $vendorQuery = DB::table('vendor_actions')
                 ->join('user', 'user.UserID', '=', 'vendor_actions.CreatedBy')
-                ->select('ActionID', DB::raw('"Vendor" as TaskType'), 'ActionType', 'State', 'vendor_actions.Created', 'CompletedDate', 'FirstName','ContactPerson')
+                ->select('ActionID', DB::raw('"Vendor" as TaskType'), 'ActionType', 'State', 'vendor_actions.Created', 'CompletedDate', 'FirstName', 'ContactPerson')
                 ->union($customerQuery)
                 ->union($billingFileQuery)
                 ->orderBy('ActionID', 'desc')
@@ -143,7 +158,8 @@ class PageController extends BaseController {
         return redirect(url('/'))->withErrors(['Access Denied']);
     }
 
-    function customerList() {
+    function customerList()
+    {
         $val = DB::table('customer')
             ->select('CustomerID', 'CustomerCode', 'CustomerName', 'BillingAddress', 'ContactPerson', 'Phone', 'CellPhone', 'Email')
             ->get();
@@ -152,7 +168,8 @@ class PageController extends BaseController {
         return View::make('lists.customer_list')->with($data);
     }
 
-    function vendorList() {
+    function vendorList()
+    {
         $val = DB::table('vendor')
             ->select('VendorID', 'VendorCode', 'VendorName', 'BillingAddress', 'ContactPerson', 'Phone', 'CellPhone', 'Email')
             ->get();
@@ -162,17 +179,20 @@ class PageController extends BaseController {
         return View::make('lists.vendor_list')->with($data);
     }
 
-    function rateSearchList() {
+    function rateSearchList()
+    {
         //$data['fetchedResult'] = PageController::rateQuery();
-        return View::make('lists.ratesearch_list')->with( PageController::rateQuery() );
+        return View::make('lists.ratesearch_list')->with(PageController::rateQuery());
     }
 
-    function rateSetList() {
+    function rateSetList()
+    {
         //$data['fetchedResult'] = PageController::rateQuery();
-        return View::make('lists.rateset_list')->with( PageController::rateQuery() );
+        return View::make('lists.rateset_list')->with(PageController::rateQuery());
     }
 
-    private static function rateQuery() {
+    private static function rateQuery()
+    {
         $val = DB::table('rate')
             ->leftJoin('vendor', 'rate.VendorID', '=', 'vendor.VendorID')
             ->leftJoin('port as p1', 'p1.PortID', '=', 'rate.Origin')
@@ -181,35 +201,37 @@ class PageController extends BaseController {
                 "p1.PortName as OriginPortName", "p2.PortID as DestinationPortID", "rate.Destination as Destination", "p2.PortName as DestinationPortName"
             )->get();
         $ports = DB::table('port')
-            -> select()
-            -> get();
+            ->select()
+            ->get();
         $data['fetchedResult'] = json_decode(json_encode($val), true);
         $data['ports'] = json_decode(json_encode($ports), true);
         return $data;
     }
 
-    function quotationList() {
+    function quotationList()
+    {
         $val = DB::table('quote')
             ->leftJoin('customer', 'customer.CustomerID', '=', 'quote.CustomerID')
             ->leftJoin('port as p1', 'p1.PortID', '=', 'quote.OriginPort')
             ->leftJoin('port as p2', 'p2.PortID', '=', 'quote.DestinationPort')
-            ->select('quote.*', 'customer.*','p1.PortName as OriginName','p2.PortName as DestinationName')
+            ->select('quote.*', 'customer.*', 'p1.PortName as OriginName', 'p2.PortName as DestinationName')
             ->get();
         $ports = DB::table('port')
-            -> select()
-            -> get();
+            ->select()
+            ->get();
         $portList = json_decode(json_encode($ports), true);
         $data['ports'] = $portList;
         $data['fetchedResult'] = json_decode(json_encode($val), true);
         return View::make('lists.quotation_list')->with($data);
     }
 
-    function customerFileList() {
+    function customerFileList()
+    {
         $val = DB::table('bookingfile')
             ->leftJoin('customer', 'customer.CustomerID', '=', 'bookingfile.CustomerID')
             ->leftJoin('port as p1', 'p1.PortID', '=', 'bookingfile.PortOfLoading')
             ->leftJoin('port as p2', 'p2.PortID', '=', 'bookingfile.PortOfDischarge')
-            ->select('customer.*','bookingfile.*','p1.PortName as PortOfLoading','p2.PortName as FinalDestination')
+            ->select('customer.*', 'bookingfile.*', 'p1.PortName as PortOfLoading', 'p2.PortName as FinalDestination')
             ->get();
         $data['fetchedResult'] = json_decode(json_encode($val), true);
         return View::make('lists.customerfile_list')->with($data);
@@ -217,7 +239,8 @@ class PageController extends BaseController {
 
 //    Form Pages //
 
-    function systemSettingsForm($formtype, $id) {
+    function systemSettingsForm($formtype, $id)
+    {
         if (HelperModel::getRoleNameFromSessionData() == 'Super User') {
             if ($formtype == "add") {
                 $data['formType'] = $formtype;
@@ -230,7 +253,7 @@ class PageController extends BaseController {
                     $data['formType'] = $formtype;
                     return View::make('forms.systemsettings_form')->with($data);
                 } else {
-                    return redirect(url('system_settings'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                    return redirect(url('system_settings'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
                 }
             }
         } else {
@@ -238,7 +261,8 @@ class PageController extends BaseController {
         }
     }
 
-    function menuSettingsForm($formtype, $id) {
+    function menuSettingsForm($formtype, $id)
+    {
 
         if ($formtype == "add") {
             $resultArray = MenuBarModel::getRootMenuBar();
@@ -249,7 +273,7 @@ class PageController extends BaseController {
                 }
                 return View::make('forms.menubar_form')->with(['menuBarLevels' => $data, 'formType' => $formtype]);
             } else {
-                return redirect(url('menu_settings'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                return redirect(url('menu_settings'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
             }
         } else {
             $result = MenuBarModel::find($id);
@@ -262,12 +286,13 @@ class PageController extends BaseController {
                 }
                 return View::make('forms.menubar_form')->with(['menuBarLevels' => $data, 'formType' => $formtype, 'id' => $id, 'fetchresult' => $fetchresult]);
             } else {
-                return redirect(url('menu_settings'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                return redirect(url('menu_settings'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
             }
         }
     }
 
-    function userRolesForm($formtype, $id) {
+    function userRolesForm($formtype, $id)
+    {
         $helperController = new HelperController;
         $menuBar = $helperController->allMenuBarList();
         $users = DB::table('user')->select('FirstName', 'LastName', 'user.UserID')
@@ -288,12 +313,13 @@ class PageController extends BaseController {
                     return "Problem In fetching data in view";
                 }
             } else {
-                return redirect(url('user_roles'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                return redirect(url('user_roles'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
             }
         }
     }
 
-    function userForm($formtype, $id =null) {
+    function userForm($formtype, $id = null)
+    {
         //$roles = UserRolesModel::loadRoles();
         $roles = NULL;
 
@@ -306,7 +332,7 @@ class PageController extends BaseController {
                 $fetchresult = json_decode(json_encode($result[0]), true);
                 return View::make('forms.user_form')->with(['data' => $roles, 'formType' => $formtype, 'id' => $id, 'fetchresult' => $fetchresult]);
             } else {
-                return redirect(url('user'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                return redirect(url('user'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
             }
         }
 
@@ -328,11 +354,13 @@ class PageController extends BaseController {
 //        }
     }
 
-    function patientForm() {
+    function patientForm()
+    {
         return view('add_patient');
     }
 
-    function portForm($formtype, $id) {
+    function portForm($formtype, $id)
+    {
         $portDB = DB::table('port_type')->select('id', 'port_type')->get();
         $country = DB::table('country')->select('CountryID', 'CountryName')->get();
         $port = json_decode(json_encode($portDB), true);
@@ -347,12 +375,13 @@ class PageController extends BaseController {
                 $fetchResult = json_decode(json_encode($result[0]), true);
                 return View::make('forms.port_form')->with($data)->with($data2)->with(["formType" => $formtype, "id" => $id, "fetchResult" => $fetchResult]);
             } else {
-                return redirect(url('port'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                return redirect(url('port'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
             }
         }
     }
 
-    function servicesProductForm($formtype, $id) {
+    function servicesProductForm($formtype, $id)
+    {
         $serviceTypes = DB::table('service_type')->select('id', 'service_type')->get();
         $services = json_decode(json_encode($serviceTypes), true);
         if ($formtype == "add") {
@@ -363,12 +392,13 @@ class PageController extends BaseController {
                 $fetchResult = json_decode(json_encode($result[0]), true);
                 return View::make('forms.services_form')->with(["services" => $services])->with(["formType" => $formtype, "id" => $id, "fetchResult" => $fetchResult]);
             } else {
-                return redirect(url('services_product'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                return redirect(url('services_product'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
             }
         }
     }
 
-    function portTypeForm($formtype, $id) {
+    function portTypeForm($formtype, $id)
+    {
         if ($formtype == "add") {
             $data['formType'] = $formtype;
             return View::make('forms.porttype_form')->with($data);
@@ -382,12 +412,13 @@ class PageController extends BaseController {
                 $data['formType'] = $formtype;
                 return View::make('forms.porttype_form')->with($data);
             } else {
-                return redirect(url('service_type'))->withErrors([ Config::get('settings.form_edit_data_not_found')]);
+                return redirect(url('service_type'))->withErrors([Config::get('settings.form_edit_data_not_found')]);
             }
         }
     }
 
-    function serviceTypeForm($formtype, $id) {
+    function serviceTypeForm($formtype, $id)
+    {
         if ($formtype == "add") {
             $data['formType'] = $formtype;
             return View::make('forms.servicetype_form')->with($data);
@@ -406,7 +437,8 @@ class PageController extends BaseController {
         }
     }
 
-    function customerForm($formType, $id) {
+    function customerForm($formType, $id)
+    {
         $paymentTerms = DB::table('payment_terms')->select()->where('status', '=', 1)->get();
         $data['paymentTerms'] = json_decode(json_encode($paymentTerms), true);
         $data['formType'] = $formType;
@@ -424,7 +456,8 @@ class PageController extends BaseController {
         }
     }
 
-    function vendorForm($formType, $id) {
+    function vendorForm($formType, $id)
+    {
         $data['formType'] = $formType;
         if ($formType == 'add') {
             $data['formType'] = $formType;
@@ -443,7 +476,8 @@ class PageController extends BaseController {
         }
     }
 
-    function paymentTermsForm($formType, $id) {
+    function paymentTermsForm($formType, $id)
+    {
         if ($formType == 'add') {
             $data['formType'] = $formType;
             return View::make('forms.paymentterms_form')->with($data);
@@ -460,7 +494,8 @@ class PageController extends BaseController {
         }
     }
 
-    function rateSetForm($formType, $id) {
+    function rateSetForm($formType, $id)
+    {
 
         $port = DB::table('port')
             ->leftJoin('port_type', 'port.PortType_ID', '=', 'port_type.id')
@@ -499,7 +534,8 @@ class PageController extends BaseController {
         }
     }
 
-    public function quotationForm($formType, $id) {
+    public function quotationForm($formType, $id)
+    {
         $customer = DB::table('customer')->select("CustomerID", "CustomerName")->get();
         $customerList = json_decode(json_encode($customer), true);
 
@@ -537,7 +573,8 @@ class PageController extends BaseController {
         return View::make('forms.quotation_form')->with($data);
     }
 
-    function customerFileForm($formType, $id) {
+    function customerFileForm($formType, $id)
+    {
         $quote = DB::table('quote')->select()->get();
         $services = DB::table('service')->select()->get();
         $data['quoteList'] = $quoteList = json_decode(json_encode($quote), true);
@@ -574,39 +611,77 @@ class PageController extends BaseController {
         return View::make('forms.customerfile_form')->with($data);
     }
 
-    function forgetPasswordForm() {
+    function forgetPasswordForm()
+    {
         return view('forms.forgetpassword_form');
     }
 
-    function resetPasswordForm() {
+    function resetPasswordForm()
+    {
         $token = \Illuminate\Support\Facades\Input::get('token');
         $forgetPassword = DB::table('user_forget_password')
-            -> select()
-            -> where('Status', '=', 'ACTIVE')
-            -> where('Token','=', $token)
-            -> where(DB::raw('FROM_UNIXTIME(ExpireTime)') , '>' , \Carbon\Carbon::now() )
-            -> get();
-        if(count($forgetPassword) > 0)
-            return view('forms.resetpassword_form') -> with( [ 'token' => $token] );
+            ->select()
+            ->where('Status', '=', 'ACTIVE')
+            ->where('Token', '=', $token)
+            ->where(DB::raw('FROM_UNIXTIME(ExpireTime)'), '>', \Carbon\Carbon::now())
+            ->get();
+        if (count($forgetPassword) > 0)
+            return view('forms.resetpassword_form')->with(['token' => $token]);
         else
-            return view('forms.forgetpassword_form') -> withErrors('No Token Found, Enter Email Again');
+            return view('forms.forgetpassword_form')->withErrors('No Token Found, Enter Email Again');
     }
 
-    function testFunction(Request $request){
+    //Role list via pagination
+    function RoleListViaPagination(Request $request)
+    {
+        $offset = $request->input('p');
+        $limit = $request->input('c');
+        $keyword = $request->input('s');
 
-        $val = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true);
-        
+        //error_log($keyword);
+        $val = GenericModel::simpleFetchGenericWithPaginationByWhereWithSortOrderAndSearchKeyword
+        ('role', '=', 'IsActive', true, $offset, $limit, 'SortOrder', $keyword, 'Name');
+
         $resultArray = json_decode(json_encode($val), true);
-        $data['allRoles'] = $resultArray;
-        if(count($data) > 0){
+        $data = $resultArray;
+        if (count($data) > 0) {
             return response()->json(['data' => $data, 'message' => 'Roles fetched'], 200);
-        }
-        else{
-            return response()->json(['data' => null, 'message' => 'Roles not found'], 400);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Roles not found'], 200);
         }
     }
 
-    public function Index(){
+    //ROle list for combo box
+
+    function RoleList()
+    {
+
+        $val = GenericModel::simpleFetchGenericByWhere
+        ('role', '=', 'IsActive', true, 'SortOrder');
+
+        $resultArray = json_decode(json_encode($val), true);
+        $data = $resultArray;
+        if (count($data) > 0) {
+            return response()->json(['data' => $data, 'message' => 'Roles fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Roles not found'], 200);
+        }
+    }
+
+    //role list count API
+
+    function RoleCount(Request $request)
+    {
+        $keyword = $request->input('s');
+
+        $val = GenericModel::simpleFetchGenericCountWIthKeyword
+        ('role', '=', 'IsActive', true, 'Name', $keyword);
+
+        return response()->json(['data' => $val, 'message' => 'Roles count'], 200);
+    }
+
+    public function Index()
+    {
         echo "Hi";
     }
 
