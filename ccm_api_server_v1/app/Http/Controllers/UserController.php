@@ -280,7 +280,7 @@ class UserController extends Controller
         //We have get the data.
         //Now insert that data in log table to maitain old record of that user
 
-        error_log('dirst name is : ' . $data[0]->FirstName);
+        error_log('first name is : ' . $data[0]->FirstName);
 
         $dataToInsert = array(
             "UserId" => $id,
@@ -333,11 +333,13 @@ class UserController extends Controller
             "Age" => $age,
             "AgeGroup" => $ageGroup,
         );
+        $emailMessage = "Dear User <br/>Update is made on your records";
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
         if ($update == true) {
             DB::commit();
+            UserModel::sendEmail($data[0]->EmailAddress, $emailMessage, null);
             return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
         } else {
             DB::rollBack();
