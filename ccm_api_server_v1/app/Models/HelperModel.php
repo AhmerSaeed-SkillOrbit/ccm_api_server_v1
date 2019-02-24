@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\UserRolesModel;
+use Carbon\Carbon;
 use Session;
 
 class HelperModel {
@@ -63,6 +64,12 @@ class HelperModel {
 
     public static function getSessionObject() {
         return Session::get('sessionLoginData');
+    }
+
+    public static function getDate() {
+
+        $date = Carbon::now();
+        return $date->toArray();
     }
 
     public static function generateAccessToken() {
