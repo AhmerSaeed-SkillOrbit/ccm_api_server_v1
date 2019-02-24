@@ -30,7 +30,6 @@ class ServicesModel
         DB::beginTransaction();
         try {
 
-            // ('ID', 'FirstName', 'LastName','EmailAddress','MobileNumber','TelephoneNumber','Gender','FunctionalTitle','FunctionalTitle')
             $invite = DB::table('account_invitation')
                 ->select()
                 ->where('ToEmailAddress', '=', $email)
@@ -41,7 +40,7 @@ class ServicesModel
             if (count($checkInvite) > 0) {
 
                 DB::rollBack();
-                return array("status" => "failed", "data" => null, "message" => "invite is already send to this email address");
+                return array("status" => "failed", "data" => null, "message" => "Invite is already sent to this Email address");
 
             } else {
 
@@ -98,7 +97,6 @@ class ServicesModel
 
         try {
 
-            // ('ID', 'FirstName', 'LastName','EmailAddress','MobileNumber','TelephoneNumber','Gender','FunctionalTitle','FunctionalTitle')
             $invite = DB::table('account_invitation')
                 ->select()
                 ->where('Token', '=', $token)
@@ -120,24 +118,24 @@ class ServicesModel
                         ->update($inviteUpdateData);
 
                     if ($inviteUpdate > 0) {
-                        return array("status" => "success", "data" => true, "message" => "your invitation is in pending");
+                        return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
                     } else {
-                        return array("status" => "failed", "data" => null, "message" => "your invitation is in pending");
+                        return array("status" => "failed", "data" => null, "message" => "Your Invitation is pending");
                     }
 
                 }
                 if ($checkInvite[0]['Status_'] == "ignored" && $checkInvite[0]['IsActive'] == 0) {
-                    return array("status" => "success", "data" => true, "message" => "your invitation is in pending");
+                    return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
                 } else if ($checkInvite[0]['Status_'] == "accepted") {
-                    return array("status" => "failed", "data" => null, "message" => "invitation is accepted by this email user");
+                    return array("status" => "failed", "data" => null, "message" => "Your invitation is accepted");
                 } else if ($checkInvite[0]['Status_'] == "rejected") {
-                    return array("status" => "failed", "data" => null, "message" => "invitation is rejected by this email user");
+                    return array("status" => "failed", "data" => null, "message" => "Your invitation is rejected");
                 } else {
-                    return array("status" => "failed", "data" => null, "message" => "invitation is ignored by this email user");
+                    return array("status" => "failed", "data" => null, "message" => "Your invitation is ignored");
                 }
             } else {
 
-                return array("status" => "failed", "data" => null, "message" => "invitation code not found");
+                return array("status" => "failed", "data" => null, "message" => "Invitation code not found");
             }
 
         } catch (Exception $e) {
@@ -154,7 +152,6 @@ class ServicesModel
             $message->to($email)->subject("Invitation");
         });
         return true;
-//        $url = 'https://api.businessdirectory360.com/registration?type='. $type . '&token=' . $token;
     }
 
 }

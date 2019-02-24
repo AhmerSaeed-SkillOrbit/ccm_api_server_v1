@@ -48,8 +48,8 @@ class LoginModel
 
                     $date = HelperModel::getDate();
 
-                    // return array("status" => "failed", "data" => $date, "message" => "token insertion failed");
-                    // return array("status" => "success", "data" => $date, "message" => "token insertion failed");
+                    // return array("status" => "failed", "data" => $date, "message" => "Failed to insert the Token");
+                    // return array("status" => "success", "data" => $date, "message" => "Failed to insert the Token");
 
                     $insertData = array(
                         "UserId" => $checkLogin[0]['Id'],
@@ -84,14 +84,14 @@ class LoginModel
                             // return response()->json(['data' => $checkLogin, 'message' => 'Successfully Login'], 200);
                         } else {
                             DB::rollBack();
-                            return array("status" => "failed", "data" => null, "message" => "get token data failed");
+                            return array("status" => "failed", "data" => null, "message" => "Get token data failed");
                         }
 
 
                     } else {
                         // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null, "message" => "token insertion failed");
+                        return array("status" => "failed", "data" => null, "message" => "Token failed to save");
                     }
 
                 } else {
@@ -241,22 +241,22 @@ class LoginModel
 
                         DB::commit();
                         // return array("status" => true, "data" => $data);
-                        return array("status" => "success", "data" => $checkInsertUserId,"message"=>"Successfully sign up");
+                        return array("status" => "success", "data" => $checkInsertUserId,"message"=>"You have successfully Signed up");
 
 
                     } else {
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null, "message" => "token insertion failed");
+                        return array("status" => "failed", "data" => null, "message" => "Failed to insert the Token");
                     }
 
                 } else {
-                    return array("status" => "failed", "data" => null, "message" => "something went wrong");
+                    return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                 }
 
 
             } else {
                 DB::rollBack();
-                return array("status" => "failed", "data" => null, "message" => "code not found or expired");
+                return array("status" => "failed", "data" => null, "message" => "Code not found or it is expired");
 
             }
 
