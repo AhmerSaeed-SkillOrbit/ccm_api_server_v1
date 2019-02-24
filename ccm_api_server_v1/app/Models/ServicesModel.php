@@ -94,7 +94,7 @@ class ServicesModel
     static public function inviteUpdate(Request $request)
     {
 
-        $token = Input::get('token');
+        $token = Input::get('Token');
 
         try {
 
@@ -149,7 +149,7 @@ class ServicesModel
 
     private static function sendEmail($email, $type, $token)
     {
-        $url = url('register') . '?type=' . $type . '&token=' . $token;
+        $url = url('registration') . '?type=' . $type . '&token=' . $token;
         Mail::raw('Invitation URL ' . $url, function ($message) use ($email) {
             $message->to($email)->subject("Invitation");
         });

@@ -55,8 +55,8 @@ class ServicesController extends Controller
 
     function inviteUpdate(Request $request)
     {
-//        try {
-             $token = $request->input('token');
+       try {
+             $token = $request->input('Token');
 
             if ($token) {
                 $check = ServicesModel::inviteUpdate($request);
@@ -74,9 +74,9 @@ class ServicesController extends Controller
             } else {
                 return response()->json(['data' => null, 'message' => 'token not found'], 400);
             }
-//        } catch (Exception $e) {
-//            return response()->json(['data' => null, 'message' => 'error occur'], 500);
-//        }
+       } catch (Exception $e) {
+           return response()->json(['data' => null, 'message' => 'error occur'], 500);
+       }
 
     }
 
