@@ -438,14 +438,15 @@ class UserController extends Controller
 
     function SuperAdminDashboard(Request $request)
     {
-        $keyword = $request->input('s');
-        $roleCode = $request->input('r');
-        error_log($keyword);
+        $superAdminRoleCode = 'super_admin';
+        $doctor = 'doctor';
+        $facilitator = 'facilitator';
+        $supportStaff = 'support_staff';
 
-        $val = UserModel::UserCountWithSearch
-        ('user', '=', 'IsActive', true, $keyword, $roleCode);
+        //$val = UserModel::UserCountWithSearch
+        //('user', '=', 'IsActive', true, $keyword, $roleCode);
 
-        return response()->json(['data' => $val, 'message' => 'Users count'], 200);
+        return response()->json(['data' => null, 'message' => 'Users count'], 200);
     }
 
 }
