@@ -241,8 +241,7 @@ class UserController extends Controller
     function UserList()
     {
 
-        $val = GenericModel::simpleFetchGenericByWhere
-        ('user', '=', 'IsActive', true, 'Id');
+        $val = UserModel::getUserList();
 
         $resultArray = json_decode(json_encode($val), true);
         $data = $resultArray;
@@ -278,6 +277,37 @@ class UserController extends Controller
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
 
+        //We have get the data.
+        //Now insert that data in log table to maitain old record of that user
+
+        error_log('dirst name is : ' . $data[0]->FirstName);
+
+        $dataToInsert = array(
+            "UserId" => $id,
+            "FirstName" => $data[0]->FirstName,
+            "LastName" => $data[0]->LastName,
+            "MobileNumber" => $data[0]->MobileNumber,
+            "TelephoneNumber" => $data[0]->TelephoneNumber,
+            "OfficeAddress" => $data[0]->OfficeAddress,
+            "ResidentialAddress" => $data[0]->ResidentialAddress,
+            "Gender" => $data[0]->Gender,
+            "FunctionalTitle" => $data[0]->FunctionalTitle,
+            "Age" => $data[0]->Age,
+            "AgeGroup" => $data[0]->AgeGroup,
+            "CreatedBy" => $data[0]->CreatedBy,
+            "CreatedOn" => $data[0]->CreatedOn,
+            "CityId" => $data[0]->CityId,
+        );
+
+        DB::beginTransaction();
+        $insertedRecord = GenericModel::insertGenericAndReturnID('change_log_user', $dataToInsert);
+
+        if ($insertedRecord == false) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in maintaining user log'], 400);
+        }
+
+
         //Binding data to variable.
 
         $firstName = $request->post('FirstName');
@@ -307,8 +337,10 @@ class UserController extends Controller
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
         if ($update == true) {
+            DB::commit();
             return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
         } else {
+            DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
         }
     }
@@ -417,7 +449,7 @@ class UserController extends Controller
         if (count($data) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
-        
+
         //Binding data to variable.
 
         $dataToUpdate = array(

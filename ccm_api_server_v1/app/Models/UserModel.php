@@ -278,10 +278,13 @@ class UserModel
         if ($roleCode != null && $roleCode != "null") {
             if ($keyword != null && $keyword != "null") {
                 error_log('Both are NOT NULL');
-                $query = DB::table($tableName)
-                    ->join('user_access', $tableName . '.Id', '=', 'user_access.UserId')
-                    ->join('role', 'user_access.RoleId', '=', 'role.Id')
-                    ->select($tableName . '.*')
+                $query = DB::table('user')
+                    ->join('user_access', 'user_access.UserId', 'user.Id')
+                    ->join('role', 'user_access.RoleId', 'role.Id')
+                    ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                    ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
                     ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
@@ -299,10 +302,13 @@ class UserModel
                 return $query;
             } else {
                 error_log('keyword is NULL and role is NOT NULL');
-                $query = DB::table($tableName)
-                    ->join('user_access', $tableName . '.Id', '=', 'user_access.UserId')
-                    ->join('role', 'user_access.RoleId', '=', 'role.Id')
-                    ->select($tableName . '.*')
+                $query = DB::table('user')
+                    ->join('user_access', 'user_access.UserId', 'user.Id')
+                    ->join('role', 'user_access.RoleId', 'role.Id')
+                    ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                    ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
                     ->offset($offset)->limit($limit)
@@ -316,9 +322,14 @@ class UserModel
         } else {
             if ($keyword != null && $keyword != "null") {
                 error_log('Role is NULL and keyword is NOT NULL');
-                return DB::table($tableName)
-                    ->select('*')
-                    ->where($columnName, $operator, $data)
+                return DB::table('user')
+                    ->join('user_access', 'user_access.UserId', 'user.Id')
+                    ->join('role', 'user_access.RoleId', 'role.Id')
+                    ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                    ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                    ->where('user.IsActive', '=', true)
                     ->Where('FirstName', 'like', '%' . $keyword . '%')
                     ->orWhere('LastName', 'like', '%' . $keyword . '%')
                     ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
@@ -331,9 +342,14 @@ class UserModel
 
             } else {
                 error_log('Role is NULL and keyword also NULL');
-                return DB::table($tableName)
-                    ->select('*')
-                    ->where($columnName, $operator, $data)
+                return DB::table('user')
+                    ->join('user_access', 'user_access.UserId', 'user.Id')
+                    ->join('role', 'user_access.RoleId', 'role.Id')
+                    ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                    ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+                    ->where('user.IsActive', '=', true)
                     ->offset($offset)->limit($limit)
                     ->orderBy($orderBy, 'ASC')
                     ->get();
@@ -404,7 +420,12 @@ class UserModel
         error_log('in model');
 
         $query = DB::table('user')
-            ->select('user.*')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+            ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+            ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
             ->where('user.Id', '=', $id)
             ->where('user.IsActive', '=', true)
             ->get();
@@ -440,6 +461,20 @@ class UserModel
             ->join('role', 'user_access.RoleId', 'role.Id')
             ->where('role.CodeName', '=', $roleCode)
             ->count();
+    }
+
+    static public function getUserList()
+    {
+        return DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+            ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+            ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType')
+            ->where('user.IsActive', '=', true)
+            ->orderBy('user.Id', 'ASC')
+            ->get();
     }
 
 }
