@@ -417,10 +417,7 @@ class UserController extends Controller
         if (count($data) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
-
-        if ($data[0]->IsActive == false) {
-            return response()->json(['data' => null, 'message' => 'User is already deleted'], 400);
-        }
+        
         //Binding data to variable.
 
         $dataToUpdate = array(
@@ -438,15 +435,26 @@ class UserController extends Controller
 
     function SuperAdminDashboard(Request $request)
     {
+        error_log('in controller');
+
         $superAdminRoleCode = 'super_admin';
         $doctor = 'doctor';
         $facilitator = 'facilitator';
         $supportStaff = 'support_staff';
 
-        //$val = UserModel::UserCountWithSearch
-        //('user', '=', 'IsActive', true, $keyword, $roleCode);
+        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRoleCode);
+        $doctorCount = UserModel::getUserCountViaRoleCode($doctor);
+        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitator);
+        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaff);
 
-        return response()->json(['data' => null, 'message' => 'Users count'], 200);
+        $data = array(
+            "SuperAdmin" => $superAdminCount,
+            "Doctor" => $doctorCount,
+            "Facilitator" => $facilitatorCount,
+            "SupportStaff" => $supperStaffCount,
+        );
+
+        return response()->json(['data' => $data, 'message' => 'Role wise user count'], 200);
     }
 
 }

@@ -422,14 +422,24 @@ class UserModel
         return $isDuplicate;
     }
 
-    public static function sendEmail($email, $emailMessage, $url) {
+    public static function sendEmail($email, $emailMessage, $url)
+    {
         $urlForEmail = url($url);
 
-        Mail::raw($emailMessage , function ($message) use ($email) {
-            $message ->to($email) ->subject("Invitation");
+        Mail::raw($emailMessage, function ($message) use ($email) {
+            $message->to($email)->subject("Invitation");
         });
 
         return true;
+    }
+
+    public static function getUserCountViaRoleCode($roleCode)
+    {
+        return DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->where('role.CodeName', '=', $roleCode)
+            ->count();
     }
 
 }
