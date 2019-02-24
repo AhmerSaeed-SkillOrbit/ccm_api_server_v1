@@ -39,6 +39,14 @@ Route::get('/user/single', 'UserController@GetSingleUserViaId');
 Route::post('/user/add', 'UserController@UserRegistration');
 //User delete route
 Route::post('/user/delete', 'UserController@UserDelete');
+//User invitation list with pagination and search
+Route::get('/user/invitation', 'UserController@GetUserInvitationListWithPaginationAndSearch');
+//User invitation list count with search
+Route::get('/user/invitation/count', 'UserController@GetUserInvitationListCount');
+//User block route
+Route::post('/user/block', 'UserController@UserBlock');
+//User unblock route
+Route::post('/user/unblock', 'UserController@UserUnblock');
 
 //Dashboard API for super admin
 Route::get('/dashboard/superadmin', 'UserController@SuperAdminDashboard');
