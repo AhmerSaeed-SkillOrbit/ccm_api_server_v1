@@ -39,8 +39,7 @@ class ServicesController extends Controller
                 $check = ServicesModel::sendInviteTrans($request);
 
                 if ($check['status'] == "success") {
-                    // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                    return response()->json(['data' => true, 'message' => 'Successfully send invite'], 200);
+                    return response()->json(['data' => true, 'message' => 'Invite is successfully sent'], 200);
                 } else if ($check['status'] == "failed") {
                     return response()->json(['data' => false, 'message' => $check['message']], 400);
                 } else {

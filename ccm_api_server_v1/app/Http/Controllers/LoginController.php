@@ -44,19 +44,19 @@ class LoginController extends Controller
                 if ($checkInsertToken) {
 
                     // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                    return response()->json(['data' => ['User' => $check['data'], 'accessToken' => "a123"], 'message' => 'Successfully Login'], 200);
+                    return response()->json(['data' => ['User' => $check['data'], 'accessToken' => "a123"], 'message' => 'User Successfully Logged In'], 200);
                 } else {
-                    return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                    return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
                 }
 
             } else {
-                return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
             }
 
 
             // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
         } else {
-            return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
+            return response()->json(['data' => null, 'message' => 'Email or password is incorrect'], 400);
         }
 
         // return LoginModel::getLogin($request);
@@ -78,14 +78,14 @@ class LoginController extends Controller
             if ($check['status'] == "success") {
 
                 // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
+                return response()->json(['data' => $check['data'], 'message' => 'User Successfully Logged In'], 200);
             } else if ($check['status'] == "failed") {
-                return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
+                return response()->json(['data' => null, 'message' => 'Email or password is incorrect'], 400);
             } else {
-                return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+                return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
             }
         } catch (Exception $e) {
-            return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
 
         }
 
@@ -115,15 +115,15 @@ class LoginController extends Controller
                     } else if ($check['status'] == "failed") {
                         return response()->json(['data' => null, 'message' => $check['message']], 400);
                     } else {
-                        return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+                        return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
                     }
                 }
             } else {
-                return response()->json(['data' => null, 'message' => 'code type is missing'], 400);
+                return response()->json(['data' => null, 'message' => 'Code type is missing'], 400);
             }
 
         } catch (Exception $e) {
-            return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
         }
     }
 
