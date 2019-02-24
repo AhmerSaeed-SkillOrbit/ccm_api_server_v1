@@ -12,12 +12,15 @@ use Carbon\Carbon;
 use PhpParser\Node\Stmt\Return_;
 use PHPUnit\Util\RegularExpressionTest;
 
+use Exception;
+use Mail;
+
 class LoginModel
 {
 
     static public function getLoginTrans(Request $request)
     {
-        
+
         $email = Input::get('email');
         $password = Input::get('password');
 
@@ -28,7 +31,7 @@ class LoginModel
 
             // ('ID', 'FirstName', 'LastName','EmailAddress','MobileNumber','TelephoneNumber','Gender','FunctionalTitle','FunctionalTitle')
             $login = DB::table('user')
-                ->select('ID')
+                ->select('Id')
                 ->where('EmailAddress', '=', $email)->where('Password', '=', $hashedPassword)
                 ->get();
 
@@ -39,7 +42,7 @@ class LoginModel
                 // return redirect( $homeRedirect )->with($session);
 
                 $token = md5(uniqid(rand(), true));
-//                $token = LoginModel::generateAccessToken();
+                // $token = LoginModel::generateAccessToken();
 
                 if ($token != null) {
 
@@ -49,7 +52,7 @@ class LoginModel
                     // return array("status" => "success", "data" => $date, "message" => "token insertion failed");
 
                     $insertData = array(
-                        "UserId" => $checkLogin[0]['ID'],
+                        "UserId" => $checkLogin[0]['Id'],
                         "AccessToken" => $token,
                         "CreatedOn" => $date["timestamp"]
                     );
@@ -72,10 +75,11 @@ class LoginModel
                                 "expiryTime" => $checkTokenData[0]["ExpiryTime"]
                             );
                             // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-//                            return response()->json(['data' => ['User' => $data, 'accessToken' => "a123"], 'message' => 'Successfully Login'], 200);
+                            // return response()->json(['data' => ['User' => $data, 'accessToken' => "a123"], 'message' => 'Successfully Login'], 200);
 
                             DB::commit();
-                            return array("status" => true, "data" => $data);
+                            // return array("status" => true, "data" => $data);
+                            return array("status" => "success", "data" => $data);
 
                             // return response()->json(['data' => $checkLogin, 'message' => 'Successfully Login'], 200);
                         } else {
@@ -85,19 +89,18 @@ class LoginModel
 
 
                     } else {
-//                        return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                        // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                         DB::rollBack();
                         return array("status" => "failed", "data" => null, "message" => "token insertion failed");
                     }
 
                 } else {
-//                    return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                    // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                     DB::rollBack();
                     return array("status" => "failed", "data" => null);
                 }
             } else {
                 // return redirect($loginRedirect)->withErrors(['email or password is incorrect']);
-
                 DB::rollBack();
                 return array("status" => "failed", "data" => null);
 
@@ -110,15 +113,7 @@ class LoginModel
             DB::rollBack();
             return array("status" => "error", "data" => null);
             //   return $e;
-        } catch (FatalThrowableError $e) {
-
-            echo "error";
-            DB::rollBack();
-            return array("status" => "error", "data" => null);
-            //   return $e;
         }
-
-
     }
 
     static public function getLogin(Request $request)
@@ -180,6 +175,99 @@ class LoginModel
         } else {
             return null;
         }
+
+    }
+
+    static public function getRegisterTrans(Request $request)
+    {
+        $data = $request->all();
+
+        $inviteCode = Input::get('InviteCode');
+        $email = Input::get('EmailAddress');
+        $password = Input::get('Password');
+        $hashedPassword = md5($password);
+        $date = HelperModel::getDate();
+
+        DB::beginTransaction();
+        try {
+
+            $inviteCode = DB::table('account_invitation')
+                ->select('Id', 'Token')
+                ->where('Token', '=', $inviteCode)
+                // ->where('ToEmailAddress', '=', $email)
+                ->where('Status_', '=', "ignored")
+                ->where('IsActive', '=', 0)
+                ->get();
+
+            $checkInviteCode = json_decode(json_encode($inviteCode), true);
+
+            if (count($checkInviteCode) > 0) {
+
+                $inviteUpdateData = array(
+                    "Status_" => "accepted",
+                    "IsActive" => 1
+                );
+
+                $inviteUpdate = DB::table('account_invitation')
+                    ->where('Token', $checkInviteCode[0]['Token'])
+                    ->update($inviteUpdateData);
+
+                if ($inviteUpdate > 0) {
+
+                    $insertData = array(
+                        "FirstName" => $data["FirstName"],
+                        "LastName" => $data["LastName"],
+                        "EmailAddress" => $data["EmailAddress"],
+                        "MobileNumber" => $data["MobileNumber"],
+                        "TelephoneNumber" => $data["TelephoneNumber"],
+                        "OfficeAddress" => $data["OfficeAddress"],
+                        "ResidentialAddress" => $data["ResidentialAddress"],
+                        "Password" => $hashedPassword,
+                        "Gender" => $data["Gender"],
+                        "FunctionalTitle" => $data["FunctionalTitle"],
+                        "Age" => $data["Age"],
+                        "AgeGroup" => $data["AgeGroup"],
+                        "CreatedOn" => $date["timestamp"],
+                        "IsActive" => 1
+                    );
+
+                    $checkInsertUserId = DB::table("user")->insertGetId($insertData);
+
+                    if ($checkInsertUserId) {
+
+                        Mail::raw('Welcome to CCM', function ($message) use ($email) {
+                            $message->to($email)->subject("Invitation");
+                        });
+
+                        DB::commit();
+                        // return array("status" => true, "data" => $data);
+                        return array("status" => "success", "data" => $checkInsertUserId,"message"=>"Successfully sign up");
+
+
+                    } else {
+                        DB::rollBack();
+                        return array("status" => "failed", "data" => null, "message" => "token insertion failed");
+                    }
+
+                } else {
+                    return array("status" => "failed", "data" => null, "message" => "something went wrong");
+                }
+
+
+            } else {
+                DB::rollBack();
+                return array("status" => "failed", "data" => null, "message" => "code not found or expired");
+
+            }
+
+        } catch (Exception $e) {
+
+            echo "error";
+            DB::rollBack();
+            return array("status" => "error", "data" => null);
+            //   return $e;
+        }
+
 
     }
 

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\LoginModel;
 use App\Models\GenericModel;
@@ -13,7 +14,8 @@ use App\Models\HelperModel;
 use Illuminate\Http\Request;
 
 use Log;
-use mysql_xdevapi\Exception;
+// use mysql_xdevapi\Exception;
+use Exception;
 
 class LoginController extends Controller
 {
@@ -93,24 +95,33 @@ class LoginController extends Controller
     function register(Request $request)
     {
         try {
-            // Log::info('hit login.');
 
-            $name = $request->query('name');
-            // $name = $request->input('name');
-            // $email = $request->input('email');
-            
-            return response()->json(['data' => $name, 'message' => 'Testing'], 200);
+            $invite = $request->input('InviteCode');
+            $code = $request->input('Type');
 
-            $check = LoginModel::getLoginTrans($request);
+            $data = $request->all();
 
-            if ($check['status'] == "success") {
-                // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-            } else if ($check['status'] == "failed") {
-                return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
+            if ($invite && $code) {
+                $validator = LoginController::registerValidator($data);
+
+                if ($validator->fails()) {
+                    return response()->json(['data' => $data, 'error' => $validator->errors(), 'message' => 'validation failed'], 400);
+                } else {
+
+                    $check = LoginModel::getRegisterTrans($request);
+
+                    if ($check['status'] == "success") {
+                        return response()->json(['data' => $check['data'], 'message' => $check['message']], 200);
+                    } else if ($check['status'] == "failed") {
+                        return response()->json(['data' => null, 'message' => $check['message']], 400);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+                    }
+                }
             } else {
-                return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
+                return response()->json(['data' => null, 'message' => 'code type is missing'], 400);
             }
+
         } catch (Exception $e) {
             return response()->json(['data' => null, 'message' => 'something went wrong'], 500);
         }
@@ -129,6 +140,20 @@ class LoginController extends Controller
     function adminLogout(Request $request)
     {
         return LoginModel::getAdminlogout($request);
+    }
+
+    /**
+     * Get a validator for an incoming registration request.
+     *
+     * @param  array $data
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
+    protected function registerValidator(array $data)
+    {
+        return Validator::make($data, [
+            'EmailAddress' => ['required', 'string', 'email', 'max:255', 'unique:user'],
+//            'BelongTo' => ['required'],
+        ]);
     }
 
 }
