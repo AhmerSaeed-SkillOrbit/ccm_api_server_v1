@@ -35,6 +35,13 @@ Route::get('/user/count', 'UserController@UserCount');
 Route::post('/user/update', 'UserController@UserUpdate');
 //Get single user via id
 Route::get('/user/single', 'UserController@GetSingleUserViaId');
+//User registration
+Route::post('/user/add', 'UserController@UserRegistration');
+//User delete route
+Route::post('/user/delete', 'UserController@UserDelete');
+
+//Dashboard API for super admin
+Route::get('/dashboard/superadmin', 'UserController@SuperAdminDashboard');
 
 
 Route::get('/', function () {

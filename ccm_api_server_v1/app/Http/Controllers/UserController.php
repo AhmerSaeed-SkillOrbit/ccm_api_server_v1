@@ -14,6 +14,7 @@ use App\Models\UserModel;
 use App\Models\GenericModel;
 use App\Models\HelperModel;
 use Config;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -323,6 +324,129 @@ class UserController extends Controller
         } else {
             return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
         }
+    }
+
+    function UserRegistration(Request $request)
+    {
+        error_log('In controller');
+
+        $emailAddress = $request->post('EmailAddress');
+        //First get and check if email record exists or not
+        $checkEmail = UserModel::isDuplicateEmail($emailAddress);
+
+        error_log('Checking email bit' . $checkEmail);
+
+        if (count($checkEmail) > 0) {
+            return response()->json(['data' => null, 'message' => 'Email already exists'], 400);
+        }
+
+        //Binding data to variable.
+        $firstName = $request->get('FirstName');
+        $lastName = $request->get('LastName');
+        $mobileNumber = $request->get('MobileNumber');
+        $telephoneNumber = $request->get('TelephoneNumber');
+        $officeAddress = $request->get('OfficeAddress');
+        $residentialAddress = $request->get('ResidentialAddress');
+        $gender = $request->get('Gender');
+        $functionalTitle = $request->get('FunctionalTitle');
+        $age = $request->get('Age');
+        $ageGroup = $request->get('AgeGroup');
+        $hashedPassword = md5('ccm1!');
+        $roleId = $request->get('RoleId');
+
+        $dataToInsert = array(
+            "EmailAddress" => $emailAddress,
+            "FirstName" => $firstName,
+            "LastName" => $lastName,
+            "MobileNumber" => $mobileNumber,
+            "TelephoneNumber" => $telephoneNumber,
+            "OfficeAddress" => $officeAddress,
+            "ResidentialAddress" => $residentialAddress,
+            "Password" => $hashedPassword,
+            "Gender" => $gender,
+            "FunctionalTitle" => $functionalTitle,
+            "Age" => $age,
+            "AgeGroup" => $ageGroup,
+            "IsActive" => true
+        );
+
+        DB::beginTransaction();
+
+
+        $insertedRecord = GenericModel::insertGenericAndReturnID('user', $dataToInsert);
+        error_log('Inserted record id ' . $insertedRecord);
+
+        if ($insertedRecord == 0) {
+            DB::rollback();
+            return response()->json(['data' => null, 'message' => 'Error in user registration'], 400);
+        }
+
+
+        //Now making data for user_access
+        $userAccessData = array(
+            "UserId" => $insertedRecord,
+            "RoleId" => $roleId,
+            "IsActive" => true
+        );
+
+        print_r($userAccessData);
+        $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
+
+        $emailMessage = "You have been invited to Chronic Management System. 
+        Your email has been created. You may login by using : ccm1! as your password.";
+
+        if ($insertUserAccessRecord == 0) {
+            DB::rollback();
+            //Now sending email
+            UserModel::sendEmail($emailAddress, $emailMessage, null);
+            return response()->json(['data' => null, 'message' => 'Error in user assigning role'], 400);
+        } else {
+            DB::commit();
+            return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
+        }
+    }
+
+    function UserDelete(Request $request)
+    {
+        error_log('in controller');
+        $id = $request->get('id');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        if ($data[0]->IsActive == false) {
+            return response()->json(['data' => null, 'message' => 'User is already deleted'], 400);
+        }
+        //Binding data to variable.
+
+        $dataToUpdate = array(
+            "IsActive" => false
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => $id, 'message' => 'User successfully deleted'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in deleting user record'], 400);
+        }
+    }
+
+    function SuperAdminDashboard(Request $request)
+    {
+        $superAdminRoleCode = 'super_admin';
+        $doctor = 'doctor';
+        $facilitator = 'facilitator';
+        $supportStaff = 'support_staff';
+
+        //$val = UserModel::UserCountWithSearch
+        //('user', '=', 'IsActive', true, $keyword, $roleCode);
+
+        return response()->json(['data' => null, 'message' => 'Users count'], 200);
     }
 
 }
