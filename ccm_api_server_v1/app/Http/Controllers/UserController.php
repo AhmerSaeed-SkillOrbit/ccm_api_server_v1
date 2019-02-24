@@ -405,4 +405,47 @@ class UserController extends Controller
             return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
         }
     }
+
+    function UserDelete(Request $request)
+    {
+        error_log('in controller');
+        $id = $request->get('id');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        if ($data[0]->IsActive == false) {
+            return response()->json(['data' => null, 'message' => 'User is already deleted'], 400);
+        }
+        //Binding data to variable.
+
+        $dataToUpdate = array(
+            "IsActive" => false
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => $id, 'message' => 'User successfully deleted'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in deleting user record'], 400);
+        }
+    }
+
+    function SuperAdminDashboard(Request $request)
+    {
+        $keyword = $request->input('s');
+        $roleCode = $request->input('r');
+        error_log($keyword);
+
+        $val = UserModel::UserCountWithSearch
+        ('user', '=', 'IsActive', true, $keyword, $roleCode);
+
+        return response()->json(['data' => $val, 'message' => 'Users count'], 200);
+    }
+
 }
