@@ -51,6 +51,13 @@ Route::post('/user/unblock', 'UserController@UserUnblock');
 //Dashboard API for super admin
 Route::get('/dashboard/superadmin', 'UserController@SuperAdminDashboard');
 
+//permission list with pagination
+Route::get('/permission/list/search', 'PageController@PermissionListViaPagination');
+//permission list without pagination
+Route::get('/permission/list', 'PageController@PermissionList');
+//permission list count
+Route::get('/permission/count', 'PageController@PermissionCount');
+
 
 Route::get('/', function () {
     return 'Hello';

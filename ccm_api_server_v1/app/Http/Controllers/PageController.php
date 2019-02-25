@@ -691,4 +691,58 @@ class PageController extends BaseController
         return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
     }
 
+    //Permission list via pagination
+    function PermissionListViaPagination(Request $request)
+    {
+        error_log('In controller');
+        $offset = $request->get('p');
+        $limit = $request->get('c');
+        $keyword = $request->get('s');
+
+        //error_log($keyword);
+        $val = GenericModel::simpleFetchGenericWithPaginationByWhereWithSortOrderAndSearchKeyword
+        ('permission', '=', 'IsActive', true, $offset, $limit, 'SortOrder', $keyword, 'Name');
+
+        $resultArray = json_decode(json_encode($val), true);
+        $data = $resultArray;
+        if (count($data) > 0) {
+            return response()->json(['data' => $data, 'message' => 'Permission fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 200);
+        }
+    }
+
+    //Permission list for combo box
+
+    function PermissionList()
+    {
+
+        error_log('In controller');
+
+        $val = GenericModel::simpleFetchGenericByWhere
+        ('permission', '=', 'IsActive', true, 'SortOrder');
+
+        $resultArray = json_decode(json_encode($val), true);
+        $data = $resultArray;
+        if (count($data) > 0) {
+            return response()->json(['data' => $data, 'message' => 'Permission fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 200);
+        }
+    }
+
+    //role list count API
+
+    function PermissionCount(Request $request)
+    {
+        error_log('In controller');
+
+        $keyword = $request->get('s');
+
+        $val = GenericModel::simpleFetchGenericCountWIthKeyword
+        ('permission', '=', 'IsActive', true, 'Name', $keyword);
+
+        return response()->json(['data' => $val, 'message' => 'Permission count'], 200);
+    }
+
 }
