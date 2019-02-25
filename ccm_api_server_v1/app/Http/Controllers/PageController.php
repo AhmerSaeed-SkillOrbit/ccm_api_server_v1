@@ -753,15 +753,10 @@ class PageController extends BaseController
 
         $permissions = $request->Permission;
 
-        error_log($roleId);
-
-        print_r($request->Permission);
-
         DB::beginTransaction();
 
         //First get the record of role permission with respect to that given role id
         $checkRolePermission = UserModel::getPermissionViaRoleId($roleId);
-        error_log('$checkRolePermission' . $checkRolePermission);
         //Now check the permission if it exists
         if (count($checkRolePermission) > 0) {
             //then delete it from role_permission
@@ -771,17 +766,31 @@ class PageController extends BaseController
             }
         }
 
-        // error_log('$permissions' . $permissions);
-        // foreach ($request as $item) { //First loop
-        foreach ($permissions as $item) { //First loop
-            
-            print_r($item);
-            error_log('$item ' . $item['Id']);
-            // error_log('$item' . $item);
-            // foreach ($item as $item1) { //Permission loop
-                // error_log($item1->Id);
-                
-            // }
+        $data = array();
+
+        foreach ($permissions as $item) {
+            array_push
+            (
+                $data,
+                array(
+                    "RoleId" => $roleId,
+                    "PermissionId" => $item['Id'],
+                    "IsActive" => true
+                )
+            );
+        }
+
+        print_r($data);
+
+        //Now inserting data
+        $checkInsertedData = GenericModel::insertGeneric('role_permission', $data);
+        error_log($checkInsertedData);
+        if ($checkInsertedData == true) {
+            DB::commit();
+            return response()->json(['data' => $roleId, 'message' => 'Permission successfully assigned'], 200);
+        } else {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in assigning permission'], 400);
         }
     }
 

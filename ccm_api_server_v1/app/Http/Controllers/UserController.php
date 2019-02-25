@@ -423,7 +423,6 @@ class UserController extends Controller
             "IsActive" => true
         );
 
-        print_r($userAccessData);
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
         $emailMessage = "You have been invited to Chronic Management System. 
