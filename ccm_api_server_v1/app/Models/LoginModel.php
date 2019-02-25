@@ -48,8 +48,8 @@ class LoginModel
 
                     $date = HelperModel::getDate();
 
-                    // return array("status" => "failed", "data" => $date, "message" => "token insertion failed");
-                    // return array("status" => "success", "data" => $date, "message" => "token insertion failed");
+                    // return array("status" => "failed", "data" => $date, "message" => "Failed to insert the Token");
+                    // return array("status" => "success", "data" => $date, "message" => "Failed to insert the Token");
 
                     $insertData = array(
                         "UserId" => $checkLogin[0]['Id'],
@@ -84,14 +84,14 @@ class LoginModel
                             // return response()->json(['data' => $checkLogin, 'message' => 'Successfully Login'], 200);
                         } else {
                             DB::rollBack();
-                            return array("status" => "failed", "data" => null, "message" => "get token data failed");
+                            return array("status" => "failed", "data" => null, "message" => "Get token data failed");
                         }
 
 
                     } else {
                         // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null, "message" => "token insertion failed");
+                        return array("status" => "failed", "data" => null, "message" => "Token failed to save");
                     }
 
                 } else {
@@ -180,6 +180,7 @@ class LoginModel
 
     static public function getRegisterTrans(Request $request)
     {
+        $belongTo = "";
         $data = $request->all();
 
         $inviteCode = Input::get('InviteCode');
@@ -192,9 +193,9 @@ class LoginModel
         try {
 
             $inviteCode = DB::table('account_invitation')
-                ->select('Id', 'Token')
+                ->select('Id', 'Token', 'BelongTo')
                 ->where('Token', '=', $inviteCode)
-                // ->where('ToEmailAddress', '=', $email)
+                ->where('ToEmailAddress', '=', $email)
                 ->where('Status_', '=', "ignored")
                 ->where('IsActive', '=', 0)
                 ->get();
@@ -202,6 +203,8 @@ class LoginModel
             $checkInviteCode = json_decode(json_encode($inviteCode), true);
 
             if (count($checkInviteCode) > 0) {
+
+                $belongTo = $checkInviteCode[0]['BelongTo'];
 
                 $inviteUpdateData = array(
                     "Status_" => "accepted",
@@ -235,28 +238,66 @@ class LoginModel
 
                     if ($checkInsertUserId) {
 
-                        Mail::raw('Welcome to CCM', function ($message) use ($email) {
-                            $message->to($email)->subject("Invitation");
-                        });
+                        $roleCode = "";
+                        if ($belongTo == "superadmin_doctor") {
+                            $roleCode = "doctor";
+                        } else if ($belongTo == "doctor_patient") {
+                            $roleCode = "patient";
+                        } else {
+                            $roleCode = "noRole";
+                        }
 
-                        DB::commit();
-                        // return array("status" => true, "data" => $data);
-                        return array("status" => "success", "data" => $checkInsertUserId,"message"=>"Successfully sign up");
+
+                        $roleData = DB::table('role')
+                            ->select('Id')
+                            ->where('CodeName', '=', $roleCode)
+                            ->where('IsActive', '=', 1)
+                            ->get();
+
+                        $checkRoleData = json_decode(json_encode($roleData), true);
+
+                        if (count($checkRoleData) > 0) {
+
+                            $insertRoleData = array(
+                                "UserId" => $checkInsertUserId,
+                                "RoleId" => $checkRoleData[0]["Id"],
+                                "IsActive" => 1
+                            );
+
+                            $checkInsertRoleDataId = DB::table("user_access")->insertGetId($insertRoleData);
+
+                            if ($checkInsertUserId) {
 
 
+                                Mail::raw('Welcome to CCM', function ($message) use ($email) {
+                                    $message->to($email)->subject("Invitation");
+                                });
+
+                                DB::commit();
+                                // return array("status" => true, "data" => $data);
+                                return array("status" => "success", "data" => $checkInsertUserId, "message" => "You have successfully Signed up");
+
+                            } else {
+                                DB::rollBack();
+                                return array("status" => "failed", "data" => null, "message" => "failed to insert role");
+                            }
+                        } else {
+                            DB::rollBack();
+                            return array("status" => "failed", "data" => null, "message" => "role not found");
+                        }
                     } else {
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null, "message" => "token insertion failed");
+                        return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
                     }
 
                 } else {
-                    return array("status" => "failed", "data" => null, "message" => "something went wrong");
+                    return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                 }
 
 
             } else {
                 DB::rollBack();
-                return array("status" => "failed", "data" => null, "message" => "code not found or expired");
+                return array("status" => "failed", "data" => null, "message" => "Code not found or it is expired");
 
             }
 

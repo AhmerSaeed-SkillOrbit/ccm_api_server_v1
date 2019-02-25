@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\HelperModel;
 
+use Mail;
+
 class UserModel
 {
 
