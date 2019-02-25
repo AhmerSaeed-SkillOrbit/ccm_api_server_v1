@@ -39,8 +39,7 @@ class ServicesController extends Controller
                 $check = ServicesModel::sendInviteTrans($request);
 
                 if ($check['status'] == "success") {
-                    // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                    return response()->json(['data' => true, 'message' => 'Successfully send invite'], 200);
+                    return response()->json(['data' => true, 'message' => 'Invite is successfully sent'], 200);
                 } else if ($check['status'] == "failed") {
                     return response()->json(['data' => false, 'message' => $check['message']], 400);
                 } else {
@@ -55,8 +54,8 @@ class ServicesController extends Controller
 
     function inviteUpdate(Request $request)
     {
-//        try {
-             $token = $request->input('token');
+       try {
+             $token = $request->input('Token');
 
             if ($token) {
                 $check = ServicesModel::inviteUpdate($request);
@@ -74,9 +73,9 @@ class ServicesController extends Controller
             } else {
                 return response()->json(['data' => null, 'message' => 'token not found'], 400);
             }
-//        } catch (Exception $e) {
-//            return response()->json(['data' => null, 'message' => 'error occur'], 500);
-//        }
+       } catch (Exception $e) {
+           return response()->json(['data' => null, 'message' => 'error occur'], 500);
+       }
 
     }
 
