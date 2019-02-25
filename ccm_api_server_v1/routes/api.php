@@ -59,6 +59,10 @@ Route::get('/permission/list', 'PageController@PermissionList');
 Route::get('/permission/count', 'PageController@PermissionCount');
 //Role permission assign
 Route::post('/role/permission/assign', 'PageController@RolePermissionAssign');
+//Get permission via role Id
+Route::get('/permission/via/role/id', 'UserController@PermissionViaRoleId');
+//Get permission via user Id
+Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
 
 
 Route::get('/', function () {

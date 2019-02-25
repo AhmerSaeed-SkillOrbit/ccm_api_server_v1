@@ -286,8 +286,8 @@ class UserModel
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
                     ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
-                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
-                        'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                    ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName',
+                        'sourceUser.FirstName as SourceUserFirstName', 'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where($tableName . '.' . $columnName, $operator, $data)
@@ -313,7 +313,7 @@ class UserModel
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
                     ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
-                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                    ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
                         'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
@@ -336,7 +336,7 @@ class UserModel
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
                     ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
-                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                    ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
                         'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
@@ -359,7 +359,7 @@ class UserModel
                     ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
                     ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
                     ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
-                    ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                    ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
                         'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
@@ -439,7 +439,7 @@ class UserModel
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
             ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
-            ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
                 'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                 'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                 'destinationUser.EmailAddress as DestinationUserEmailAddress')
@@ -488,7 +488,7 @@ class UserModel
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
             ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
-            ->select('user.*', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
                 'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                 'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                 'destinationUser.EmailAddress as DestinationUserEmailAddress')
@@ -559,9 +559,26 @@ class UserModel
     {
         return DB::table('role_permission')
             ->leftJoin('permission', 'permission.Id', '=', 'role_permission.PermissionId')
-            ->select('permission.Name as PermissionName', 'permission.CodeName as PermissionCodeName')
+            ->select('permission.Id', 'permission.Name as PermissionName', 'permission.CodeName as PermissionCodeName')
             ->where('role_permission.RoleId', '=', $roleId)
             ->where('role_permission.IsActive', '=', true)
+            ->get();
+    }
+
+    static public function getRoleViaRoleCode($roleCodeName)
+    {
+        return DB::table('role')
+            ->select('role.*')
+            ->where('CodeName', '=', $roleCodeName)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
+
+    static public function GetUserRoleViaUserId($userId)
+    {
+        return DB::table('user_access')
+            ->select('user_access.RoleId')
+            ->where('user_access.UserId', '=', $userId)
             ->get();
     }
 }

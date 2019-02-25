@@ -386,7 +386,17 @@ class UserController extends Controller
         $age = $request->get('Age');
         $ageGroup = $request->get('AgeGroup');
         $hashedPassword = md5('ccm1!');
-        $roleId = $request->get('RoleId');
+        $roleCode = $request->get('RoleCode');
+
+        $roleCode = UserModel::getRoleViaRoleCode($roleCode);
+
+        if (count($roleCode) == 0) {
+            DB::rollback();
+            return response()->json(['data' => null, 'message' => 'Role not found'], 400);
+        }
+        $roleId = $roleCode[0]->Id;
+
+        error_log('$roleId' . $roleId);
 
         $dataToInsert = array(
             "EmailAddress" => $emailAddress,
@@ -583,6 +593,43 @@ class UserController extends Controller
             return response()->json(['data' => $id, 'message' => 'User successfully unblocked'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Error in unblocking user'], 400);
+        }
+    }
+
+    function PermissionViaRoleId(Request $request)
+    {
+        error_log('in controller');
+
+        $roleId = $request->get('RoleId');
+
+        $result = UserModel::getPermissionViaRoleId($roleId);
+        if (count($result) > 0) {
+            return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
+        }
+    }
+
+    function PermissionViaUserId(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('UserId');
+
+        $data = UserModel::GetUserRoleViaUserId($userId);
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User has not yet assigned with any role'], 400);
+        }
+        $roleId = $data[0]->RoleId;
+
+        error_log('$roleId' . $roleId);
+
+        $result = UserModel::getPermissionViaRoleId($roleId);
+
+        if (count($result) > 0) {
+            return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
         }
     }
 
