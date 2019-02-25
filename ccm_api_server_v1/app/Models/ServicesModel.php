@@ -147,7 +147,7 @@ class ServicesModel
 
     private static function sendEmail($email, $type, $token)
     {
-        $url = url(env('WEB_URL') . 'registration') . '?type=' . $type . '&token=' . $token;
+        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
         Mail::raw('Invitation URL ' . $url, function ($message) use ($email) {
             $message->to($email)->subject("Invitation");
         });
