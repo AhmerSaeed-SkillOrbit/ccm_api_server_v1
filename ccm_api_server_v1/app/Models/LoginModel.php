@@ -180,6 +180,7 @@ class LoginModel
 
     static public function getRegisterTrans(Request $request)
     {
+        $belongTo = "";
         $data = $request->all();
 
         $inviteCode = Input::get('InviteCode');
@@ -192,9 +193,9 @@ class LoginModel
         try {
 
             $inviteCode = DB::table('account_invitation')
-                ->select('Id', 'Token')
+                ->select('Id', 'Token', 'BelongTo')
                 ->where('Token', '=', $inviteCode)
-                // ->where('ToEmailAddress', '=', $email)
+                ->where('ToEmailAddress', '=', $email)
                 ->where('Status_', '=', "ignored")
                 ->where('IsActive', '=', 0)
                 ->get();
@@ -202,6 +203,8 @@ class LoginModel
             $checkInviteCode = json_decode(json_encode($inviteCode), true);
 
             if (count($checkInviteCode) > 0) {
+
+                $belongTo = $checkInviteCode[0]['BelongTo'];
 
                 $inviteUpdateData = array(
                     "Status_" => "accepted",
@@ -235,18 +238,56 @@ class LoginModel
 
                     if ($checkInsertUserId) {
 
-                        Mail::raw('Welcome to CCM', function ($message) use ($email) {
-                            $message->to($email)->subject("Invitation");
-                        });
+                        $roleCode = "";
+                        if ($belongTo == "superadmin_doctor") {
+                            $roleCode = "doctor";
+                        } else if ($belongTo == "doctor_patient") {
+                            $roleCode = "patient";
+                        } else {
+                            $roleCode = "noRole";
+                        }
 
-                        DB::commit();
-                        // return array("status" => true, "data" => $data);
-                        return array("status" => "success", "data" => $checkInsertUserId,"message"=>"You have successfully Signed up");
+
+                        $roleData = DB::table('role')
+                            ->select('Id')
+                            ->where('CodeName', '=', $roleCode)
+                            ->where('IsActive', '=', 1)
+                            ->get();
+
+                        $checkRoleData = json_decode(json_encode($roleData), true);
+
+                        if (count($checkRoleData) > 0) {
+
+                            $insertRoleData = array(
+                                "UserId" => $checkInsertUserId,
+                                "RoleId" => $checkRoleData[0]["Id"],
+                                "IsActive" => 1
+                            );
+
+                            $checkInsertRoleDataId = DB::table("user_access")->insertGetId($insertRoleData);
+
+                            if ($checkInsertUserId) {
 
 
+                                Mail::raw('Welcome to CCM', function ($message) use ($email) {
+                                    $message->to($email)->subject("Invitation");
+                                });
+
+                                DB::commit();
+                                // return array("status" => true, "data" => $data);
+                                return array("status" => "success", "data" => $checkInsertUserId, "message" => "You have successfully Signed up");
+
+                            } else {
+                                DB::rollBack();
+                                return array("status" => "failed", "data" => null, "message" => "failed to insert role");
+                            }
+                        } else {
+                            DB::rollBack();
+                            return array("status" => "failed", "data" => null, "message" => "role not found");
+                        }
                     } else {
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null, "message" => "Failed to insert the Token");
+                        return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
                     }
 
                 } else {
