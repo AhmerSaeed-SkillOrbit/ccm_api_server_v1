@@ -64,5 +64,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::post('/login', 'LoginController@login');
+Route::post('/register', 'LoginController@register');
+Route::post('/invite', 'ServicesController@invite');
+Route::post('/invite/update', 'ServicesController@inviteUpdate');
+
 
 
