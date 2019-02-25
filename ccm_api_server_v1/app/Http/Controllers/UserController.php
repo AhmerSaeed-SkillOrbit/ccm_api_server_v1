@@ -475,17 +475,20 @@ class UserController extends Controller
         $doctor = 'doctor';
         $facilitator = 'facilitator';
         $supportStaff = 'support_staff';
+        $patient = 'patient';
 
         $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRoleCode);
         $doctorCount = UserModel::getUserCountViaRoleCode($doctor);
         $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitator);
         $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaff);
+        $patientCount = UserModel::getUserCountViaRoleCode($patient);
 
         $data = array(
             "SuperAdmin" => $superAdminCount,
             "Doctor" => $doctorCount,
             "Facilitator" => $facilitatorCount,
             "SupportStaff" => $supperStaffCount,
+            "Patient" => $patientCount
         );
 
         return response()->json(['data' => $data, 'message' => 'Role wise user count'], 200);
