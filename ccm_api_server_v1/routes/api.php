@@ -57,6 +57,8 @@ Route::get('/permission/list/search', 'PageController@PermissionListViaPaginatio
 Route::get('/permission/list', 'PageController@PermissionList');
 //permission list count
 Route::get('/permission/count', 'PageController@PermissionCount');
+//Role permission assign
+Route::post('/role/permission/assign', 'PageController@RolePermissionAssign');
 
 
 Route::get('/', function () {

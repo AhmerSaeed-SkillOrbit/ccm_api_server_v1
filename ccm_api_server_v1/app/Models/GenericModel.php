@@ -30,7 +30,7 @@ class GenericModel
         return $result;
     }
 
-    function deleteGeneric($table, $whereField, $whereFieldValue)
+    static public function deleteGeneric($table, $whereField, $whereFieldValue)
     {
         $result = DB::table($table)->where($whereField, '=', $whereFieldValue)->delete();
         return $result;
