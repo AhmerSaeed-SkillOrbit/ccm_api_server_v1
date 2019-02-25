@@ -745,4 +745,35 @@ class PageController extends BaseController
         return response()->json(['data' => $val, 'message' => 'Permission count'], 200);
     }
 
+    function RolePermissionAssign(Request $request)
+    {
+        error_log('In controller');
+
+        $roleId = $request->RoleId;
+
+        error_log($roleId);
+
+        print_r($request->Permission);
+
+        DB::beginTransaction();
+
+        //First get the record of role permission with respect to that given role id
+        $checkRolePermission = UserModel::getPermissionViaRoleId($roleId);
+        error_log('$checkRolePermission' . $checkRolePermission);
+        //Now check the permission if it exists
+        if (count($checkRolePermission) > 0) {
+            //then delete it from role_permission
+            $result = GenericModel::deleteGeneric('role_permission', 'RoleId', $roleId);
+            if ($result == false) {
+                DB::rollBack();
+            }
+        }
+
+        foreach ($request as $item) { //First loop
+            foreach ($item as $item1) { //Permission loop
+                error_log($item1->Id);
+            }
+        }
+    }
+
 }

@@ -552,4 +552,14 @@ class UserModel
                 ->count();
         }
     }
+
+    static public function getPermissionViaRoleId($roleId)
+    {
+        return DB::table('role_permission')
+            ->leftJoin('permission', 'permission.Id', '=', 'role_permission.PermissionId')
+            ->select('permission.Name as PermissionName', 'permission.CodeName as PermissionCodeName')
+            ->where('role_permission.RoleId', '=', $roleId)
+            ->where('role_permission.IsActive', '=', true)
+            ->get();
+    }
 }
