@@ -751,6 +751,8 @@ class PageController extends BaseController
 
         $roleId = $request->RoleId;
 
+        $permissions = $request->Permission;
+
         error_log($roleId);
 
         print_r($request->Permission);
@@ -769,10 +771,17 @@ class PageController extends BaseController
             }
         }
 
-        foreach ($request as $item) { //First loop
-            foreach ($item as $item1) { //Permission loop
-                error_log($item1->Id);
-            }
+        // error_log('$permissions' . $permissions);
+        // foreach ($request as $item) { //First loop
+        foreach ($permissions as $item) { //First loop
+            
+            print_r($item);
+            error_log('$item ' . $item['Id']);
+            // error_log('$item' . $item);
+            // foreach ($item as $item1) { //Permission loop
+                // error_log($item1->Id);
+                
+            // }
         }
     }
 
