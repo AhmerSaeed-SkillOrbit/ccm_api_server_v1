@@ -261,9 +261,14 @@ class UserController extends Controller
 
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                } else if ($roleCode == $supportStaffRole) {
+                }
+                else if ($roleCode == $supportStaffRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                } else if ($roleCode == $facilitatorRole) {
+                }
+                else if ($roleCode == $doctorRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $facilitatorRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedFacilitatorId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
 
@@ -288,7 +293,33 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Facilitators not found'], 200);
                     }
-                } else {
+                }
+                else if ($roleCode == $patientRole) {
+                    //Getting ids of associated facilitator
+                    $getAssociatedPatientId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorPatientAssociation);
+
+                    if (count($getAssociatedPatientId) == 0) {
+                        return response()->json(['data' => null, 'message' => 'No patient associated yet'], 400);
+                    }
+                    $destinationIds = array();
+                    foreach ($getAssociatedPatientId as $item) {
+                        array_push($destinationIds, $item->DestinationUserId);
+                    }
+
+                    $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
+
+                    $resultArray = json_decode(json_encode($val), true);
+
+                    $data = $resultArray;
+
+                    error_log(count($data));
+                    if (count($data) > 0) {
+                        return response()->json(['data' => $data, 'message' => 'Patients fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Patients not found'], 200);
+                    }
+                }  else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
             }

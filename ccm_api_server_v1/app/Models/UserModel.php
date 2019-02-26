@@ -277,7 +277,7 @@ class UserModel
     static public function FetchUserFacilitatorListForDoctorWithSearchAndPagination
     ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $destinationUserId)
     {
-        error_log('in model');
+        error_log('in model ');
         if ($keyword != null && $keyword != "null") {
             error_log('Keyword NOT NULL');
             $query = DB::table('user')
@@ -298,15 +298,16 @@ class UserModel
                 ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
                 ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
                 ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
-                ->offset($offset)->limit($limit)
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                ->groupBy('user.Id')
+                ->offset($offset)->limit($limit)
                 ->get();
 
             error_log($query);
 
             return $query;
         } else {
-            error_log('keyword is NULL and role is NOT NULL');
+            error_log('keyword is NULL');
             $query = DB::table('user')
                 ->join('user_access', 'user_access.UserId', 'user.Id')
                 ->join('role', 'user_access.RoleId', 'role.Id')
@@ -319,8 +320,9 @@ class UserModel
                     'destinationUser.EmailAddress as DestinationUserEmailAddress')
                 ->where($tableName . '.' . $columnName, $operator, $data)
                 ->whereIn('user.Id', $destinationUserId)
-                ->offset($offset)->limit($limit)
+                ->groupBy('user.Id')
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                ->offset($offset)->limit($limit)
                 ->get();
 
             error_log($query);
@@ -332,6 +334,7 @@ class UserModel
     static public function FetchUserWithSearchAndPagination
     ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $roleCode)
     {
+        error_log('$roleCode ' . $roleCode);
         if ($roleCode != null && $roleCode != "null") {
             if ($keyword != null && $keyword != "null") {
                 error_log('Both are NOT NULL');
@@ -346,13 +349,13 @@ class UserModel
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where($tableName . '.' . $columnName, $operator, $data)
-                    ->where('role.CodeName', '=', $roleCode)
                     ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
                     ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
                     ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
                     ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
                     ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
                     ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                    ->where('role.CodeName', '=', $roleCode)
                     ->offset($offset)->limit($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
                     ->get();
