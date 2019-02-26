@@ -274,6 +274,61 @@ class UserModel
             return 'failed';
     }
 
+    static public function FetchUserFacilitatorListForDoctorWithSearchAndPagination
+    ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $destinationUserId)
+    {
+        error_log('in model');
+        if ($keyword != null && $keyword != "null") {
+            error_log('Keyword NOT NULL');
+            $query = DB::table('user')
+                ->join('user_access', 'user_access.UserId', 'user.Id')
+                ->join('role', 'user_access.RoleId', 'role.Id')
+                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+                ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName',
+                    'sourceUser.FirstName as SourceUserFirstName', 'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                    'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                    'destinationUser.EmailAddress as DestinationUserEmailAddress')
+                ->where($tableName . '.' . $columnName, $operator, $data)
+                ->whereIn('user.Id', $destinationUserId)
+                ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                ->offset($offset)->limit($limit)
+                ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                ->get();
+
+            error_log($query);
+
+            return $query;
+        } else {
+            error_log('keyword is NULL and role is NOT NULL');
+            $query = DB::table('user')
+                ->join('user_access', 'user_access.UserId', 'user.Id')
+                ->join('role', 'user_access.RoleId', 'role.Id')
+                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+                ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                    'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                    'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                    'destinationUser.EmailAddress as DestinationUserEmailAddress')
+                ->where($tableName . '.' . $columnName, $operator, $data)
+                ->whereIn('user.Id', $destinationUserId)
+                ->offset($offset)->limit($limit)
+                ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                ->get();
+
+            error_log($query);
+
+            return $query;
+        }
+    }
+
     static public function FetchUserWithSearchAndPagination
     ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $roleCode)
     {
@@ -579,6 +634,16 @@ class UserModel
         return DB::table('user_access')
             ->select('user_access.RoleId')
             ->where('user_access.UserId', '=', $userId)
+            ->get();
+    }
+
+    static public function getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $associationType)
+    {
+        return DB::table('user_association')
+            ->select('DestinationUserId')
+            ->where('SourceUserId', '=', $userId)
+            ->where('AssociationType', '=', $associationType)
+            ->where('IsActive', '=', true)
             ->get();
     }
 }
