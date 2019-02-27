@@ -7,15 +7,10 @@ use Illuminate\Support\Facades\DB;
 class GenericModel
 {
 
-    function insertGeneric($tableName, $data)
+    static public function insertGeneric($tableName, $data)
     {
         $result = DB::table($tableName)->insert($data);
-
-        if (count($result) > 0)
-            return true;
-        else
-            return false;
-
+        return $result;
     }
 
     static public function insertGenericAndReturnID($tableName, $data)

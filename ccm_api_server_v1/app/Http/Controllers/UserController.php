@@ -215,24 +215,239 @@ class UserController extends Controller
     //user list via pagination
     function UserListViaPagination(Request $request)
     {
+
+        error_log('in controller');
+
         $offset = $request->input('p');
         $limit = $request->input('c');
         $keyword = $request->input('s');
         $roleCode = $request->input('r');
+        $userId = $request->input('userId');
 
-        error_log($roleCode);
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $supportStaffRole = env('ROLE_SUPPORT_STAFF');
+        $patientRole = env('ROLE_PATIENT');
 
-        //error_log($keyword);
-        $val = UserModel::FetchUserWithSearchAndPagination
-        ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
-        $resultArray = json_decode(json_encode($val), true);
-        $data = $resultArray;
-        error_log(count($data));
-        if (count($data) > 0) {
-            return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+        //Fetching user if looged in user is belonging to admin
+        $userData = UserModel::GetSingleUserViaId($userId);
+        if (count($userData) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
         } else {
-            return response()->json(['data' => null, 'message' => 'Users not found'], 200);
+            //Means user data fetched
+
+            //Now checking if user belongs to super admin
+            if ($userData[0]->RoleCodeName == $superAdminRole) {
+                error_log('User is from super admin');
+                $val = UserModel::FetchUserWithSearchAndPagination
+                ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
+
+                $resultArray = json_decode(json_encode($val), true);
+                $data = $resultArray;
+                error_log(count($data));
+                if (count($data) > 0) {
+                    return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Users not found'], 200);
+                }
+            }
+            //Now checking if user belongs to doctor
+            else if ($userData[0]->RoleCodeName == $doctorRole) {
+                error_log('logged in user role is doctor');
+
+                if ($roleCode == $superAdminRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $supportStaffRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $doctorRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $facilitatorRole) {
+                    //Getting ids of associated facilitator
+                    $getAssociatedFacilitatorId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+
+                    if (count($getAssociatedFacilitatorId) == 0) {
+                        return response()->json(['data' => null, 'message' => 'No facilitator associated yet'], 400);
+                    }
+                    $destinationIds = array();
+                    foreach ($getAssociatedFacilitatorId as $item) {
+                        array_push($destinationIds, $item->DestinationUserId);
+                    }
+
+                    $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
+
+                    $resultArray = json_decode(json_encode($val), true);
+
+                    $data = $resultArray;
+
+                    error_log(count($data));
+                    if (count($data) > 0) {
+                        return response()->json(['data' => $data, 'message' => 'Facilitators fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Facilitators not found'], 200);
+                    }
+                }
+                else if ($roleCode == $patientRole) {
+                    //Getting ids of associated facilitator
+                    $getAssociatedPatientId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorPatientAssociation);
+
+                    if (count($getAssociatedPatientId) == 0) {
+                        return response()->json(['data' => null, 'message' => 'No patient associated yet'], 400);
+                    }
+                    $destinationIds = array();
+                    foreach ($getAssociatedPatientId as $item) {
+                        array_push($destinationIds, $item->DestinationUserId);
+                    }
+
+                    $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
+
+                    $resultArray = json_decode(json_encode($val), true);
+
+                    $data = $resultArray;
+
+                    error_log(count($data));
+                    if (count($data) > 0) {
+                        return response()->json(['data' => $data, 'message' => 'Patients fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Patients not found'], 200);
+                    }
+                }
+                else {
+                    return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
+                }
+            }
+
+            else if($userData[0]->RoleCodeName == $facilitatorRole){
+                error_log('logged in user role is facilitator');
+
+                if ($roleCode == $superAdminRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $supportStaffRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $facilitatorRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $doctorRole) {
+                    $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserIdAndAssociationType($userId);
+
+                    if (count($getAssociatedDoctorsId) == 0) {
+                        return response()->json(['data' => null, 'message' => 'No doctor associated yet'], 400);
+                    }
+                    $doctorIds = array();
+                    foreach ($getAssociatedDoctorsId as $item) {
+                        array_push($doctorIds, $item->SourceUserId);
+                    }
+
+                    $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
+
+                    $resultArray = json_decode(json_encode($val), true);
+
+                    $data = $resultArray;
+
+                    error_log(count($data));
+                    if (count($data) > 0) {
+                        return response()->json(['data' => $data, 'message' => 'Doctors fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Doctors not found'], 200);
+                    }
+                }
+                else if ($roleCode == $patientRole) {
+                    //First get associated doctors id.
+                    $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserIdAndAssociationType($userId);
+
+                    if (count($getAssociatedDoctorsId) == 0) {
+                        return response()->json(['data' => null, 'message' => 'No doctor associated yet'], 400);
+                    }
+                    $doctorIds = array();
+                    foreach ($getAssociatedDoctorsId as $item) {
+                        array_push($doctorIds, $item->SourceUserId);
+                    }
+
+                    $getAssociatedPatientIds = UserModel::getAssociatedPatientsUserId($doctorIds, $doctorPatientAssociation);
+
+                    if (count($getAssociatedPatientIds) == 0) {
+                        return response()->json(['data' => null, 'message' => 'No patient associated yet'], 400);
+                    }
+                    $patientIds = array();
+                    foreach ($getAssociatedPatientIds as $item) {
+                        array_push($patientIds, $item->DestinationUserId);
+                    }
+
+                    $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $patientIds);
+
+                    $resultArray = json_decode(json_encode($val), true);
+
+                    $data = $resultArray;
+
+                    error_log(count($data));
+                    if (count($data) > 0) {
+                        return response()->json(['data' => $data, 'message' => 'Patients fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Patients not found'], 200);
+                    }
+                }
+                else {
+                    return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
+                }
+            }
+
+            else if($userData[0]->RoleCodeName == $patientRole){
+                error_log('logged in user role is patient');
+
+                if ($roleCode == $superAdminRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $supportStaffRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $patientRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $facilitatorRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+                else if ($roleCode == $doctorRole) {
+                    $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserIdAndAssociationType($userId);
+
+                    if (count($getAssociatedDoctorsId) == 0) {
+                        return response()->json(['data' => null, 'message' => 'No doctor associated yet'], 400);
+                    }
+                    $doctorIds = array();
+                    foreach ($getAssociatedDoctorsId as $item) {
+                        array_push($doctorIds, $item->SourceUserId);
+                    }
+
+                    $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
+
+                    $resultArray = json_decode(json_encode($val), true);
+
+                    $data = $resultArray;
+
+                    error_log(count($data));
+                    if (count($data) > 0) {
+                        return response()->json(['data' => $data, 'message' => 'Doctors fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Doctors not found'], 200);
+                    }
+                }
+                else {
+                    return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
+                }
+            }
+
         }
     }
 
@@ -386,7 +601,17 @@ class UserController extends Controller
         $age = $request->get('Age');
         $ageGroup = $request->get('AgeGroup');
         $hashedPassword = md5('ccm1!');
-        $roleId = $request->get('RoleId');
+        $roleCode = $request->get('RoleCode');
+
+        $roleCode = UserModel::getRoleViaRoleCode($roleCode);
+
+        if (count($roleCode) == 0) {
+            DB::rollback();
+            return response()->json(['data' => null, 'message' => 'Role not found'], 400);
+        }
+        $roleId = $roleCode[0]->Id;
+
+        error_log('$roleId' . $roleId);
 
         $dataToInsert = array(
             "EmailAddress" => $emailAddress,
@@ -423,7 +648,6 @@ class UserController extends Controller
             "IsActive" => true
         );
 
-        print_r($userAccessData);
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
         $emailMessage = "You have been invited to Chronic Management System. 
@@ -471,17 +695,17 @@ class UserController extends Controller
     {
         error_log('in controller');
 
-        $superAdminRoleCode = 'super_admin';
-        $doctor = 'doctor';
-        $facilitator = 'facilitator';
-        $supportStaff = 'support_staff';
-        $patient = 'patient';
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $supportStaffRole = env('ROLE_SUPPORT_STAFF');
+        $patientRole = env('ROLE_PATIENT');
 
-        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRoleCode);
-        $doctorCount = UserModel::getUserCountViaRoleCode($doctor);
-        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitator);
-        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaff);
-        $patientCount = UserModel::getUserCountViaRoleCode($patient);
+        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRole);
+        $doctorCount = UserModel::getUserCountViaRoleCode($doctorRole);
+        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitatorRole);
+        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaffRole);
+        $patientCount = UserModel::getUserCountViaRoleCode($patientRole);
 
         $data = array(
             "SuperAdmin" => $superAdminCount,
@@ -584,6 +808,43 @@ class UserController extends Controller
             return response()->json(['data' => $id, 'message' => 'User successfully unblocked'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Error in unblocking user'], 400);
+        }
+    }
+
+    function PermissionViaRoleId(Request $request)
+    {
+        error_log('in controller');
+
+        $roleId = $request->get('RoleId');
+
+        $result = UserModel::getPermissionViaRoleId($roleId);
+        if (count($result) > 0) {
+            return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
+        }
+    }
+
+    function PermissionViaUserId(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('UserId');
+
+        $data = UserModel::GetUserRoleViaUserId($userId);
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User has not yet assigned with any role'], 400);
+        }
+        $roleId = $data[0]->RoleId;
+
+        error_log('$roleId' . $roleId);
+
+        $result = UserModel::getPermissionViaRoleId($roleId);
+
+        if (count($result) > 0) {
+            return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
         }
     }
 
