@@ -650,7 +650,7 @@ class UserModel
             ->get();
     }
 
-    static public function getSourceUserIdViaLoggedInUserIdAndAssociationType($userId)
+    static public function getSourceUserIdViaLoggedInUserId($userId)
     {
         return DB::table('user_association')
             ->select('SourceUserId')
@@ -664,6 +664,16 @@ class UserModel
         return DB::table('user_association')
             ->select('DestinationUserId')
             ->whereIn('SourceUserId', $doctorIds)
+            ->where('AssociationType', '=', $associationType)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
+
+    static public function getSourceIdViaLoggedInUserIdAndAssociationType($userId, $associationType)
+    {
+        return DB::table('user_association')
+            ->select('SourceUserId')
+            ->where('DestinationUserId', '=', $userId)
             ->where('AssociationType', '=', $associationType)
             ->where('IsActive', '=', true)
             ->get();
