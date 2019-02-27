@@ -649,4 +649,23 @@ class UserModel
             ->where('IsActive', '=', true)
             ->get();
     }
+
+    static public function getSourceUserIdViaLoggedInUserIdAndAssociationType($userId)
+    {
+        return DB::table('user_association')
+            ->select('SourceUserId')
+            ->where('DestinationUserId', '=', $userId)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
+
+    static public function getAssociatedPatientsUserId($doctorIds, $associationType)
+    {
+        return DB::table('user_association')
+            ->select('DestinationUserId')
+            ->whereIn('SourceUserId', $doctorIds)
+            ->where('AssociationType', '=', $associationType)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
 }
