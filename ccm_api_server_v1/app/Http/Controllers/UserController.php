@@ -263,8 +263,7 @@ class UserController extends Controller
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
                 } else if ($roleCode == $doctorRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                }
-                else if ($roleCode == $facilitatorRole) {
+                } else if ($roleCode == $facilitatorRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedFacilitatorId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
 
@@ -289,8 +288,7 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Facilitators not found'], 200);
                     }
-                }
-                else if ($roleCode == $patientRole) {
+                } else if ($roleCode == $patientRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedPatientId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorPatientAssociation);
 
@@ -318,9 +316,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $facilitatorRole)
-            {
+            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
@@ -391,8 +387,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $patientRole) {
+            } else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -464,8 +459,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
@@ -551,8 +545,7 @@ class UserController extends Controller
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
                 } else if ($roleCode == $doctorRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                }
-                else if ($roleCode == $facilitatorRole) {
+                } else if ($roleCode == $facilitatorRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedFacilitatorId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
 
@@ -567,8 +560,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchCount
                     ('user', '=', 'IsActive', true, $keyword, $destinationIds);
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
-                }
-                else if ($roleCode == $patientRole) {
+                } else if ($roleCode == $patientRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedPatientId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorPatientAssociation);
 
@@ -584,12 +576,10 @@ class UserController extends Controller
                     ('user', '=', 'IsActive', true, $keyword, $destinationIds);
 
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
-                }
-                else {
+                } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $facilitatorRole) {
+            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
@@ -642,8 +632,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $patientRole) {
+            } else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -697,13 +686,11 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                }
-                else {
+                } else {
                     if ($roleCode == null || $roleCode == "null") {
                         return response()->json(['data' => null, 'message' => 'Role code should not be empty'], 404);
                     } else {
@@ -715,372 +702,435 @@ class UserController extends Controller
                 }
             }
         }
+    }
 
-        function UserUpdate(Request $request)
-        {
-            $id = $request->get('id');
+    function UserUpdate(Request $request)
+    {
+        $id = $request->get('id');
 
-            //First get and check if record exists or not
-            $data = UserModel::GetSingleUserViaId($id);
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
 
-            if (count($data) == 0) {
-                return response()->json(['data' => null, 'message' => 'User not found'], 400);
-            }
-
-            //We have get the data.
-            //Now insert that data in log table to maitain old record of that user
-
-            error_log('first name is : ' . $data[0]->FirstName);
-
-            $dataToInsert = array(
-                "UserId" => $id,
-                "FirstName" => $data[0]->FirstName,
-                "LastName" => $data[0]->LastName,
-                "MobileNumber" => $data[0]->MobileNumber,
-                "TelephoneNumber" => $data[0]->TelephoneNumber,
-                "OfficeAddress" => $data[0]->OfficeAddress,
-                "ResidentialAddress" => $data[0]->ResidentialAddress,
-                "Gender" => $data[0]->Gender,
-                "FunctionalTitle" => $data[0]->FunctionalTitle,
-                "Age" => $data[0]->Age,
-                "AgeGroup" => $data[0]->AgeGroup,
-                "CreatedBy" => $data[0]->CreatedBy,
-                "CreatedOn" => $data[0]->CreatedOn,
-                "CityId" => $data[0]->CityId,
-            );
-
-            DB::beginTransaction();
-            $insertedRecord = GenericModel::insertGenericAndReturnID('change_log_user', $dataToInsert);
-
-            if ($insertedRecord == false) {
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Error in maintaining user log'], 400);
-            }
-
-
-            //Binding data to variable.
-
-            $firstName = $request->post('FirstName');
-            $lastName = $request->post('LastName');
-            $mobileNumber = $request->post('MobileNumber');
-            $telephoneNumber = $request->post('TelephoneNumber');
-            $officeAddress = $request->post('OfficeAddress');
-            $residentialAddress = $request->post('ResidentialAddress');
-            $gender = $request->post('Gender');
-            $functionalTitle = $request->post('FunctionalTitle');
-            $age = $request->post('Age');
-            $ageGroup = $request->post('AgeGroup');
-
-            $dataToUpdate = array(
-                "FirstName" => $firstName,
-                "LastName" => $lastName,
-                "MobileNumber" => $mobileNumber,
-                "TelephoneNumber" => $telephoneNumber,
-                "OfficeAddress" => $officeAddress,
-                "ResidentialAddress" => $residentialAddress,
-                "Gender" => $gender,
-                "FunctionalTitle" => $functionalTitle,
-                "Age" => $age,
-                "AgeGroup" => $ageGroup,
-            );
-            $emailMessage = "Dear User <br/>Update is made on your records";
-
-            $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
-
-            if ($update == true) {
-                DB::commit();
-                UserModel::sendEmail($data[0]->EmailAddress, $emailMessage, null);
-                return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
-            } else {
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
-            }
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
 
-        function GetSingleUserViaId(Request $request)
-        {
-            $id = $request->get('id');
+        //We have get the data.
+        //Now insert that data in log table to maitain old record of that user
 
-            $val = UserModel::GetSingleUserViaId($id);
+        error_log('first name is : ' . $data[0]->FirstName);
 
-            if (!empty($val)) {
-                return response()->json(['data' => $val[0], 'message' => 'User detail fetched successfully'], 200);
-            } else {
-                return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
-            }
+        $dataToInsert = array(
+            "UserId" => $id,
+            "FirstName" => $data[0]->FirstName,
+            "LastName" => $data[0]->LastName,
+            "MobileNumber" => $data[0]->MobileNumber,
+            "TelephoneNumber" => $data[0]->TelephoneNumber,
+            "OfficeAddress" => $data[0]->OfficeAddress,
+            "ResidentialAddress" => $data[0]->ResidentialAddress,
+            "Gender" => $data[0]->Gender,
+            "FunctionalTitle" => $data[0]->FunctionalTitle,
+            "Age" => $data[0]->Age,
+            "AgeGroup" => $data[0]->AgeGroup,
+            "CreatedBy" => $data[0]->CreatedBy,
+            "CreatedOn" => $data[0]->CreatedOn,
+            "CityId" => $data[0]->CityId,
+        );
+
+        DB::beginTransaction();
+        $insertedRecord = GenericModel::insertGenericAndReturnID('change_log_user', $dataToInsert);
+
+        if ($insertedRecord == false) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in maintaining user log'], 400);
         }
 
-        function UserRegistration(Request $request)
-        {
-            error_log('In controller');
 
-            $emailAddress = $request->post('EmailAddress');
-            //First get and check if email record exists or not
-            $checkEmail = UserModel::isDuplicateEmail($emailAddress);
+        //Binding data to variable.
 
-            error_log('Checking email bit' . $checkEmail);
+        $firstName = $request->post('FirstName');
+        $lastName = $request->post('LastName');
+        $mobileNumber = $request->post('MobileNumber');
+        $telephoneNumber = $request->post('TelephoneNumber');
+        $officeAddress = $request->post('OfficeAddress');
+        $residentialAddress = $request->post('ResidentialAddress');
+        $gender = $request->post('Gender');
+        $functionalTitle = $request->post('FunctionalTitle');
+        $age = $request->post('Age');
+        $ageGroup = $request->post('AgeGroup');
 
-            if (count($checkEmail) > 0) {
-                return response()->json(['data' => null, 'message' => 'Email already exists'], 400);
-            }
+        $dataToUpdate = array(
+            "FirstName" => $firstName,
+            "LastName" => $lastName,
+            "MobileNumber" => $mobileNumber,
+            "TelephoneNumber" => $telephoneNumber,
+            "OfficeAddress" => $officeAddress,
+            "ResidentialAddress" => $residentialAddress,
+            "Gender" => $gender,
+            "FunctionalTitle" => $functionalTitle,
+            "Age" => $age,
+            "AgeGroup" => $ageGroup,
+        );
+        $emailMessage = "Dear User <br/>Update is made on your records";
 
-            //Binding data to variable.
-            $firstName = $request->get('FirstName');
-            $lastName = $request->get('LastName');
-            $mobileNumber = $request->get('MobileNumber');
-            $telephoneNumber = $request->get('TelephoneNumber');
-            $officeAddress = $request->get('OfficeAddress');
-            $residentialAddress = $request->get('ResidentialAddress');
-            $gender = $request->get('Gender');
-            $functionalTitle = $request->get('FunctionalTitle');
-            $age = $request->get('Age');
-            $ageGroup = $request->get('AgeGroup');
-            $hashedPassword = md5('ccm1!');
-            $roleCode = $request->get('RoleCode');
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-            $roleCode = UserModel::getRoleViaRoleCode($roleCode);
+        if ($update == true) {
+            DB::commit();
+            UserModel::sendEmail($data[0]->EmailAddress, $emailMessage, null);
+            return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
+        } else {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
+        }
+    }
 
-            if (count($roleCode) == 0) {
-                DB::rollback();
-                return response()->json(['data' => null, 'message' => 'Role not found'], 400);
-            }
-            $roleId = $roleCode[0]->Id;
+    function GetSingleUserViaId(Request $request)
+    {
+        $id = $request->get('id');
 
-            error_log('$roleId' . $roleId);
+        $val = UserModel::GetSingleUserViaId($id);
 
-            $dataToInsert = array(
-                "EmailAddress" => $emailAddress,
-                "FirstName" => $firstName,
-                "LastName" => $lastName,
-                "MobileNumber" => $mobileNumber,
-                "TelephoneNumber" => $telephoneNumber,
-                "OfficeAddress" => $officeAddress,
-                "ResidentialAddress" => $residentialAddress,
-                "Password" => $hashedPassword,
-                "Gender" => $gender,
-                "FunctionalTitle" => $functionalTitle,
-                "Age" => $age,
-                "AgeGroup" => $ageGroup,
-                "IsActive" => true
-            );
+        if (!empty($val)) {
+            return response()->json(['data' => $val[0], 'message' => 'User detail fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
+        }
+    }
 
-            DB::beginTransaction();
+    function UserRegistration(Request $request)
+    {
+        error_log('In controller');
+
+        $emailAddress = $request->post('EmailAddress');
+        //First get and check if email record exists or not
+        $checkEmail = UserModel::isDuplicateEmail($emailAddress);
+
+        error_log('Checking email bit' . $checkEmail);
+
+        if (count($checkEmail) > 0) {
+            return response()->json(['data' => null, 'message' => 'Email already exists'], 400);
+        }
+
+        //Binding data to variable.
+        $firstName = $request->get('FirstName');
+        $lastName = $request->get('LastName');
+        $mobileNumber = $request->get('MobileNumber');
+        $telephoneNumber = $request->get('TelephoneNumber');
+        $officeAddress = $request->get('OfficeAddress');
+        $residentialAddress = $request->get('ResidentialAddress');
+        $gender = $request->get('Gender');
+        $functionalTitle = $request->get('FunctionalTitle');
+        $age = $request->get('Age');
+        $ageGroup = $request->get('AgeGroup');
+        $hashedPassword = md5('ccm1!');
+        $roleCode = $request->get('RoleCode');
+
+        $roleCode = UserModel::getRoleViaRoleCode($roleCode);
+
+        if (count($roleCode) == 0) {
+            DB::rollback();
+            return response()->json(['data' => null, 'message' => 'Role not found'], 400);
+        }
+        $roleId = $roleCode[0]->Id;
+
+        error_log('$roleId' . $roleId);
+
+        $dataToInsert = array(
+            "EmailAddress" => $emailAddress,
+            "FirstName" => $firstName,
+            "LastName" => $lastName,
+            "MobileNumber" => $mobileNumber,
+            "TelephoneNumber" => $telephoneNumber,
+            "OfficeAddress" => $officeAddress,
+            "ResidentialAddress" => $residentialAddress,
+            "Password" => $hashedPassword,
+            "Gender" => $gender,
+            "FunctionalTitle" => $functionalTitle,
+            "Age" => $age,
+            "AgeGroup" => $ageGroup,
+            "IsActive" => true
+        );
+
+        DB::beginTransaction();
 
 
-            $insertedRecord = GenericModel::insertGenericAndReturnID('user', $dataToInsert);
-            error_log('Inserted record id ' . $insertedRecord);
+        $insertedRecord = GenericModel::insertGenericAndReturnID('user', $dataToInsert);
+        error_log('Inserted record id ' . $insertedRecord);
 
-            if ($insertedRecord == 0) {
-                DB::rollback();
-                return response()->json(['data' => null, 'message' => 'Error in user registration'], 400);
-            }
+        if ($insertedRecord == 0) {
+            DB::rollback();
+            return response()->json(['data' => null, 'message' => 'Error in user registration'], 400);
+        }
 
 
-            //Now making data for user_access
-            $userAccessData = array(
-                "UserId" => $insertedRecord,
-                "RoleId" => $roleId,
-                "IsActive" => true
-            );
+        //Now making data for user_access
+        $userAccessData = array(
+            "UserId" => $insertedRecord,
+            "RoleId" => $roleId,
+            "IsActive" => true
+        );
 
-            $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
+        $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
-            $emailMessage = "You have been invited to Chronic Management System. 
+        $emailMessage = "You have been invited to Chronic Management System. 
         Your email has been created. You may login by using : ccm1! as your password.";
 
-            if ($insertUserAccessRecord == 0) {
-                DB::rollback();
-                //Now sending email
-                UserModel::sendEmail($emailAddress, $emailMessage, null);
-                return response()->json(['data' => null, 'message' => 'Error in user assigning role'], 400);
-            } else {
-                DB::commit();
-                return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
+        if ($insertUserAccessRecord == 0) {
+            DB::rollback();
+            //Now sending email
+            UserModel::sendEmail($emailAddress, $emailMessage, null);
+            return response()->json(['data' => null, 'message' => 'Error in user assigning role'], 400);
+        } else {
+            DB::commit();
+            return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
+        }
+    }
+
+    function UserDelete(Request $request)
+    {
+        error_log('in controller');
+        $id = $request->get('id');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        //Binding data to variable.
+
+        $dataToUpdate = array(
+            "IsActive" => false
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => $id, 'message' => 'User successfully deleted'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in deleting user record'], 400);
+        }
+    }
+
+    function SuperAdminDashboard(Request $request)
+    {
+        error_log('in controller');
+
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $supportStaffRole = env('ROLE_SUPPORT_STAFF');
+        $patientRole = env('ROLE_PATIENT');
+
+        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRole);
+        $doctorCount = UserModel::getUserCountViaRoleCode($doctorRole);
+        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitatorRole);
+        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaffRole);
+        $patientCount = UserModel::getUserCountViaRoleCode($patientRole);
+
+        $data = array(
+            "SuperAdmin" => $superAdminCount,
+            "Doctor" => $doctorCount,
+            "Facilitator" => $facilitatorCount,
+            "SupportStaff" => $supperStaffCount,
+            "Patient" => $patientCount
+        );
+
+        return response()->json(['data' => $data, 'message' => 'Role wise user count'], 200);
+    }
+
+    function GetUserInvitationListWithPaginationAndSearch(Request $request)
+    {
+        error_log('In controller');
+
+        $pageNo = $request->get('p');
+        $limit = $request->get('c');
+        $searchKeyword = $request->get('s');
+
+        $data = UserModel::getUserInvitationLink($pageNo, $limit, $searchKeyword);
+
+        error_log('Count of data is : ' . count($data));
+
+        if (count($data) > 0) {
+            return response()->json(['data' => $data, 'message' => 'User invitation list found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'User invitation list not found'], 200);
+        }
+    }
+
+    function GetUserInvitationListCount(Request $request)
+    {
+        error_log('In controller');
+
+        $searchKeyword = $request->get('s');
+
+        $data = UserModel::getUserInvitationLinkCount($searchKeyword);
+
+        return response()->json(['data' => $data, 'message' => 'User invitation count'], 200);
+    }
+
+    function UserBlock(Request $request)
+    {
+        error_log('in controller');
+        $id = $request->get('id');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        if ($data[0]->IsBlock == true) {
+            return response()->json(['data' => null, 'message' => 'User is already blocked'], 400);
+        }
+
+        //Binding data to variable.
+
+        $dataToUpdate = array(
+            "IsBlock" => true,
+            "BlockReason" => $request->get('BlockReason')
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => $id, 'message' => 'User successfully blocked'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in blocking user'], 400);
+        }
+    }
+
+    function UserUnblock(Request $request)
+    {
+        error_log('in controller');
+        $id = $request->get('id');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaId($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        if ($data[0]->IsBlock == false) {
+            return response()->json(['data' => null, 'message' => 'User is already unblocked'], 400);
+        }
+
+        //Binding data to variable.
+
+        $dataToUpdate = array(
+            "IsBlock" => false
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            return response()->json(['data' => $id, 'message' => 'User successfully unblocked'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in unblocking user'], 400);
+        }
+    }
+
+
+    function PermissionViaRoleId(Request $request)
+    {
+        error_log('in controller');
+
+        $roleId = $request->get('RoleId');
+
+        $result = UserModel::getPermissionViaRoleId($roleId);
+        if (count($result) > 0) {
+            return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
+        }
+    }
+
+    function PermissionViaUserId(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('UserId');
+
+        $data = UserModel::GetUserRoleViaUserId($userId);
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User has not yet assigned with any role'], 400);
+        }
+        $roleId = $data[0]->RoleId;
+
+        error_log('$roleId' . $roleId);
+
+        $result = UserModel::getPermissionViaRoleId($roleId);
+
+        if (count($result) > 0) {
+            return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
+        }
+    }
+
+
+    function AssociateFacilitatorsWithDoctor(Request $request)
+    {
+        error_log('In controller');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorId = $request->DoctorId;
+        $facilitators = $request->Facilitator;
+
+        //First check if this doctor is belonging to role doctor or not
+        $doctorsData = UserModel::GetSingleUserViaId($doctorId);
+        if (count($doctorsData) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        } else {
+            if ($doctorsData[0]->RoleCodeName != $doctorRole) {
+                return response()->json(['data' => null, 'message' => 'Logged in user is not doctor'], 400);
             }
         }
 
-        function UserDelete(Request $request)
-        {
-            error_log('in controller');
-            $id = $request->get('id');
+        DB::beginTransaction();
 
-            //First get and check if record exists or not
-            $data = UserModel::GetSingleUserViaId($id);
-
-            if (count($data) == 0) {
-                return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        //First get the record of role permission with respect to that given role id
+        $checkDoctorFacilitator = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorFacilitatorAssociation);
+        error_log('$checkDoctorFacilitator ' .$checkDoctorFacilitator);
+        //Now check the permission if it exists
+        if (count($checkDoctorFacilitator) > 0) {
+            //then delete it from role_permission
+            $result = UserModel::deleteAssociatedFacilitators($doctorId, $doctorFacilitatorAssociation);
+            if ($result == false) {
+                DB::rollBack();
             }
+        }
 
-            //Binding data to variable.
+        $data = array();
 
-            $dataToUpdate = array(
-                "IsActive" => false
+        foreach ($facilitators as $item) {
+            array_push
+            (
+                $data,
+                array(
+                    "SourceUserId" => $doctorId,
+                    "DestinationUserId" => $item['Id'],
+                    "AssociationType" => $doctorFacilitatorAssociation,
+                    "IsActive" => true
+                )
             );
-
-            $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
-
-            if ($update == true) {
-                return response()->json(['data' => $id, 'message' => 'User successfully deleted'], 200);
-            } else {
-                return response()->json(['data' => null, 'message' => 'Error in deleting user record'], 400);
-            }
         }
 
-        function SuperAdminDashboard(Request $request)
-        {
-            error_log('in controller');
-
-            $superAdminRole = env('ROLE_SUPER_ADMIN');
-            $doctorRole = env('ROLE_DOCTOR');
-            $facilitatorRole = env('ROLE_FACILITATOR');
-            $supportStaffRole = env('ROLE_SUPPORT_STAFF');
-            $patientRole = env('ROLE_PATIENT');
-
-            $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRole);
-            $doctorCount = UserModel::getUserCountViaRoleCode($doctorRole);
-            $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitatorRole);
-            $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaffRole);
-            $patientCount = UserModel::getUserCountViaRoleCode($patientRole);
-
-            $data = array(
-                "SuperAdmin" => $superAdminCount,
-                "Doctor" => $doctorCount,
-                "Facilitator" => $facilitatorCount,
-                "SupportStaff" => $supperStaffCount,
-                "Patient" => $patientCount
-            );
-
-            return response()->json(['data' => $data, 'message' => 'Role wise user count'], 200);
-        }
-
-        function GetUserInvitationListWithPaginationAndSearch(Request $request)
-        {
-            error_log('In controller');
-
-            $pageNo = $request->get('p');
-            $limit = $request->get('c');
-            $searchKeyword = $request->get('s');
-
-            $data = UserModel::getUserInvitationLink($pageNo, $limit, $searchKeyword);
-
-            error_log('Count of data is : ' . count($data));
-
-            if (count($data) > 0) {
-                return response()->json(['data' => $data, 'message' => 'User invitation list found'], 200);
-            } else {
-                return response()->json(['data' => null, 'message' => 'User invitation list not found'], 200);
-            }
-        }
-
-        function GetUserInvitationListCount(Request $request)
-        {
-            error_log('In controller');
-
-            $searchKeyword = $request->get('s');
-
-            $data = UserModel::getUserInvitationLinkCount($searchKeyword);
-
-            return response()->json(['data' => $data, 'message' => 'User invitation count'], 200);
-        }
-
-        function UserBlock(Request $request)
-        {
-            error_log('in controller');
-            $id = $request->get('id');
-
-            //First get and check if record exists or not
-            $data = UserModel::GetSingleUserViaId($id);
-
-            if (count($data) == 0) {
-                return response()->json(['data' => null, 'message' => 'User not found'], 400);
-            }
-
-            if ($data[0]->IsBlock == true) {
-                return response()->json(['data' => null, 'message' => 'User is already blocked'], 400);
-            }
-
-            //Binding data to variable.
-
-            $dataToUpdate = array(
-                "IsBlock" => true,
-                "BlockReason" => $request->get('BlockReason')
-            );
-
-            $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
-
-            if ($update == true) {
-                return response()->json(['data' => $id, 'message' => 'User successfully blocked'], 200);
-            } else {
-                return response()->json(['data' => null, 'message' => 'Error in blocking user'], 400);
-            }
-        }
-
-        function UserUnblock(Request $request)
-        {
-            error_log('in controller');
-            $id = $request->get('id');
-
-            //First get and check if record exists or not
-            $data = UserModel::GetSingleUserViaId($id);
-
-            if (count($data) == 0) {
-                return response()->json(['data' => null, 'message' => 'User not found'], 400);
-            }
-
-            if ($data[0]->IsBlock == false) {
-                return response()->json(['data' => null, 'message' => 'User is already unblocked'], 400);
-            }
-
-            //Binding data to variable.
-
-            $dataToUpdate = array(
-                "IsBlock" => false
-            );
-
-            $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
-
-            if ($update == true) {
-                return response()->json(['data' => $id, 'message' => 'User successfully unblocked'], 200);
-            } else {
-                return response()->json(['data' => null, 'message' => 'Error in unblocking user'], 400);
-            }
-        }
-
-        function PermissionViaRoleId(Request $request)
-        {
-            error_log('in controller');
-
-            $roleId = $request->get('RoleId');
-
-            $result = UserModel::getPermissionViaRoleId($roleId);
-            if (count($result) > 0) {
-                return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
-            } else {
-                return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
-            }
-        }
-
-        function PermissionViaUserId(Request $request)
-        {
-            error_log('in controller');
-
-            $userId = $request->get('UserId');
-
-            $data = UserModel::GetUserRoleViaUserId($userId);
-            if (count($data) == 0) {
-                return response()->json(['data' => null, 'message' => 'User has not yet assigned with any role'], 400);
-            }
-            $roleId = $data[0]->RoleId;
-
-            error_log('$roleId' . $roleId);
-
-            $result = UserModel::getPermissionViaRoleId($roleId);
-
-            if (count($result) > 0) {
-                return response()->json(['data' => $result, 'message' => 'Permission successfully fetched'], 200);
-            } else {
-                return response()->json(['data' => null, 'message' => 'Permission not found'], 400);
-            }
+        //Now inserting data
+        $checkInsertedData = GenericModel::insertGeneric('user_association', $data);
+        error_log('$checkInsertedData ' . $checkInsertedData);
+        if ($checkInsertedData == true) {
+            DB::commit();
+            return response()->json(['data' => $doctorId, 'message' => 'Facilitator(s) successfully associated'], 200);
+        } else {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in associating facilitator(s)'], 400);
         }
     }
 }

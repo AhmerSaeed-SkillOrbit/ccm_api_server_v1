@@ -723,4 +723,13 @@ class UserModel
             ->where('IsActive', '=', true)
             ->get();
     }
+
+    static public function deleteAssociatedFacilitators($doctorId, $associationType)
+    {
+        $result = DB::table('user_association')
+            ->where('SourceUserId', '=', $doctorId)
+            ->where('AssociationType', '=', $associationType)
+            ->delete();
+        return $result;
+    }
 }

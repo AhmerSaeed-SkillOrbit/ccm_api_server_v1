@@ -48,6 +48,9 @@ Route::post('/user/block', 'UserController@UserBlock');
 //User unblock route
 Route::post('/user/unblock', 'UserController@UserUnblock');
 
+//Associate doctor to facilitator route
+Route::post('/associate/doctor/facilitator', 'UserController@AssociateFacilitatorsWithDoctor');
+
 //Dashboard API for super admin
 Route::get('/dashboard/superadmin', 'UserController@SuperAdminDashboard');
 
