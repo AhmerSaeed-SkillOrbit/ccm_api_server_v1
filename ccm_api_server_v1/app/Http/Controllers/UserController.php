@@ -878,11 +878,11 @@ class UserController extends Controller
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
-            //Now sending email
-            UserModel::sendEmail($emailAddress, $emailMessage, null);
             return response()->json(['data' => null, 'message' => 'Error in user assigning role'], 400);
         } else {
             DB::commit();
+            //Now sending email
+            UserModel::sendEmail($emailAddress, $emailMessage, null);
             return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
         }
     }
@@ -1097,7 +1097,7 @@ class UserController extends Controller
 
         //First get the record of role permission with respect to that given role id
         $checkDoctorFacilitator = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorFacilitatorAssociation);
-        error_log('$checkDoctorFacilitator ' .$checkDoctorFacilitator);
+        error_log('$checkDoctorFacilitator ' . $checkDoctorFacilitator);
         //Now check the permission if it exists
         if (count($checkDoctorFacilitator) > 0) {
             //then delete it from role_permission
@@ -1106,7 +1106,7 @@ class UserController extends Controller
                 DB::rollBack();
             }
         }
-
+        $userIds = array();
         $data = array();
 
         foreach ($facilitators as $item) {
@@ -1120,6 +1120,27 @@ class UserController extends Controller
                     "IsActive" => true
                 )
             );
+
+            array_push($userIds, $item['Id']);
+        }
+
+        //Now get all facilitator email address
+        //And then shoot email to them that they are now associated with XYZ dr.
+
+        $getFacilitatorEmails = UserModel::getMultipleUsers($userIds);
+        if (count($getFacilitatorEmails) == 0) {
+            return response()->json(['data' => null, 'message' => 'Facilitator(s) not found'], 400);
+        }
+
+        $emailMessage = "You have been associated with Dr. " . $doctorsData[0]->FirstName . ".";
+
+        error_log($emailMessage);
+
+        error_log(count($getFacilitatorEmails));
+
+        foreach ($getFacilitatorEmails as $item) {
+            error_log('$item' . $item->EmailAddress);
+            UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
         }
 
         //Now inserting data

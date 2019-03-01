@@ -732,4 +732,14 @@ class UserModel
             ->delete();
         return $result;
     }
+
+    static public function getMultipleUsers($userIds)
+    {
+        $result = DB::table('user')
+            ->select('user.EmailAddress')
+            ->whereIn('Id', $userIds)
+            ->where('IsActive', '=', true)
+            ->get();
+        return $result;
+    }
 }
