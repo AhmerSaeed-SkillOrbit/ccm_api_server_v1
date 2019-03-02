@@ -234,7 +234,7 @@ class UserController extends Controller
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         //Fetching user if looged in user is belonging to admin
-        $userData = UserModel::GetSingleUseGetSingleUserViaIdrViaId($userId);
+        $userData = UserModel::GetSingleUserViaId($userId);
         if (count($userData) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         } else {
