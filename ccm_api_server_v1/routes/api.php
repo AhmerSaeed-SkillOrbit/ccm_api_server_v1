@@ -66,6 +66,8 @@ Route::post('/role/permission/assign', 'PageController@RolePermissionAssign');
 Route::get('/permission/via/role/id', 'UserController@PermissionViaRoleId');
 //Get permission via user Id
 Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
+//Test file upload
+Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
 
 Route::get('/', function () {

@@ -234,7 +234,7 @@ class UserController extends Controller
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         //Fetching user if looged in user is belonging to admin
-        $userData = UserModel::GetSingleUserViaId($userId);
+        $userData = UserModel::GetSingleUseGetSingleUserViaIdrViaId($userId);
         if (count($userData) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         } else {
@@ -789,10 +789,54 @@ class UserController extends Controller
     {
         $id = $request->get('id');
 
+        $doctorRole = env('ROLE_DOCTOR');
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
         $val = UserModel::GetSingleUserViaId($id);
 
-        if (!empty($val)) {
-            return response()->json(['data' => $val[0], 'message' => 'User detail fetched successfully'], 200);
+//        $data = array();
+//        //Pushing logged in user basic inforamtion
+//        array_push($data, $val);
+
+        if ($val[0]->RoleCodeName == $doctorRole) {
+            error_log('logged in user is doctor');
+            //Now fetch it's patients which are registered
+            $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($id, $doctorPatientAssociation);
+            error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+            if (count($getAssociatedPatients) > 0) {
+                //Means associated patients are there
+                $getAssociatedPatientsIds = array();
+                foreach ($getAssociatedPatients as $item) {
+                    array_push($getAssociatedPatientsIds, $item->DestinationUserId);
+                }
+                $getAssociatedPatientsData = UserModel::getMultipleUsers($getAssociatedPatientsIds);
+
+                if (count($getAssociatedPatientsData) > 0) {
+                    $val['associatedPatients'] = $getAssociatedPatientsData;
+                }
+            }
+
+            //Now get associated facilitators
+
+            $getAssociatedFacilitators = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($id, $doctorFacilitatorAssociation);
+            error_log('$getAssociatedFacilitators are ' . $getAssociatedFacilitators);
+            if (count($getAssociatedFacilitators) > 0) {
+                //Means associated patients are there
+                $getAssociatedFacilitatorIds = array();
+                foreach ($getAssociatedFacilitators as $item) {
+                    array_push($getAssociatedFacilitatorIds, $item->DestinationUserId);
+                }
+                $getAssociatedFacilitatorsData = UserModel::getMultipleUsers($getAssociatedFacilitatorIds);
+
+                if (count($getAssociatedFacilitatorsData) > 0) {
+                    $val['associatedFacilitators'] = $getAssociatedFacilitatorsData;
+                }
+            }
+        }
+
+        if (count($val) > 0) {
+            return response()->json(['data' => $val, 'message' => 'User detail fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
         }
