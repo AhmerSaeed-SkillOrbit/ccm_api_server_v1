@@ -20,5 +20,30 @@ use Mail;
 
 class DoctorScheduleModel
 {
+    static public function getDoctorSchedule($doctorId)
+    {
+        error_log('in model');
+
+        $query = DB::table('doctor_schedule')
+            ->select('Id', 'StartDate', 'EndDate')
+            ->where('DoctorId', '=', $doctorId)
+            ->where('IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleDetail($doctorScheduleId)
+    {
+        error_log('in model');
+
+        $query = DB::table('doctor_schedule_detail')
+            ->select('Id', 'ScheduleDate', 'StartTime', 'EndTime', 'ShiftType', 'IsOffDay')
+            ->where('DoctorScheduleId', '=', $doctorScheduleId)
+            ->where('IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
 
 }

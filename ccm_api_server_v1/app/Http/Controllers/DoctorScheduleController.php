@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserModel;
 use App\Models\GenericModel;
+use App\Models\DoctorScheduleModel;
 use App\Models\HelperModel;
 use Carbon\Carbon;
 
 
 class DoctorScheduleController extends Controller
 {
-    static public function AddDoctorSchedule(Request $request)
+    function AddDoctorSchedule(Request $request)
     {
         $doctorRole = env('ROLE_DOCTOR');
 
@@ -96,5 +97,29 @@ class DoctorScheduleController extends Controller
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in scheduling doctor'], 400);
         }
+    }
+
+    function GetDoctorScheduleDetail(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+
+        $val = DoctorScheduleModel::getDoctorSchedule($doctorId);
+        if (count($val) == 0) {
+            return response()->json(['data' => null, 'message' => 'No shcedule for this doctor'], 400);
+        }
+
+        error_log(count($val));
+
+        //Now schedule found.
+        //So fetch that schedule details
+
+        $doctorScheduleDetail = DoctorScheduleModel::getDoctorScheduleDetail($val[0]->Id);
+        if (count($doctorScheduleDetail) > 0) {
+            $val['DoctorScheduleDetails'] = $doctorScheduleDetail;
+        }
+
+        return response()->json(['data' => $val, 'message' => 'Doctor schedule found'], 200);
     }
 }

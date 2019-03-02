@@ -72,6 +72,9 @@ Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 //Adding schedule of doctor
 Route::post('/doctor/schedule/add', 'DoctorScheduleController@AddDoctorSchedule');
 
+//Adding schedule of doctor
+Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetail');
+
 
 Route::get('/', function () {
     return 'Hello';
