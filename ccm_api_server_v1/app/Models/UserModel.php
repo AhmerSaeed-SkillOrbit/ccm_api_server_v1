@@ -331,6 +331,51 @@ class UserModel
         }
     }
 
+    static public function FetchUserFacilitatorListForDoctorWithSearchCount
+    ($tableName, $operator, $columnName, $data, $keyword, $destinationUserId)
+    {
+        error_log('in model ');
+        if ($keyword != null && $keyword != "null") {
+            error_log('Keyword NOT NULL');
+            $query = DB::table('user')
+                ->join('user_access', 'user_access.UserId', 'user.Id')
+                ->join('role', 'user_access.RoleId', 'role.Id')
+                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+                ->where($tableName . '.' . $columnName, $operator, $data)
+                ->whereIn('user.Id', $destinationUserId)
+                ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                ->groupBy('user.Id')
+                ->count();
+
+            error_log($query);
+
+            return $query;
+        } else {
+            error_log('keyword is NULL');
+            $query = DB::table('user')
+                ->join('user_access', 'user_access.UserId', 'user.Id')
+                ->join('role', 'user_access.RoleId', 'role.Id')
+                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+                ->where($tableName . '.' . $columnName, $operator, $data)
+                ->whereIn('user.Id', $destinationUserId)
+                ->groupBy('user.Id')
+                ->count();
+
+            error_log($query);
+
+            return $query;
+        }
+    }
+
     static public function FetchUserWithSearchAndPagination
     ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $roleCode)
     {
@@ -650,7 +695,7 @@ class UserModel
             ->get();
     }
 
-    static public function getSourceUserIdViaLoggedInUserIdAndAssociationType($userId)
+    static public function getSourceUserIdViaLoggedInUserId($userId)
     {
         return DB::table('user_association')
             ->select('SourceUserId')
@@ -667,5 +712,34 @@ class UserModel
             ->where('AssociationType', '=', $associationType)
             ->where('IsActive', '=', true)
             ->get();
+    }
+
+    static public function getSourceIdViaLoggedInUserIdAndAssociationType($userId, $associationType)
+    {
+        return DB::table('user_association')
+            ->select('SourceUserId')
+            ->where('DestinationUserId', '=', $userId)
+            ->where('AssociationType', '=', $associationType)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
+
+    static public function deleteAssociatedFacilitators($doctorId, $associationType)
+    {
+        $result = DB::table('user_association')
+            ->where('SourceUserId', '=', $doctorId)
+            ->where('AssociationType', '=', $associationType)
+            ->delete();
+        return $result;
+    }
+
+    static public function getMultipleUsers($userIds)
+    {
+        $result = DB::table('user')
+            ->select('user.EmailAddress', 'user.Id', 'user.FirstName', 'user.LastName')
+            ->whereIn('Id', $userIds)
+            ->where('IsActive', '=', true)
+            ->get();
+        return $result;
     }
 }

@@ -48,6 +48,9 @@ Route::post('/user/block', 'UserController@UserBlock');
 //User unblock route
 Route::post('/user/unblock', 'UserController@UserUnblock');
 
+//Associate doctor to facilitator route
+Route::post('/associate/doctor/facilitator', 'UserController@AssociateFacilitatorsWithDoctor');
+
 //Dashboard API for super admin
 Route::get('/dashboard/superadmin', 'UserController@SuperAdminDashboard');
 
@@ -63,6 +66,14 @@ Route::post('/role/permission/assign', 'PageController@RolePermissionAssign');
 Route::get('/permission/via/role/id', 'UserController@PermissionViaRoleId');
 //Get permission via user Id
 Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
+//Test file upload
+Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
+
+//Adding schedule of doctor
+Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorSchedule');
+
+//Adding schedule of doctor
+Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetail');
 
 
 Route::get('/', function () {
