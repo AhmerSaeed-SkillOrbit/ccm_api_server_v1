@@ -780,8 +780,6 @@ class PageController extends BaseController
             );
         }
 
-        print_r($data);
-
         //Now inserting data
         $checkInsertedData = GenericModel::insertGeneric('role_permission', $data);
         error_log($checkInsertedData);

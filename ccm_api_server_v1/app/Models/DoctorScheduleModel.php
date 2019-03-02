@@ -8,6 +8,15 @@
 
 namespace App\Models;
 
+use App\Models\GenericModel;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use App\Models\HelperModel;
+
+use Mail;
+
 
 class DoctorScheduleModel
 {

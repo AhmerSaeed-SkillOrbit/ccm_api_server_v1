@@ -69,6 +69,9 @@ Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
 //Test file upload
 Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
+//Adding schedule of doctor
+Route::post('/doctor/schedule/add', 'DoctorScheduleController@AddDoctorSchedule');
+
 
 Route::get('/', function () {
     return 'Hello';
