@@ -1222,12 +1222,13 @@ class UserController extends Controller
         error_log(count($getFacilitatorEmails));
 
         $toNumber = array();
+        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
         foreach ($getFacilitatorEmails as $item) {
 
             //pushing mobile number
             //in array for use in sending sms
-            array_push($toNumber, $item->MobileNumber);
+            array_push($toNumber, $phoneCode . $item->MobileNumber);
 
             error_log('$item' . $item->EmailAddress);
             error_log('$item' . $item->MobileNumber);
@@ -1276,7 +1277,7 @@ class UserController extends Controller
             $getAssociatedFacilitatorData = UserModel::getMultipleUsers($getAssociatedFacilitatorIds);
 
             if (count($getAssociatedFacilitatorData) > 0) {
-                return response()->json(['data' => $getAssociatedFacilitatorData, 'message' => 'Associated facilitators fetched successfully'], 400);
+                return response()->json(['data' => $getAssociatedFacilitatorData, 'message' => 'Associated facilitators fetched successfully'], 200);
             } else {
                 return response()->json(['data' => null, 'message' => 'Error in getting associated facilitator record'], 400);
             }
