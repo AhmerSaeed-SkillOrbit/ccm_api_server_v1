@@ -300,8 +300,9 @@ class DoctorScheduleController extends Controller
 
     function UpdateDoctorScheduleDetailSingle(Request $request)
     {
+        error_log('in controller');
 
-        $doctorScheduleDetailId = $request->get('doctorScheduleDetailId');
+        $doctorScheduleDetailId = $request->get('DoctorScheduleDetailId');
         $doctorScheduleId = $request->post('DoctorScheduleId');
 
         error_log($doctorScheduleDetailId);
@@ -312,13 +313,15 @@ class DoctorScheduleController extends Controller
         $endTime = $request->post('EndTime');
         $isOffDay = $request->post('IsOffDay');
 
+        $date = HelperModel::getDate();
+
         $updateData = array(
             "ScheduleDate" => $scheduleDate,
             "StartTime" => $startTime,
             "EndTime" => $endTime,
             "ShiftType" => 1,
             "IsOffDay" => $isOffDay,
-            "UpdatedOn" => getdate(),
+            "UpdatedOn" => $date['timestamp'],
             "UpdatedBy" => 1 //fetch from doctor_schedule table
         );
 
@@ -330,7 +333,7 @@ class DoctorScheduleController extends Controller
 //            ->update($updateData);
 
         if ($update > 0) {
-            return response()->json(['data' => null, 'message' => 'Doctor schedule detail updated successfully'], 200);
+            return response()->json(['data' => $doctorScheduleDetailId, 'message' => 'Doctor schedule detail updated successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Doctor schedule detail failed to update'], 500);
         }
