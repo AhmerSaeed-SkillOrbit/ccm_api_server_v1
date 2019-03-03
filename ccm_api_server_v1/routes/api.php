@@ -75,6 +75,8 @@ Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorSchedule
 //Adding schedule of doctor
 Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetail');
 
+Route::get('/doctor/schedule/single/ahmer', 'DoctorScheduleController@GetDoctorScheduleDetailAhmer');
+
 
 Route::get('/', function () {
     return 'Hello';

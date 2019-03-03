@@ -193,4 +193,29 @@ class DoctorScheduleController extends Controller
 
         return response()->json(['data' => $val, 'message' => 'Doctor schedule found'], 200);
     }
+
+    function GetDoctorScheduleDetailAhmer(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+        $doctorScheduleDetail = array();
+
+        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId);
+
+        if ($getRange == null) {
+            return response()->json(['data' => null, 'message' => 'No schedule for this doctor'], 400);
+        }
+
+        $doctorScheduleDetail['StartDate'] = $getRange->StartDate;
+        $doctorScheduleDetail['EndDate'] = $getRange->EndDate;
+        $doctorScheduleDetail['Id'] = $getRange->Id;
+
+        $getDetail = DoctorScheduleModel::getDoctorScheduleDetail($getRange->Id);
+        if (count($getDetail) > 0) {
+            $doctorScheduleDetail['DoctorScheduleDetails'] = $getDetail;
+        }
+
+        return response()->json(['data' => $doctorScheduleDetail, 'message' => 'Doctor schedule found'], 200);
+    }
 }
