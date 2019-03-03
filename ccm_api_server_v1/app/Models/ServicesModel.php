@@ -130,7 +130,7 @@ class ServicesModel
                     );
 
                     $inviteUpdate = DB::table('account_invitation')
-                        ->where('id', $checkInvite[0]['Id'])
+                        ->where('Id', $checkInvite[0]['Id'])
                         ->update($inviteUpdateData);
 
                     if ($inviteUpdate > 0) {

@@ -117,8 +117,7 @@ class DoctorScheduleController extends Controller
                     }
                 }
             }
-        }
-        else {
+        } else {
             error_log('doctor schedule not found');
             //Now making data to upload in doctor schedule and doctor schedule detail table
             $doctorScheduleData = array(
@@ -301,13 +300,42 @@ class DoctorScheduleController extends Controller
 
     function UpdateDoctorScheduleDetailSingle(Request $request)
     {
-        $doctorScheduleDetailId = $request->get('doctorScheduleDetailId');
-//        $request->post('StartDate')
+        error_log('in controller');
 
-//        $inviteUpdate = DB::table('account_invitation')
-//            ->where('id', $checkInvite[0]['Id'])
-//            ->update($inviteUpdateData);
+        $doctorScheduleDetailId = $request->get('DoctorScheduleDetailId');
+        $doctorScheduleId = $request->post('DoctorScheduleId');
 
         error_log($doctorScheduleDetailId);
+        error_log($doctorScheduleId);
+
+        $scheduleDate = $request->post('ScheduleDate');
+        $startTime = $request->post('StartTime');
+        $endTime = $request->post('EndTime');
+        $isOffDay = $request->post('IsOffDay');
+
+        $date = HelperModel::getDate();
+
+        $updateData = array(
+            "ScheduleDate" => $scheduleDate,
+            "StartTime" => $startTime,
+            "EndTime" => $endTime,
+            "ShiftType" => 1,
+            "IsOffDay" => $isOffDay,
+            "UpdatedOn" => $date['timestamp'],
+            "UpdatedBy" => 1 //fetch from doctor_schedule table
+        );
+
+        $update = GenericModel::updateGeneric('doctor_schedule_detail', 'Id', $doctorScheduleDetailId, $updateData);
+
+//        $update = DB::table('doctor_schedule_detail')
+//            ->where('Id', $doctorScheduleDetailId)
+//            ->where('DoctorScheduleId', $doctorScheduleId)
+//            ->update($updateData);
+
+        if ($update > 0) {
+            return response()->json(['data' => $doctorScheduleDetailId, 'message' => 'Doctor schedule detail updated successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Doctor schedule detail failed to update'], 500);
+        }
     }
 }
