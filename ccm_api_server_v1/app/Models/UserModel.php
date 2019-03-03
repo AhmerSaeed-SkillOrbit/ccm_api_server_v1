@@ -553,6 +553,27 @@ class UserModel
         return $query;
     }
 
+    static public function GetSingleUserViaIdNewFunction($id)
+    {
+        error_log('in model');
+
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+            ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+            ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
+                'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
+                'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
+                'destinationUser.EmailAddress as DestinationUserEmailAddress')
+            ->where('user.Id', '=', $id)
+            ->where('user.IsActive', '=', true)
+            ->first();
+
+        return $query;
+    }
+
     static public function isDuplicateEmail($userEmail)
     {
         $isDuplicate = DB::table('user')
