@@ -20,6 +20,19 @@ use Mail;
 
 class DoctorScheduleModel
 {
+    static public function getDoctorScheduleAhmer($doctorId)
+    {
+        error_log('in model');
+
+        $query = DB::table('doctor_schedule')
+            ->select('Id', 'StartDate', 'EndDate')
+            ->where('DoctorId', '=', $doctorId)
+            ->where('IsActive', '=', true)
+            ->first();
+
+        return $query;
+    }
+
     static public function getDoctorSchedule($doctorId)
     {
         error_log('in model');
