@@ -958,10 +958,14 @@ class UserController extends Controller
             //Now sending sms
             if ($mobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
-                HelperModel::sendSms($mobileNumber, 'User successfully registered', $url);
+                $toNumber = array();
+                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                $mobileNumber = $phoneCode.$mobileNumber;
+                array_push($toNumber,$mobileNumber);
+                HelperModel::sendSms($toNumber, 'User successfully registered', $url);
             }
 
-            return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
+            return response()->json(['data' => $insertedRecord, 'message' => 'Welcome, You are successfully registered to CCM'], 200);
         }
     }
 
