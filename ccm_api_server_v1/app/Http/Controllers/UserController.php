@@ -242,16 +242,21 @@ class UserController extends Controller
             //Now checking if user belongs to super admin
             if ($userData[0]->RoleCodeName == $superAdminRole) {
                 error_log('User is from super admin');
-                $val = UserModel::FetchUserWithSearchAndPagination
-                ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
-
-                $resultArray = json_decode(json_encode($val), true);
-                $data = $resultArray;
-                error_log(count($data));
-                if (count($data) > 0) {
-                    return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+                if ($roleCode == $doctorRole) {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
                 } else {
-                    return response()->json(['data' => null, 'message' => 'Users not found'], 200);
+
+                    $val = UserModel::FetchUserWithSearchAndPagination
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
+
+                    $resultArray = json_decode(json_encode($val), true);
+                    $data = $resultArray;
+                    error_log(count($data));
+                    if (count($data) > 0) {
+                        return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Users not found'], 200);
+                    }
                 }
             } //Now checking if user belongs to doctor
             else if ($userData[0]->RoleCodeName == $doctorRole) {
@@ -950,10 +955,9 @@ class UserController extends Controller
             UserModel::sendEmail($emailAddress, $emailMessage, null);
 
             //Now sending sms
-            if($mobileNumber != null)
-            {
+            if ($mobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
-                HelperModel::sendSms($mobileNumber,'User successfully registered',$url);
+                HelperModel::sendSms($mobileNumber, 'User successfully registered', $url);
             }
 
             return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
@@ -1240,6 +1244,36 @@ class UserController extends Controller
         } else {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in associating facilitator(s)'], 400);
+        }
+    }
+
+    function GetAssociateFacilitator(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('doctorId');
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+
+        $data = UserModel::GetUserRoleViaUserId($userId);
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User data not found'], 400);
+        }
+
+        $getAssociatedFacilitators = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+        if (count($getAssociatedFacilitators) == 0) {
+            return response()->json(['data' => null, 'message' => 'Facilitator not associated yet'], 400);
+        } else {
+            $getAssociatedFacilitatorIds = array();
+            foreach ($getAssociatedFacilitators as $item) {
+                array_push($getAssociatedFacilitatorIds, $item->DestinationUserId);
+            }
+            $getAssociatedFacilitatorData = UserModel::getMultipleUsers($getAssociatedFacilitatorIds);
+
+            if (count($getAssociatedFacilitatorData) > 0) {
+                return response()->json(['data' => $getAssociatedFacilitatorData, 'message' => 'Associated facilitators fetched successfully'], 400);
+            } else {
+                return response()->json(['data' => null, 'message' => 'Error in getting associated facilitator record'], 400);
+            }
         }
     }
 }
