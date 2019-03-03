@@ -17,6 +17,7 @@ use App\Models\PaymentTermsModel;
 use App\Models\GenericModel;
 use App\Models\ForgetPasswordModel;
 use Config;
+use Twilio\Rest\Client as TwilioClient;
 
 class PageController extends BaseController
 {
@@ -689,6 +690,52 @@ class PageController extends BaseController
     {
         $result = ForgetPasswordModel::forgetPassword();
         return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
+    }
+
+    public function TestSms()
+    {
+        $twilioAccountSid   = getenv("TWILIO_SID");
+        $twilioAuthToken    = getenv("TWILIO_TOKEN");
+        $myTwilioNumber = getenv("TWILIO_NUMBER");
+
+        $twilioClient = new TwilioClient($twilioAccountSid, $twilioAuthToken);
+
+        $twilioClient->messages->create(
+        // Where to send a text message
+            '+923122410823',
+            array(
+                "from" => $myTwilioNumber,
+                "body" => "Hey! Tech event begins in 2 days!"
+            )
+        );
+
+//        return $this->sendTwilioSmsReminders();
+
+        return response()->json(['data' => true, 'message' => 'Check SMS'], 200);
+    }
+
+
+    /**
+     * Send messages using Twilio API client
+     *
+     * @param array $subscribers - Subscribers info
+     *
+     * @return void
+     */
+    public function sendTwilioSmsReminders()
+    {
+
+        foreach( $subscribers as $subscriber) {
+            $this->twilioClient->messages->create(
+            // Where to send a text message
+                $subscriber[0],
+                array(
+                    "from" => $myTwilioNumber,
+                    "body" => "Hey! ". $subscriber[1] . ", the ".$subscriber[2] ." Tech event begins in 2 days!"
+                )
+            );
+        }
+        return "Successfully sent ". count($subscribers) . " reminder(s)";
     }
 
     //Permission list via pagination

@@ -84,6 +84,8 @@ Route::get('/test/list', 'PageController@testFunction');
 
 Route::get('/test/email', 'PageController@TestEmail');
 
+Route::get('/test/sms', 'PageController@TestSms');
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
