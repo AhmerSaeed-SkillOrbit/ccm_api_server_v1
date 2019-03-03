@@ -793,13 +793,34 @@ class UserController extends Controller
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
-        $val = UserModel::GetSingleUserViaId($id);
+        $val = UserModel::GetSingleUserViaIdNewFunction($id);
+
+        $userDetails = array();
+
+        $userDetails['Id'] = $val->Id;
+        $userDetails['FirstName'] = $val->FirstName;
+        $userDetails['LastName'] = $val->LastName;
+        $userDetails['EmailAddress'] = $val->EmailAddress;
+        $userDetails['MobileNumber'] = $val->MobileNumber;
+        $userDetails['TelephoneNumber'] = $val->TelephoneNumber;
+        $userDetails['OfficeAddress'] = $val->OfficeAddress;
+        $userDetails['ResidentialAddress'] = $val->ResidentialAddress;
+        $userDetails['Gender'] = $val->Gender;
+        $userDetails['FunctionalTitle'] = $val->FunctionalTitle;
+        $userDetails['Age'] = $val->Age;
+        $userDetails['AgeGroup'] = $val->AgeGroup;
+        $userDetails['IsBlock'] = $val->IsBlock;
+        $userDetails['BlockReason'] = $val->BlockReason;
+        $userDetails['Role'] = array();
+        $userDetails['Role']['Id'] = $val->RoleId;
+        $userDetails['Role']['RoleName'] = $val->RoleName;
+        $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
 
 //        $data = array();
 //        //Pushing logged in user basic inforamtion
 //        array_push($data, $val);
 
-        if ($val[0]->RoleCodeName == $doctorRole) {
+        if ($val->RoleCodeName == $doctorRole) {
             error_log('logged in user is doctor');
             //Now fetch it's patients which are registered
             $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($id, $doctorPatientAssociation);
@@ -813,7 +834,8 @@ class UserController extends Controller
                 $getAssociatedPatientsData = UserModel::getMultipleUsers($getAssociatedPatientsIds);
 
                 if (count($getAssociatedPatientsData) > 0) {
-                    $val['associatedPatients'] = $getAssociatedPatientsData;
+//                    $val['associatedPatients'] = $getAssociatedPatientsData;
+                    $userDetails['AssociatedPatients'] = $getAssociatedPatientsData;
                 }
             }
 
@@ -830,13 +852,14 @@ class UserController extends Controller
                 $getAssociatedFacilitatorsData = UserModel::getMultipleUsers($getAssociatedFacilitatorIds);
 
                 if (count($getAssociatedFacilitatorsData) > 0) {
-                    $val['associatedFacilitators'] = $getAssociatedFacilitatorsData;
+//                    $val['associatedFacilitators'] = $getAssociatedFacilitatorsData;
+                    $userDetails['AssociatedFacilitators'] = $getAssociatedFacilitatorsData;
                 }
             }
         }
 
-        if (count($val) > 0) {
-            return response()->json(['data' => $val, 'message' => 'User detail fetched successfully'], 200);
+        if ($userDetails != null) {
+            return response()->json(['data' => $userDetails, 'message' => 'User detail fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
         }
