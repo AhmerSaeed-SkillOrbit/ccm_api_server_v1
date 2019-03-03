@@ -898,7 +898,6 @@ class UserController extends Controller
 
         DB::beginTransaction();
 
-
         $insertedRecord = GenericModel::insertGenericAndReturnID('user', $dataToInsert);
         error_log('Inserted record id ' . $insertedRecord);
 
@@ -906,7 +905,6 @@ class UserController extends Controller
             DB::rollback();
             return response()->json(['data' => null, 'message' => 'Error in user registration'], 400);
         }
-
 
         //Now making data for user_access
         $userAccessData = array(
@@ -927,6 +925,14 @@ class UserController extends Controller
             DB::commit();
             //Now sending email
             UserModel::sendEmail($emailAddress, $emailMessage, null);
+
+            //Now sending sms
+            if($mobileNumber != null)
+            {
+                $url = env('WEB_URL') . '/#/';
+                HelperModel::sendSms($mobileNumber,'User successfully registered',$url);
+            }
+
             return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
         }
     }
@@ -1182,10 +1188,25 @@ class UserController extends Controller
 
         error_log(count($getFacilitatorEmails));
 
+        $toNumber = array();
+
         foreach ($getFacilitatorEmails as $item) {
+
+            //pushing mobile number
+            //in array for use in sending sms
+            array_push($toNumber, $item->MobileNumber);
+
             error_log('$item' . $item->EmailAddress);
+            error_log('$item' . $item->MobileNumber);
+
             UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
         }
+
+        ## Preparing Data for SMS  - START ##
+        if (count($toNumber) > 0) {
+            HelperModel::sendSms($toNumber, $emailMessage, null);
+        }
+        ## Preparing Data for SMS  - END ##
 
         //Now inserting data
         $checkInsertedData = GenericModel::insertGeneric('user_association', $data);
