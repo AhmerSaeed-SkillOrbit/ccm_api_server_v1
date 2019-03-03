@@ -20,9 +20,10 @@ class ServicesModel
 
     static public function sendInviteTrans(Request $request)
     {
+        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
         $email = Input::get('email');
-        $mobileNumber = Input::get('mobileNumber');
+        $mobileNumber = $phoneCode . Input::get('mobileNumber');
         $type = Input::get('type');
         $userId = Input::get('userId');
 
