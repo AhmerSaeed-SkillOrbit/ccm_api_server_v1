@@ -246,17 +246,17 @@ class UserController extends Controller
 //                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
 //                } else {
 
-                    $val = UserModel::FetchUserWithSearchAndPagination
-                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
+                $val = UserModel::FetchUserWithSearchAndPagination
+                ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
-                    $resultArray = json_decode(json_encode($val), true);
-                    $data = $resultArray;
-                    error_log(count($data));
-                    if (count($data) > 0) {
-                        return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
-                    } else {
-                        return response()->json(['data' => null, 'message' => 'Users not found'], 200);
-                    }
+                $resultArray = json_decode(json_encode($val), true);
+                $data = $resultArray;
+                error_log(count($data));
+                if (count($data) > 0) {
+                    return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Users not found'], 200);
+                }
                 //}
             } //Now checking if user belongs to doctor
             else if ($userData[0]->RoleCodeName == $doctorRole) {
@@ -321,8 +321,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $facilitatorRole) {
+            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
@@ -885,6 +884,8 @@ class UserController extends Controller
             return response()->json(['data' => null, 'message' => 'Email already exists'], 400);
         }
 
+        $defaultPassword = getenv("DEFAULT_PWD");
+
         //Binding data to variable.
         $firstName = $request->get('FirstName');
         $lastName = $request->get('LastName');
@@ -896,7 +897,7 @@ class UserController extends Controller
         $functionalTitle = $request->get('FunctionalTitle');
         $age = $request->get('Age');
         $ageGroup = $request->get('AgeGroup');
-        $hashedPassword = md5('ccm1!');
+        $hashedPassword = md5($defaultPassword);
         $roleCode = $request->get('RoleCode');
 
         $roleCode = UserModel::getRoleViaRoleCode($roleCode);
@@ -945,7 +946,7 @@ class UserController extends Controller
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
         $emailMessage = "You have been invited to Chronic Management System. 
-        Your email has been created. You may login by using : ccm1! as your password.";
+        Your email has been created. You may login by using :" . $defaultPassword . " as your password.";
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
@@ -960,12 +961,12 @@ class UserController extends Controller
                 $url = env('WEB_URL') . '/#/';
                 $toNumber = array();
                 $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                $mobileNumber = $phoneCode.$mobileNumber;
-                array_push($toNumber,$mobileNumber);
-                HelperModel::sendSms($toNumber, 'User successfully registered', $url);
+                $mobileNumber = $phoneCode . $mobileNumber;
+                array_push($toNumber, $mobileNumber);
+                HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM use this password to login ' . $defaultPassword, $url);
             }
 
-            return response()->json(['data' => $insertedRecord, 'message' => 'Welcome, You are successfully registered to CCM'], 200);
+            return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
         }
     }
 
