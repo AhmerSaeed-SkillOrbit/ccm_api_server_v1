@@ -242,9 +242,9 @@ class UserController extends Controller
             //Now checking if user belongs to super admin
             if ($userData[0]->RoleCodeName == $superAdminRole) {
                 error_log('User is from super admin');
-                if ($roleCode == $doctorRole) {
-                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                } else {
+//                if ($roleCode == $doctorRole) {
+//                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+//                } else {
 
                     $val = UserModel::FetchUserWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
@@ -257,7 +257,7 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Users not found'], 200);
                     }
-                }
+                //}
             } //Now checking if user belongs to doctor
             else if ($userData[0]->RoleCodeName == $doctorRole) {
                 error_log('logged in user role is doctor');
@@ -321,7 +321,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
