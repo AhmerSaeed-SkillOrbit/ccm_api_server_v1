@@ -70,7 +70,7 @@ Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
 Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
 //Adding schedule of doctor
-Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorSchedule');
+Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleLatest');
 
 //Adding schedule of doctor
 Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetailAhmer');
@@ -96,6 +96,9 @@ Route::post('/login', 'LoginController@login');
 Route::post('/register', 'LoginController@register');
 Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
+
+//?doctorScheduleDetailId=1
+Route::post('doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
 
 
 
