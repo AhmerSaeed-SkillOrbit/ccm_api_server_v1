@@ -22,8 +22,11 @@ class ServicesModel
     {
 
         $email = Input::get('email');
+        $mobileNumber = Input::get('mobileNumber');
         $type = Input::get('type');
         $userId = Input::get('userId');
+
+        error_log($mobileNumber);
 
         $data = $request->all();
 
@@ -45,7 +48,6 @@ class ServicesModel
             } else {
 
                 $token = md5(uniqid(rand(), true));
-                // $token = LoginModel::generateAccessToken();
 
                 if ($token != null) {
 
@@ -66,6 +68,20 @@ class ServicesModel
 
                     if ($checkInsertTokenId) {
                         ServicesModel::sendEmail($email, $type, $token);
+
+                        error_log("email sent");
+
+                        ## Preparing Data for SMS  - START ##
+                        if ($mobileNumber != null) {
+                            $toNumber = array();
+                            $toNumber[0] = $mobileNumber;
+
+                            $content = getenv("ACCOUNT_INVITATION_SMS");
+                            $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
+
+                            HelperModel::sendSms($toNumber, $content, $url);
+                        }
+                        ## Preparing Data for SMS  - END ##
 
                         DB::commit();
                         return array("status" => "success", "data" => null);
@@ -153,5 +169,4 @@ class ServicesModel
         });
         return true;
     }
-
 }
