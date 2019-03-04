@@ -633,6 +633,7 @@ class UserModel
         $isDuplicate = DB::table('user')
             ->select('*')
             ->where('EmailAddress', '=', $userEmail)
+            ->where('IsActive', '=', 1)
             ->get();
 
         return $isDuplicate;
