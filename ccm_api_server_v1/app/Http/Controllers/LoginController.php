@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\LoginModel;
+use App\Models\UserModel;
 use App\Models\GenericModel;
 use App\Models\HelperModel;
 use Illuminate\Http\Request;
@@ -80,8 +81,8 @@ class LoginController extends Controller
                 // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
                 return response()->json(['data' => $check['data'], 'message' => 'User Successfully Logged In'], 200);
             } else if ($check['status'] == "failed") {
-                return response()->json(['data' => null, 'message' => 'Email or password is incorrect'], 400);
-            } else {
+                return response()->json(['data' => null, 'message' => $check['message']], 400);
+            }  else {
                 return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
             }
         } catch (Exception $e) {

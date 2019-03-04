@@ -177,10 +177,10 @@ class DoctorScheduleController extends Controller
         $doctorId = $request->get('doctorId');
         $scheduleDetail = $request->ScheduleDetail;
 
-        error_log('in controller');
+        error_log('in controller  d');
         //First check if logged in user role is doctor or not.
 
-        $doctorData = UserModel::GetSingleUserViaId($doctorId);
+        $doctorData = UserModel::GetSingleUserViaIds($doctorId);
 
         if (count($doctorData) == 0) {
             return response()->json(['data' => null, 'message' => 'Doctor record not found'], 400);
@@ -196,6 +196,11 @@ class DoctorScheduleController extends Controller
         // First check if doctors schedule already exists or not
         //If exists then get doctor detail record and delete it.
         //And add the new one
+
+        if ($request->post('StartDate') > $request->post('EndDate')) {
+            error_log('start date is greater');
+            return response()->json(['data' => null, 'message' => 'Start date should not exceed end date'], 400);
+        }
 
         DB::beginTransaction();
         error_log('doctor schedule not found');
@@ -221,20 +226,27 @@ class DoctorScheduleController extends Controller
         $doctorScheduleDetailData = array();
 
         foreach ($scheduleDetail as $item) {
-            array_push
-            (
-                $doctorScheduleDetailData,
-                array(
-                    "DoctorScheduleId" => $insertDoctorScheduleData,
-                    "ScheduleDate" => $item['ScheduleDate'],
-                    "StartTime" => $item['StartTime'],
-                    "EndTime" => $item['EndTime'],
-                    "ShiftType" => $item['ShiftType'],
-                    "IsOffDay" => $item['IsOffDay'],
-                    "CreatedOn" => $date["timestamp"],
-                    "IsActive" => true
-                )
-            );
+            if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
+                if ($item['StartTime'] > $item['EndTime']) {
+                    return response()->json(['data' => null, 'message' => 'Start time should not exceed end time'], 400);
+                }
+                array_push
+                (
+                    $doctorScheduleDetailData,
+                    array(
+                        "DoctorScheduleId" => $insertDoctorScheduleData,
+                        "ScheduleDate" => $item['ScheduleDate'],
+                        "StartTime" => $item['StartTime'],
+                        "EndTime" => $item['EndTime'],
+                        "ShiftType" => $item['ShiftType'],
+                        "IsOffDay" => $item['IsOffDay'],
+                        "CreatedOn" => $date["timestamp"],
+                        "IsActive" => true
+                    )
+                );
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
+            }
         }
 
         //Now inserting data
@@ -308,34 +320,46 @@ class DoctorScheduleController extends Controller
         error_log($doctorScheduleDetailId);
         error_log($doctorScheduleId);
 
+        $getDoctorScheduleData = DoctorScheduleModel::getDoctorSchedule($doctorScheduleId);
+        if (count($getDoctorScheduleData) == 0) {
+            return response()->json(['data' => null, 'message' => 'Doctor schedule not found'], 400);
+        }
+
+
         $scheduleDate = $request->post('ScheduleDate');
         $startTime = $request->post('StartTime');
         $endTime = $request->post('EndTime');
         $isOffDay = $request->post('IsOffDay');
 
-        $date = HelperModel::getDate();
+        if ($scheduleDate >= $getDoctorScheduleData[0]->StartDate && $scheduleDate <= $getDoctorScheduleData[0]->EndDate) {
+            //First get dr schedule data with respect to given schedule detail ID
 
-        $updateData = array(
-            "ScheduleDate" => $scheduleDate,
-            "StartTime" => $startTime,
-            "EndTime" => $endTime,
-            "ShiftType" => 1,
-            "IsOffDay" => $isOffDay,
-            "UpdatedOn" => $date['timestamp'],
-            "UpdatedBy" => 1 //fetch from doctor_schedule table
-        );
+            $date = HelperModel::getDate();
 
-        $update = GenericModel::updateGeneric('doctor_schedule_detail', 'Id', $doctorScheduleDetailId, $updateData);
+            $updateData = array(
+                "ScheduleDate" => $scheduleDate,
+                "StartTime" => $startTime,
+                "EndTime" => $endTime,
+                "ShiftType" => 1,
+                "IsOffDay" => $isOffDay,
+                "UpdatedOn" => $date['timestamp'],
+                "UpdatedBy" => 1 //fetch from doctor_schedule table
+            );
+
+            $update = GenericModel::updateGeneric('doctor_schedule_detail', 'Id', $doctorScheduleDetailId, $updateData);
 
 //        $update = DB::table('doctor_schedule_detail')
 //            ->where('Id', $doctorScheduleDetailId)
 //            ->where('DoctorScheduleId', $doctorScheduleId)
 //            ->update($updateData);
 
-        if ($update > 0) {
-            return response()->json(['data' => $doctorScheduleDetailId, 'message' => 'Doctor schedule detail updated successfully'], 200);
+            if ($update > 0) {
+                return response()->json(['data' => $doctorScheduleDetailId, 'message' => 'Doctor schedule detail updated successfully'], 200);
+            } else {
+                return response()->json(['data' => null, 'message' => 'Doctor schedule detail failed to update'], 500);
+            }
         } else {
-            return response()->json(['data' => null, 'message' => 'Doctor schedule detail failed to update'], 500);
+            return response()->json(['data' => null, 'message' => 'Schedule date for a doctor should be in between start and end date'], 400);
         }
     }
 }
