@@ -177,10 +177,10 @@ class DoctorScheduleController extends Controller
         $doctorId = $request->get('doctorId');
         $scheduleDetail = $request->ScheduleDetail;
 
-        error_log('in controller');
+        error_log('in controller  d');
         //First check if logged in user role is doctor or not.
 
-        $doctorData = UserModel::GetSingleUserViaId($doctorId);
+        $doctorData = UserModel::GetSingleUserViaIds($doctorId);
 
         if (count($doctorData) == 0) {
             return response()->json(['data' => null, 'message' => 'Doctor record not found'], 400);
@@ -196,6 +196,11 @@ class DoctorScheduleController extends Controller
         // First check if doctors schedule already exists or not
         //If exists then get doctor detail record and delete it.
         //And add the new one
+
+        if ($request->post('StartDate') > $request->post('EndDate')) {
+            error_log('start date is greater');
+            return response()->json(['data' => null, 'message' => 'Start date should not exceed end date'], 400);
+        }
 
         DB::beginTransaction();
         error_log('doctor schedule not found');
@@ -221,6 +226,9 @@ class DoctorScheduleController extends Controller
         $doctorScheduleDetailData = array();
 
         foreach ($scheduleDetail as $item) {
+            if ($item['StartTime'] > $item['EndTime']) {
+                return response()->json(['data' => null, 'message' => 'Start time should not exceed end time'], 400);
+            }
             array_push
             (
                 $doctorScheduleDetailData,
@@ -308,10 +316,20 @@ class DoctorScheduleController extends Controller
         error_log($doctorScheduleDetailId);
         error_log($doctorScheduleId);
 
+        $getDoctorScheduleData = DoctorScheduleModel::getDoctorSchedule($doctorScheduleId);
+        if(count($getDoctorScheduleData) == 0){
+            return response()->json(['data' => null, 'message' => 'Doctor schedule not found'], 400);
+        }
+
+
         $scheduleDate = $request->post('ScheduleDate');
         $startTime = $request->post('StartTime');
         $endTime = $request->post('EndTime');
         $isOffDay = $request->post('IsOffDay');
+
+//        if($scheduleDate >= $getDoctorScheduleData[0]->StartDate)
+
+        //First get dr schedule data with respect to given schedule detail ID
 
         $date = HelperModel::getDate();
 
