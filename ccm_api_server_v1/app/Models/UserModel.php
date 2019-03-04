@@ -623,7 +623,6 @@ class UserModel
                 'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                 'destinationUser.EmailAddress as DestinationUserEmailAddress')
             ->where('user.Id', '=', $id)
-            ->where('user.IsActive', '=', true)
             ->first();
 
         return $query;

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use PhpParser\Node\Stmt\Return_;
 use PHPUnit\Util\RegularExpressionTest;
+use App\Models\UserModel;
 
 use Exception;
 use Mail;
@@ -36,6 +37,22 @@ class LoginModel
                 ->get();
 
             $checkLogin = json_decode(json_encode($login), true);
+
+
+            //Checking user if it is blocked or not
+            $checkUser = UserModel::GetSingleUserViaIdNewFunction($checkLogin[0]['Id']);
+
+            if ($checkUser != null || $checkUser != false) {
+                error_log('user data fetched');
+                error_log('$checkUser->IsBlock ' . $checkUser->IsBlock);
+                if ($checkUser->IsBlock == true) {
+                    return array("status" => "failed", "data" => null, "message" => "User is blocked");
+                }
+                error_log('$checkUser->IsActive ' . $checkUser->IsActive);
+                if ($checkUser->IsActive == false) {
+                    return array("status" => "failed", "data" => null, "message" => "User is not active");
+                }
+            }
 
             if (count($checkLogin) > 0) {
                 // $session = LoginModel::createLoginSession($request, $checkLogin);
@@ -108,6 +125,8 @@ class LoginModel
             }
 
         } catch (Exception $e) {
+
+            error_log('in exception');
 
             echo "error";
             DB::rollBack();
