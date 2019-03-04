@@ -20,9 +20,10 @@ class ServicesModel
 
     static public function sendInviteTrans(Request $request)
     {
+        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
         $email = Input::get('email');
-        $mobileNumber = Input::get('mobileNumber');
+        $mobileNumber = $phoneCode . Input::get('mobileNumber');
         $type = Input::get('type');
         $userId = Input::get('userId');
 
@@ -130,7 +131,7 @@ class ServicesModel
                     );
 
                     $inviteUpdate = DB::table('account_invitation')
-                        ->where('id', $checkInvite[0]['Id'])
+                        ->where('Id', $checkInvite[0]['Id'])
                         ->update($inviteUpdateData);
 
                     if ($inviteUpdate > 0) {

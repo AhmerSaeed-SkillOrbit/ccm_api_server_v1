@@ -77,6 +77,9 @@ Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorSchedul
 
 Route::get('/doctor/schedule/single/ahsan', 'DoctorScheduleController@GetDoctorScheduleDetail');
 
+//Get doctor facilitator list
+Route::get('/doctor/facilitator', 'UserController@GetAssociateFacilitator');
+
 
 Route::get('/', function () {
     return 'Hello';
@@ -98,7 +101,7 @@ Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
 
 //?doctorScheduleDetailId=1
-Route::post('doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
+Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
 
 
 

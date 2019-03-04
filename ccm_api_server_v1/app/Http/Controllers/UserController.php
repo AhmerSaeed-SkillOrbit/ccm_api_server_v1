@@ -242,6 +242,10 @@ class UserController extends Controller
             //Now checking if user belongs to super admin
             if ($userData[0]->RoleCodeName == $superAdminRole) {
                 error_log('User is from super admin');
+//                if ($roleCode == $doctorRole) {
+//                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+//                } else {
+
                 $val = UserModel::FetchUserWithSearchAndPagination
                 ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
@@ -253,6 +257,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Users not found'], 200);
                 }
+                //}
             } //Now checking if user belongs to doctor
             else if ($userData[0]->RoleCodeName == $doctorRole) {
                 error_log('logged in user role is doctor');
@@ -793,13 +798,34 @@ class UserController extends Controller
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
-        $val = UserModel::GetSingleUserViaId($id);
+        $val = UserModel::GetSingleUserViaIdNewFunction($id);
+
+        $userDetails = array();
+
+        $userDetails['Id'] = $val->Id;
+        $userDetails['FirstName'] = $val->FirstName;
+        $userDetails['LastName'] = $val->LastName;
+        $userDetails['EmailAddress'] = $val->EmailAddress;
+        $userDetails['MobileNumber'] = $val->MobileNumber;
+        $userDetails['TelephoneNumber'] = $val->TelephoneNumber;
+        $userDetails['OfficeAddress'] = $val->OfficeAddress;
+        $userDetails['ResidentialAddress'] = $val->ResidentialAddress;
+        $userDetails['Gender'] = $val->Gender;
+        $userDetails['FunctionalTitle'] = $val->FunctionalTitle;
+        $userDetails['Age'] = $val->Age;
+        $userDetails['AgeGroup'] = $val->AgeGroup;
+        $userDetails['IsBlock'] = $val->IsBlock;
+        $userDetails['BlockReason'] = $val->BlockReason;
+        $userDetails['Role'] = array();
+        $userDetails['Role']['Id'] = $val->RoleId;
+        $userDetails['Role']['RoleName'] = $val->RoleName;
+        $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
 
 //        $data = array();
 //        //Pushing logged in user basic inforamtion
 //        array_push($data, $val);
 
-        if ($val[0]->RoleCodeName == $doctorRole) {
+        if ($val->RoleCodeName == $doctorRole) {
             error_log('logged in user is doctor');
             //Now fetch it's patients which are registered
             $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($id, $doctorPatientAssociation);
@@ -813,7 +839,8 @@ class UserController extends Controller
                 $getAssociatedPatientsData = UserModel::getMultipleUsers($getAssociatedPatientsIds);
 
                 if (count($getAssociatedPatientsData) > 0) {
-                    $val['associatedPatients'] = $getAssociatedPatientsData;
+//                    $val['associatedPatients'] = $getAssociatedPatientsData;
+                    $userDetails['AssociatedPatients'] = $getAssociatedPatientsData;
                 }
             }
 
@@ -830,13 +857,14 @@ class UserController extends Controller
                 $getAssociatedFacilitatorsData = UserModel::getMultipleUsers($getAssociatedFacilitatorIds);
 
                 if (count($getAssociatedFacilitatorsData) > 0) {
-                    $val['associatedFacilitators'] = $getAssociatedFacilitatorsData;
+//                    $val['associatedFacilitators'] = $getAssociatedFacilitatorsData;
+                    $userDetails['AssociatedFacilitators'] = $getAssociatedFacilitatorsData;
                 }
             }
         }
 
-        if (count($val) > 0) {
-            return response()->json(['data' => $val, 'message' => 'User detail fetched successfully'], 200);
+        if ($userDetails != null) {
+            return response()->json(['data' => $userDetails, 'message' => 'User detail fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'User detail not found'], 200);
         }
@@ -856,6 +884,8 @@ class UserController extends Controller
             return response()->json(['data' => null, 'message' => 'Email already exists'], 400);
         }
 
+        $defaultPassword = getenv("DEFAULT_PWD");
+
         //Binding data to variable.
         $firstName = $request->get('FirstName');
         $lastName = $request->get('LastName');
@@ -867,7 +897,7 @@ class UserController extends Controller
         $functionalTitle = $request->get('FunctionalTitle');
         $age = $request->get('Age');
         $ageGroup = $request->get('AgeGroup');
-        $hashedPassword = md5('ccm1!');
+        $hashedPassword = md5($defaultPassword);
         $roleCode = $request->get('RoleCode');
 
         $roleCode = UserModel::getRoleViaRoleCode($roleCode);
@@ -916,7 +946,7 @@ class UserController extends Controller
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
         $emailMessage = "You have been invited to Chronic Management System. 
-        Your email has been created. You may login by using : ccm1! as your password.";
+        Your email has been created. You may login by using :" . $defaultPassword . " as your password.";
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
@@ -927,10 +957,13 @@ class UserController extends Controller
             UserModel::sendEmail($emailAddress, $emailMessage, null);
 
             //Now sending sms
-            if($mobileNumber != null)
-            {
+            if ($mobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
-                HelperModel::sendSms($mobileNumber,'User successfully registered',$url);
+                $toNumber = array();
+                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                $mobileNumber = $phoneCode . $mobileNumber;
+                array_push($toNumber, $mobileNumber);
+                HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM use this password to login ' . $defaultPassword, $url);
             }
 
             return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
@@ -1189,12 +1222,13 @@ class UserController extends Controller
         error_log(count($getFacilitatorEmails));
 
         $toNumber = array();
+        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
         foreach ($getFacilitatorEmails as $item) {
 
             //pushing mobile number
             //in array for use in sending sms
-            array_push($toNumber, $item->MobileNumber);
+            array_push($toNumber, $phoneCode . $item->MobileNumber);
 
             error_log('$item' . $item->EmailAddress);
             error_log('$item' . $item->MobileNumber);
@@ -1217,6 +1251,36 @@ class UserController extends Controller
         } else {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in associating facilitator(s)'], 400);
+        }
+    }
+
+    function GetAssociateFacilitator(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('doctorId');
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+
+        $data = UserModel::GetUserRoleViaUserId($userId);
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User data not found'], 400);
+        }
+
+        $getAssociatedFacilitators = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+        if (count($getAssociatedFacilitators) == 0) {
+            return response()->json(['data' => null, 'message' => 'Facilitator not associated yet'], 400);
+        } else {
+            $getAssociatedFacilitatorIds = array();
+            foreach ($getAssociatedFacilitators as $item) {
+                array_push($getAssociatedFacilitatorIds, $item->DestinationUserId);
+            }
+            $getAssociatedFacilitatorData = UserModel::getMultipleUsers($getAssociatedFacilitatorIds);
+
+            if (count($getAssociatedFacilitatorData) > 0) {
+                return response()->json(['data' => $getAssociatedFacilitatorData, 'message' => 'Associated facilitators fetched successfully'], 200);
+            } else {
+                return response()->json(['data' => null, 'message' => 'Error in getting associated facilitator record'], 400);
+            }
         }
     }
 }
