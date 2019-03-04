@@ -587,7 +587,7 @@ class UserModel
         }
     }
 
-    static public function GetSingleUserViaIds($id)
+    static public function GetSingleUserViaId($id)
     {
         error_log('in model   k');
 

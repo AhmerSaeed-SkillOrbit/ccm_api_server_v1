@@ -180,7 +180,7 @@ class DoctorScheduleController extends Controller
         error_log('in controller  d');
         //First check if logged in user role is doctor or not.
 
-        $doctorData = UserModel::GetSingleUserViaIds($doctorId);
+        $doctorData = UserModel::GetSingleUserViaId($doctorId);
 
         if (count($doctorData) == 0) {
             return response()->json(['data' => null, 'message' => 'Doctor record not found'], 400);
