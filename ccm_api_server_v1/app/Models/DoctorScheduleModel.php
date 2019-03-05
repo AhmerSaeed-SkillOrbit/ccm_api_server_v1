@@ -20,13 +20,15 @@ use Mail;
 
 class DoctorScheduleModel
 {
-    static public function getDoctorScheduleAhmer($doctorId)
+    static public function getDoctorScheduleAhmer($doctorId, $month, $year)
     {
         error_log('in model');
 
         $query = DB::table('doctor_schedule')
-            ->select('Id', 'StartDate', 'EndDate')
+            ->select('Id', 'StartDate', 'EndDate', 'MonthName', 'YearName')
             ->where('DoctorId', '=', $doctorId)
+            ->where('MonthName', '=', $month)
+            ->where('YearName', '=', $year)
             ->where('IsActive', '=', true)
             ->first();
 
@@ -58,8 +60,8 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_detail")
             ->select("Id", "ScheduleDate", "ShiftType",
-                "IsOffDay",DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                    DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                "IsOffDay", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
             ->where("DoctorScheduleId", "=", $doctorScheduleId)
             ->where("IsActive", "=", true)
             ->get();

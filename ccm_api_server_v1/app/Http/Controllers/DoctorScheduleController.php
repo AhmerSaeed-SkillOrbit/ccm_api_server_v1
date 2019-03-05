@@ -292,9 +292,44 @@ class DoctorScheduleController extends Controller
         error_log('in controller');
 
         $doctorId = $request->get('doctorId');
+        $loggedInUserId = $request->get('userId');
+        $month = $request->get('month');
+        $year = $request->get('year');
+
+        $patientRole = env('ROLE_PATIENT');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
         $doctorScheduleDetail = array();
 
-        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId);
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) == 0) {
+            return response()->json(['data' => null, 'message' => 'logged in user record not found'], 400);
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
+            //Now check if logged in patient is associated with given doctor id or not
+            $checkAssociatedPatient = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorPatientAssociation, $loggedInUserId);
+            error_log('$checkAssociatedPatient ' . $checkAssociatedPatient);
+            if ($checkAssociatedPatient == null) {
+                return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
+            }
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName == $facilitatorRole) {
+            //Now check if logged in patient is associated with given doctor id or not
+            $checkAssociatedFacilitator = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorFacilitatorAssociation, $loggedInUserId);
+            error_log('$checkAssociatedFacilitator ' . $checkAssociatedFacilitator);
+            if ($checkAssociatedFacilitator == null) {
+                return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
+            }
+        }
+
+
+        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $month, $year);
 
         if ($getRange == null) {
             return response()->json(['data' => null, 'message' => 'No schedule for this doctor'], 400);
@@ -302,6 +337,8 @@ class DoctorScheduleController extends Controller
 
         $doctorScheduleDetail['StartDate'] = $getRange->StartDate;
         $doctorScheduleDetail['EndDate'] = $getRange->EndDate;
+        $doctorScheduleDetail['MonthName'] = $getRange->MonthName;
+        $doctorScheduleDetail['YearName'] = $getRange->YearName;
         $doctorScheduleDetail['Id'] = $getRange->Id;
 
         $getDetail = DoctorScheduleModel::getDoctorScheduleDetail($getRange->Id);
