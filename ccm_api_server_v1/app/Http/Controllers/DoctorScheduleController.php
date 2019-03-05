@@ -210,7 +210,9 @@ class DoctorScheduleController extends Controller
             "StartDate" => $request->post('StartDate'),
             "EndDate" => $request->post('EndDate'),
             "CreatedOn" => $date["timestamp"],
-            "IsActive" => true
+            "IsActive" => true,
+            "MonthName" => $request->post('MonthName'),
+            "YearName" => $request->post('YearName')
         );
 
         //First insert doctor schedule data and then get id of that record
