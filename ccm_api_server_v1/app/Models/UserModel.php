@@ -587,9 +587,9 @@ class UserModel
         }
     }
 
-    static public function GetSingleUserViaId($id)
+    static public function GetSingleUserViaIds($id)
     {
-        error_log('in model');
+        error_log('in model   k');
 
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')
@@ -604,6 +604,8 @@ class UserModel
             ->where('user.Id', '=', $id)
             ->where('user.IsActive', '=', true)
             ->get();
+
+        error_log($query);
 
         return $query;
     }
