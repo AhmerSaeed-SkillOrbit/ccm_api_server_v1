@@ -27,6 +27,10 @@ class LoginModel
 
         $hashedPassword = md5($password);
 
+        error_log($email);
+        error_log($password);
+        error_log($hashedPassword);
+
         DB::beginTransaction();
         try {
 
@@ -37,6 +41,7 @@ class LoginModel
                 ->get();
 
             $checkLogin = json_decode(json_encode($login), true);
+
 
 
             //Checking user if it is blocked or not

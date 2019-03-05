@@ -658,6 +658,7 @@ class UserModel
             ->join('user_access', 'user_access.UserId', 'user.Id')
             ->join('role', 'user_access.RoleId', 'role.Id')
             ->where('role.CodeName', '=', $roleCode)
+            ->where('user.IsActive', '=', 1)
             ->count();
     }
 
