@@ -991,9 +991,9 @@ class UserController extends Controller
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
         if ($update == true) {
-            return response()->json(['data' => $id, 'message' => 'User successfully deleted'], 200);
+            return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in deleting user record'], 400);
+            return response()->json(['data' => null, 'message' => 'Error in deleting'], 400);
         }
     }
 
