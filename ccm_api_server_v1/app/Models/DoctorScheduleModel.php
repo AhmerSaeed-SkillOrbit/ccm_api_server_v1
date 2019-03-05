@@ -50,10 +50,18 @@ class DoctorScheduleModel
     {
         error_log('in model');
 
-        $query = DB::table('doctor_schedule_detail')
-            ->select('Id', 'ScheduleDate', 'StartTime', 'EndTime', 'ShiftType', 'IsOffDay')
-            ->where('DoctorScheduleId', '=', $doctorScheduleId)
-            ->where('IsActive', '=', true)
+//        $query = DB::table('doctor_schedule_detail')
+//            ->select('Id', 'ScheduleDate', 'EndTime', 'ShiftType', 'IsOffDay')
+//            ->where('DoctorScheduleId', '=', $doctorScheduleId)
+//            ->where('IsActive', '=', true)
+//            ->get();
+
+        $query = DB::table("doctor_schedule_detail")
+            ->select("Id", "ScheduleDate", "ShiftType",
+                "IsOffDay",DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
+                    DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+            ->where("DoctorScheduleId", "=", $doctorScheduleId)
+            ->where("IsActive", "=", true)
             ->get();
 
         return $query;
