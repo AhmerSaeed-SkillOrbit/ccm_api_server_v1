@@ -37,6 +37,7 @@ class ServicesModel
             $invite = DB::table('account_invitation')
                 ->select()
                 ->where('ToEmailAddress', '=', $email)
+                ->Where('Status_', '<>', 'ignored')
                 ->get();
 
             $checkInvite = json_decode(json_encode($invite), true);
@@ -46,7 +47,8 @@ class ServicesModel
                 DB::rollBack();
                 return array("status" => "failed", "data" => null, "message" => "Invite is already sent to this Email address");
 
-            } else {
+            }
+            else {
 
                 $token = md5(uniqid(rand(), true));
 
