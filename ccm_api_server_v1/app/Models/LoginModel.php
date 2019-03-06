@@ -401,5 +401,12 @@ class LoginModel
 
     }
 
-
+    static function checkEmailAvailable(string $email){
+        $result = DB::table('user')
+            ->select('*')
+            ->where('EmailAddress', '=', $email)
+            ->where('IsActive', '=', 1)
+            ->get();
+        return $result;
+    }
 }

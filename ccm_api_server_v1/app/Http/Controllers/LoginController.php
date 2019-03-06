@@ -82,7 +82,7 @@ class LoginController extends Controller
                 return response()->json(['data' => $check['data'], 'message' => 'User Successfully Logged In'], 200);
             } else if ($check['status'] == "failed") {
                 return response()->json(['data' => null, 'message' => $check['message']], 400);
-            }  else {
+            } else {
                 return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
             }
         } catch (Exception $e) {
@@ -109,14 +109,23 @@ class LoginController extends Controller
                     return response()->json(['data' => $data, 'error' => $validator->errors(), 'message' => 'validation failed'], 400);
                 } else {
 
-                    $check = LoginModel::getRegisterTrans($request);
+                    //custom check for
+                    //email already exist
 
-                    if ($check['status'] == "success") {
-                        return response()->json(['data' => $check['data'], 'message' => $check['message']], 200);
-                    } else if ($check['status'] == "failed") {
-                        return response()->json(['data' => null, 'message' => $check['message']], 400);
+                    $isEmailAvailable = LoginModel::checkEmailAvailable($request->EmailAddress);
+
+                    if (count($isEmailAvailable) > 0) {
+                        return response()->json(['data' => 0, 'message' => "Email is already taken"], 200);
                     } else {
-                        return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+                        $check = LoginModel::getRegisterTrans($request);
+
+                        if ($check['status'] == "success") {
+                            return response()->json(['data' => $check['data'], 'message' => $check['message']], 200);
+                        } else if ($check['status'] == "failed") {
+                            return response()->json(['data' => null, 'message' => $check['message']], 400);
+                        } else {
+                            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+                        }
                     }
                 }
             } else {

@@ -35,7 +35,6 @@ class ServicesController extends Controller
             if ($validator->fails()) {
                 return response()->json(['data' => $data, 'error' => $validator->errors(), 'message' => 'validation failed'], 400);
             } else {
-
                 $check = ServicesModel::sendInviteTrans($request);
 
                 if ($check['status'] == "success") {

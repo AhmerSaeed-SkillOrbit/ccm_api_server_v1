@@ -81,8 +81,14 @@ class ServicesModel
 
                             $content = getenv("ACCOUNT_INVITATION_SMS");
                             $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
-
-                            HelperModel::sendSms($toNumber, $content, $url);
+                            try {
+                                error_log('sms in try block');
+                                HelperModel::sendSms($toNumber, $content, $url);
+                            }
+                            catch (Exception $ex){
+                                error_log('sms exception catched');
+                                return array("status" => "success", "data" => null);
+                            }
                         }
                         ## Preparing Data for SMS  - END ##
 
