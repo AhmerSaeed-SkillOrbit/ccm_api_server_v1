@@ -268,11 +268,9 @@ class DoctorScheduleController extends Controller
         $doctorRole = env('ROLE_DOCTOR');
 
         $doctorId = $request->get('doctorId');
-        $scheduleDetail = $request->get('ScheduleDetail');
+        $scheduleDetail = $request->ScheduleDetail;
 
         error_log('in controller');
-
-        error_log(' $scheduleDetail ' . $scheduleDetail['ScheduleDate']);
         //First check if logged in user role is doctor or not.
 
         $doctorData = UserModel::GetSingleUserViaId($doctorId);
@@ -297,6 +295,8 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'Start date should not exceed end date'], 400);
         }
 
+        DB::beginTransaction();
+
         error_log('doctor schedule not found');
         //Now making data to upload in doctor schedule and doctor schedule detail table
         $doctorScheduleData = array(
@@ -309,7 +309,6 @@ class DoctorScheduleController extends Controller
             "YearName" => $request->post('YearName')
         );
 
-        DB::beginTransaction();
         //First insert doctor schedule data and then get id of that record
 
         $insertDoctorScheduleData = GenericModel::insertGenericAndReturnID('doctor_schedule_copy1', $doctorScheduleData);
@@ -320,25 +319,71 @@ class DoctorScheduleController extends Controller
 
         //Now making data for doctor schedule detail
 
-        $doctorScheduleDetailData = array(
-            "DoctorScheduleId" => $insertDoctorScheduleData,
-            "ScheduleDate" => $scheduleDetail['ScheduleDate'],
-            "NoOfShift" => $scheduleDetail['NoOfShift'],
-            "IsOffDay" => $scheduleDetail['IsOffDay'],
-            "CreatedOn" => $date["timestamp"],
-            "IsActive" => true
-        );
+        $doctorScheduleDetailData = array();
+        $doctorScheduleShiftData = array();
+
+        foreach ($scheduleDetail as $item) {
+            if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
+
+                $doctorScheduleDetailData = array(
+                    "DoctorScheduleId" => $insertDoctorScheduleData,
+                    "ScheduleDate" => $item['ScheduleDate'],
+                    "NoOfShift" => $item['NoOfShift'],
+                    "IsOffDay" => $item['IsOffDay'],
+                    "CreatedOn" => $date["timestamp"],
+                    "IsActive" => true
+                );
+            } else {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
+            }
+            $checkInsertedData = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
+            error_log('$checkInsertedData of doctor schedule detail' . $checkInsertedData);
+            if ($checkInsertedData == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+            }
+            foreach ($item['ScheduleShift'] as $scheduleShift) {
+
+                error_log('$scheduleShift[\'StartTime\'] is : ' . $scheduleShift['StartTime']);
+                error_log('$scheduleShift[\'EndTime\'] is : ' . $scheduleShift['EndTime']);
+
+//                if ($scheduleShift['StartTime'] > $scheduleShift['EndTime']) {
+//                    DB::rollBack();
+//                    return response()->json(['data' => null, 'message' => 'Start time should not exceed end time'], 400);
+//                }
+                array_push
+                (
+                    $doctorScheduleShiftData,
+                    array(
+                        "DoctorScheduleDetailId" => $checkInsertedData,
+                        "StartTime" => $scheduleShift['StartTime'],
+                        "EndTime" => $scheduleShift['EndTime'],
+                        "IsActive" => true
+                    )
+                );
+            }
+
+            $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+            if ($checkInsertedData == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+            }
+        }
+
+        DB::commit();
+        return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
 
         //Now inserting data
-        $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
-        error_log('Check inserted data ' . $checkInsertedData);
-        if ($checkInsertedData == true) {
-            DB::commit();
-            return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
-        } else {
-            DB::rollBack();
-            return response()->json(['data' => null, 'message' => 'Error in scheduling doctor'], 400);
-        }
+//        $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_detail', $doctorScheduleDetailData);
+//        error_log('Check inserted data ' . $checkInsertedData);
+//        if ($checkInsertedData == true) {
+//            DB::commit();
+//            return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
+//        } else {
+//            DB::rollBack();
+//            return response()->json(['data' => null, 'message' => 'Error in scheduling doctor'], 400);
+//        }
     }
 
     function GetDoctorScheduleDetail(Request $request)
