@@ -821,4 +821,13 @@ class UserModel
             ->get();
         return $result;
     }
+
+    static public function getUserViaId($userId)
+    {
+        $result = DB::table('user')
+            ->select('user.EmailAddress')
+            ->where('Id', $userId)
+            ->get();
+        return $result;
+    }
 }
