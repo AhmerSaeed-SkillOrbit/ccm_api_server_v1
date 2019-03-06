@@ -103,25 +103,28 @@ class LoginModel
                             // return response()->json(['data' => $checkLogin, 'message' => 'Successfully Login'], 200);
                         } else {
                             DB::rollBack();
-                            return array("status" => "failed", "data" => null, "message" => "Get token data failed");
+                            error_log("Get token data failed");
+                            return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                         }
 
 
                     } else {
                         // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null, "message" => "Token failed to save");
+                        error_log("Token failed to save");
+                        return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                     }
 
                 } else {
                     // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                     DB::rollBack();
-                    return array("status" => "failed", "data" => null);
+                    error_log("Token Generation failed");
+                    return array("status" => "failed", "data" => null, 'message' => "Something went wrong");
                 }
             } else {
                 // return redirect($loginRedirect)->withErrors(['email or password is incorrect']);
                 DB::rollBack();
-                return array("status" => "failed", "data" => null);
+                return array("status" => "failed", "data" => null, 'message' => "Email or password is incorrect");
 
                 // return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
             }
@@ -132,7 +135,7 @@ class LoginModel
 
             echo "error";
             DB::rollBack();
-            return array("status" => "error", "data" => null);
+            return array("status" => "error", "data" => null, 'message' => "Something went wrong");
             //   return $e;
         }
     }
