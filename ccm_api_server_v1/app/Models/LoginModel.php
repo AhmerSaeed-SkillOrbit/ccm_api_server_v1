@@ -42,8 +42,6 @@ class LoginModel
 
             $checkLogin = json_decode(json_encode($login), true);
 
-
-
             //Checking user if it is blocked or not
             $checkUser = UserModel::GetSingleUserViaIdNewFunction($checkLogin[0]['Id']);
 

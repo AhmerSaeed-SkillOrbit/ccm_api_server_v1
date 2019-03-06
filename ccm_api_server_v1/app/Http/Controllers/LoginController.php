@@ -161,7 +161,7 @@ class LoginController extends Controller
     protected function registerValidator(array $data)
     {
         return Validator::make($data, [
-            'EmailAddress' => ['required', 'string', 'email', 'max:255', 'unique:user'],
+            'EmailAddress' => ['required', 'string', 'email', 'max:255'],
 //            'BelongTo' => ['required'],
         ]);
     }
