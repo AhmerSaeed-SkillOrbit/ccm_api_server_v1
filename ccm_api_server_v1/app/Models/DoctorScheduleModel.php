@@ -35,6 +35,32 @@ class DoctorScheduleModel
         return $query;
     }
 
+    static public function getDoctorScheduleAllViaPagination($doctorId, $offset, $limit)
+    {
+        error_log('in model');
+
+        $query = DB::table('doctor_schedule_copy1')
+            ->select('Id', 'StartDate', 'EndDate', 'MonthName', 'YearName')
+            ->where('DoctorId', '=', $doctorId)
+            ->where('IsActive', '=', true)
+            ->offset($offset)->limit($limit)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleAllCount($doctorId)
+    {
+        error_log('in model');
+
+        $query = DB::table('doctor_schedule_copy1')
+            ->where('DoctorId', '=', $doctorId)
+            ->where('IsActive', '=', true)
+            ->count();
+
+        return $query;
+    }
+
     static public function getDoctorSchedule($doctorId)
     {
         error_log('in model');
