@@ -589,7 +589,7 @@ class UserModel
 
     static public function GetSingleUserViaId($id)
     {
-        error_log('in model   k');
+        error_log('in model');
 
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')

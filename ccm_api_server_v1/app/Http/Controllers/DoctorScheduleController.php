@@ -523,7 +523,7 @@ class DoctorScheduleController extends Controller
         $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $month, $year);
 
         if ($getRange == null) {
-            return response()->json(['data' => null, 'message' => 'No schedule for this doctor'], 400);
+            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 400);
         }
 
         $doctorScheduleDetail['Id'] = $getRange->Id;
@@ -569,6 +569,60 @@ class DoctorScheduleController extends Controller
         }
 
         return response()->json(['data' => $doctorScheduleDetail, 'message' => 'Doctor schedule found'], 200);
+    }
+
+    function GetDoctorScheduleListViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $offset = $request->get('offset');
+        $limit = $request->get('limit');
+        $loggedInUserId = $request->get('userId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) == 0) {
+            return response()->json(['data' => null, 'message' => 'logged in user record not found'], 400);
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName != $doctorRole) {
+            //Now check if logged in user is doctor or not
+            return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+        }
+        //Query to get doctor record
+        $getDoctorScheduleData = DoctorScheduleModel::getDoctorScheduleAllViaPagination($loggedInUserId, $offset, $limit);
+
+        if (count($getDoctorScheduleData) == 0) {
+            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 400);
+        }
+
+        return response()->json(['data' => $getDoctorScheduleData, 'message' => 'Doctor schedule found'], 200);
+    }
+
+    function GetDoctorScheduleListCount(Request $request)
+    {
+        error_log('in controller');
+
+        $loggedInUserId = $request->get('userId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) == 0) {
+            return response()->json(['data' => null, 'message' => 'logged in user record not found'], 400);
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName != $doctorRole) {
+            //Now check if logged in user is doctor or not
+            return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+        }
+        //Query to get doctor record
+        $getDoctorScheduleData = DoctorScheduleModel::getDoctorScheduleAllCount($loggedInUserId);
+
+        return response()->json(['data' => $getDoctorScheduleData, 'message' => 'Total Count'], 200);
     }
 
     function UpdateDoctorScheduleDetailSingle(Request $request)
