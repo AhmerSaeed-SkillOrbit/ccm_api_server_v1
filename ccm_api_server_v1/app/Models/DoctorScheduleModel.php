@@ -93,16 +93,24 @@ class DoctorScheduleModel
     {
         error_log('in model');
 
-//        $query = DB::table('doctor_schedule_detail')
-//            ->select('Id', 'ScheduleDate', 'EndTime', 'ShiftType', 'IsOffDay')
-//            ->where('DoctorScheduleId', '=', $doctorScheduleId)
-//            ->where('IsActive', '=', true)
-//            ->get();
-
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
                 DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
+            ->where("IsActive", "=", true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getMultipleDoctorScheduleShift($doctorScheduleDetailId)
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift")
+            ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+            ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
 
