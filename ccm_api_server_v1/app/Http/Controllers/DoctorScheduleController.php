@@ -284,6 +284,12 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'User does not belong to doctor'], 400);
         }
 
+        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $request->post('MonthName'), $request->post('YearName'));
+
+        if ($getRange != null) {
+            return response()->json(['data' => null, 'message' => 'Schedule of this dr with same time already exists'], 400);
+        }
+
         $date = HelperModel::getDate();
 
         // First check if doctors schedule already exists or not
