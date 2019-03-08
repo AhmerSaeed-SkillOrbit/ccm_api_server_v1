@@ -53,14 +53,16 @@ class GenericModel
                 ->select('*')
                 ->where($columnName, $operator, $data)
                 ->Where($searchColumnName, 'like', '%' . $keyword . '%')
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy($orderBy, 'ASC')
                 ->get();
         } else {
             return DB::table($tableName)
                 ->select('*')
                 ->where($columnName, $operator, $data)
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy($orderBy, 'ASC')
                 ->get();
         }
@@ -73,7 +75,8 @@ class GenericModel
         return DB::table($tableName)
             ->select('*')
             ->where($columnName, $operator, $data)
-            ->offset($offset)->limit($limit)
+//            ->offset($offset)->limit($limit)
+            ->skip($offset * $limit)->take($limit)
             ->orderBy($orderby, 'ASC')
             ->get();
     }

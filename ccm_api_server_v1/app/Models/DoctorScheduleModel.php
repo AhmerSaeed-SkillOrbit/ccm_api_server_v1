@@ -43,7 +43,8 @@ class DoctorScheduleModel
             ->select('Id', 'StartDate', 'EndDate', 'MonthName', 'YearName')
             ->where('DoctorId', '=', $doctorId)
             ->where('IsActive', '=', true)
-            ->offset($offset)->limit($limit)
+//            ->offset($offset)->limit($limit)
+            ->skip($offset * $limit)->take($limit)
             ->get();
 
         return $query;
