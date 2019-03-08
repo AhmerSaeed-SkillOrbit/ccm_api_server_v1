@@ -116,6 +116,20 @@ class DoctorScheduleModel
         return $query;
     }
 
+    static public function getDoctorScheduleDetailViaId($doctorScheduleDetailId)
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_detail_copy1")
+            ->select("Id", "ScheduleDate", "NoOfShift",
+                "IsOffDay")
+            ->where("Id", "=", $doctorScheduleDetailId)
+            ->where("IsActive", "=", true)
+            ->first();
+
+        return $query;
+    }
+
     static public function getDoctorScheduleShift($doctorScheduleDetailId)
     {
         error_log('in model');
@@ -140,6 +154,33 @@ class DoctorScheduleModel
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
+
+        return $query;
+    }
+
+    static public function getAppointmentViaShiftId($doctorScheduleShiftId)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->select("Id")
+            ->where("DoctorScheduleShiftId", '=', $doctorScheduleShiftId)
+            ->where("IsActive", "=", true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleShiftViaId($doctorScheduleShiftId)
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift")
+            ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+            ->where("Id", "=", $doctorScheduleShiftId)
+            ->where("IsActive", "=", true)
+            ->first();
 
         return $query;
     }

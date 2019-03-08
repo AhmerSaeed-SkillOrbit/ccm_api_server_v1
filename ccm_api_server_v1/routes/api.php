@@ -71,6 +71,8 @@ Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
 //Adding schedule of doctor
 Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
+//Updating schedule of doctor
+Route::post('/doctor/schedule/update', 'DoctorScheduleController@UpdateDoctorSchedule');
 
 //Adding schedule of doctor
 Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetailAhmerUpdate');

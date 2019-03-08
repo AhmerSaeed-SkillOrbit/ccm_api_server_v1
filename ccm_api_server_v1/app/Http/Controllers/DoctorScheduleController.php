@@ -392,6 +392,153 @@ class DoctorScheduleController extends Controller
 //        }
     }
 
+    function UpdateDoctorSchedule(Request $request)
+    {
+        error_log('in controller');
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorId = $request->get('doctorId');
+        error_log('$doctorId ' . $doctorId);
+
+        $doctorScheduleDetailId = $request->post('DoctorScheduleDetailId');
+        $noOfShift = $request->post('NoOfShift');
+        $isOffDay = $request->post('IsOffDay');
+        $scheduleShift = $request->ScheduleShift;
+
+        error_log('in controller');
+        //First check if logged in user role is doctor or not.
+
+        $doctorData = UserModel::GetSingleUserViaId($doctorId);
+
+        $date = HelperModel::getDate();
+
+        if (count($doctorData) == 0) {
+            return response()->json(['data' => null, 'message' => 'Doctor record not found'], 400);
+        }
+        //Means doctor record exist.
+        //Now checking it's role
+        if ($doctorData[0]->RoleCodeName != $doctorRole) {
+            return response()->json(['data' => null, 'message' => 'User does not belong to doctor'], 400);
+        }
+
+        $getDoctorScheduleDetailData = DoctorScheduleModel::getDoctorScheduleDetailViaId($doctorScheduleDetailId);
+
+        DB::beginTransaction();
+
+        //First check if dr schedule exist
+        if ($getDoctorScheduleDetailData == null) {
+            return response()->json(['data' => null, 'message' => 'Doctor schedule not found'], 400);
+        } else {
+            error_log('Schedule detail data found');
+            //Doctor schedule found
+            //LOGIC
+            //check if appointment is taken or not
+            //If taken then don't update that record
+            //If not taken then check if schedule is off day
+            //If off day is true then remove record of that schedule shift and update record of schedule detail
+            // else update that record
+
+            if (count($scheduleShift) > 0) {
+                error_log('Given schedule shift is > 0');
+                foreach ($scheduleShift as $item) {
+                    $checkAppointment = DoctorScheduleModel::getAppointmentViaShiftId($item['Id']);
+                    if (count($checkAppointment) == 0) {
+                        error_log('Appointment not scheduled');
+                        //Now get records from doctor schedule detail and check if record exists
+                        //if exists then update it
+                        //else insert data
+                        $getDoctorScheduleShiftData = DoctorScheduleModel::getDoctorScheduleShiftViaId($item['Id']);
+
+                        if ($getDoctorScheduleShiftData == null) {
+                            error_log('Schedule shift not exist');
+
+                            if ($isOffDay == true) {
+                                error_log('Off days is true and data is null');
+                                //Now fetch the record of schedule shift
+                                //if is exists then delete
+
+                                $checkScheduleShiftRecord = GenericModel::simpleFetchGenericByWhere('doctor_schedule_shift', '=', 'DoctorScheduleDetailId', $doctorScheduleDetailId, 'Id');
+                                if (count($checkScheduleShiftRecord) > 0) {
+                                    error_log('Deleting all shift entries');
+                                    $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
+                                    if ($result == false) {
+                                        DB::rollBack();
+                                    }
+                                }
+                            } else {
+
+                                error_log('Off day is false and data is inserting');
+
+                                $doctorScheduleShiftData =
+                                    array(
+                                        "DoctorScheduleDetailId" => $doctorScheduleDetailId,
+                                        "StartTime" => $item['StartTime'],
+                                        "EndTime" => $item['EndTime'],
+                                        "IsActive" => true
+                                    );
+
+                                $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+                                if ($checkInsertedData == false) {
+                                    DB::rollBack();
+                                }
+                            }
+                        } else {
+                            error_log('Schedule shift exist');
+                            //Now checking if off day is true
+                            //If yes then we will remove all the schedule shift
+                            error_log('$isOffDay ' . $isOffDay);
+                            if ($isOffDay == true) {
+
+                                error_log('Off days is true');
+                                //Now fetch the record of schedule shift
+                                //if is exists then delete
+
+                                $checkScheduleShiftRecord = GenericModel::simpleFetchGenericByWhere('doctor_schedule_shift', '=', 'DoctorScheduleDetailId', $doctorScheduleDetailId, 'Id');
+                                error_log('$checkScheduleShiftRecord ' . $checkScheduleShiftRecord);
+                                if (count($checkScheduleShiftRecord) > 0) {
+                                    error_log('Deleting all shift entries');
+                                    $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
+                                    if ($result == false) {
+                                        DB::rollBack();
+                                    }
+                                }
+                            } else {
+
+                                error_log('Off day is false');
+
+                                $dataToUpdate = array(
+                                    "DoctorScheduleDetailId" => $doctorScheduleDetailId,
+                                    "StartTime" => $item['StartTime'],
+                                    "EndTime" => $item['EndTime'],
+                                    "IsActive" => true
+                                );
+                                $update = GenericModel::updateGeneric('doctor_schedule_shift', 'Id', $item['Id'], $dataToUpdate);
+                                if ($update == false) {
+                                    DB::rollBack();
+                                }
+                            }
+                        }
+                        error_log('Now updating doctor schedule details');
+
+                        $updateData = array(
+                            "NoOfShift" => $noOfShift,
+                            "IsOffDay" => $isOffDay,
+                            "UpdatedOn" => $date['timestamp'],
+                            "UpdatedBy" => $doctorId //fetch from doctor_schedule table
+                        );
+
+                        $update = GenericModel::updateGeneric('doctor_schedule_detail_copy1', 'Id', $doctorScheduleDetailId, $updateData);
+                        if ($update == false) {
+                            DB::rollBack();
+                        }
+                    }
+                }
+            }
+        }
+        DB::commit();
+        return response()->json(['data' => null, 'message' => 'Doctor schedule shift updated successfully'], 200);
+    }
+
     function GetDoctorScheduleDetail(Request $request)
     {
         error_log('in controller');
