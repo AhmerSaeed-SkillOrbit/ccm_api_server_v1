@@ -961,4 +961,56 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'Error in scheduling doctor'], 400);
         }
     }
+
+    function getDoctorAppointmentListViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $doctorId = $request->get('userId');
+
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+
+        $patientIds = array();
+
+
+        //First check if patient id is belonging to dr
+
+        $DoctorData = UserModel::GetSingleUserViaId($doctorId);
+
+        if (count($DoctorData) > 0) {
+            error_log('user data fetched');
+            if ($DoctorData[0]->RoleCodeName != $doctorRole) {
+                error_log('login user is not doctor');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+            } else {
+                error_log('login user is doctor');
+                //Now get his associated patient ids
+
+                $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+                if (count($getAssociatedPatients) > 0) {
+                    //Now bind ids to an  array
+                    foreach ($getAssociatedPatients as $item) {
+                        array_push($patientIds, $item->DestinationUserId);
+                    }
+
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $patientIds, $pageNo, $limit);
+                    if (count($getAppointmentData) > 0) {
+                        return response()->json(['data' => $getAppointmentData, 'message' => 'Appointments fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'No appointment scheduled yet'], 200);
+                    }
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
+                }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
 }
