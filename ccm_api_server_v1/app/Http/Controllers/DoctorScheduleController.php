@@ -365,6 +365,7 @@ class DoctorScheduleController extends Controller
                         "DoctorScheduleDetailId" => $checkInsertedData,
                         "StartTime" => $scheduleShift['StartTime'],
                         "EndTime" => $scheduleShift['EndTime'],
+                        "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
                         "IsActive" => true
                     )
                 );
@@ -473,6 +474,7 @@ class DoctorScheduleController extends Controller
                                         "DoctorScheduleDetailId" => $doctorScheduleDetailId,
                                         "StartTime" => $item['StartTime'],
                                         "EndTime" => $item['EndTime'],
+                                        "NoOfPatientAllowed" => $item['NoOfPatientAllowed'],
                                         "IsActive" => true
                                     );
 

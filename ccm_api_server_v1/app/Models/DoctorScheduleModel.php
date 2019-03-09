@@ -136,7 +136,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -150,7 +150,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime','NoOfPatientAllowed'))
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
