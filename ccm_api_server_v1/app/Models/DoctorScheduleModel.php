@@ -245,4 +245,22 @@ class DoctorScheduleModel
         return $query;
     }
 
+    static public function getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $patientIds)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+            ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->where("appointment.IsActive", "=", true)
+            ->where("appointment.DoctorId", "=", $doctorId)
+            ->whereIn("appointment.PatientId", $patientIds)
+            ->groupBy('appointment.Id')
+            ->count();
+
+        return $query;
+    }
+
 }

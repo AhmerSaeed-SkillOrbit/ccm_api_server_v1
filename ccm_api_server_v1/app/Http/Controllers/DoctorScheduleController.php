@@ -1013,4 +1013,49 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
         }
     }
+
+    function getDoctorAppointmentListCount(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $doctorId = $request->get('userId');
+
+        $patientIds = array();
+
+
+        //First check if patient id is belonging to dr
+
+        $DoctorData = UserModel::GetSingleUserViaId($doctorId);
+
+        if (count($DoctorData) > 0) {
+            error_log('user data fetched');
+            if ($DoctorData[0]->RoleCodeName != $doctorRole) {
+                error_log('login user is not doctor');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+            } else {
+                error_log('login user is doctor');
+                //Now get his associated patient ids
+
+                $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+                if (count($getAssociatedPatients) > 0) {
+                    //Now bind ids to an  array
+                    foreach ($getAssociatedPatients as $item) {
+                        array_push($patientIds, $item->DestinationUserId);
+                    }
+
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $patientIds);
+                    return response()->json(['data' => $getAppointmentData, 'message' => 'Total Count'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
+                }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
 }
