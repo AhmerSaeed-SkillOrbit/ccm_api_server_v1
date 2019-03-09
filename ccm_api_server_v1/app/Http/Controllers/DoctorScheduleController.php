@@ -671,7 +671,7 @@ class DoctorScheduleController extends Controller
         $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $month, $year);
 
         if ($getRange == null) {
-            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 400);
+            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 200);
         }
 
         $doctorScheduleDetail['Id'] = $getRange->Id;
