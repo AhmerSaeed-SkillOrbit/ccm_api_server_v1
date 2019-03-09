@@ -150,7 +150,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime','NoOfPatientAllowed'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -193,6 +193,31 @@ class DoctorScheduleModel
             ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
             ->where("DoctorScheduleShiftId", "=", $doctorScheduleShiftId)
             ->get();
+
+        return $query;
+    }
+
+    static public function getLastAppointment()
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->select('AppointmentNumber')
+            ->where("IsActive", "=", true)
+            ->orderBy('Id', 'desc')
+            ->first();
+
+        return $query;
+    }
+
+    static public function getShiftSlotViaId($shiftSlotId)
+    {
+        error_log('in model');
+
+        $query = DB::table("shift_time_slot")
+            ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
+            ->where("Id", "=", $shiftSlotId)
+            ->first();
 
         return $query;
     }
