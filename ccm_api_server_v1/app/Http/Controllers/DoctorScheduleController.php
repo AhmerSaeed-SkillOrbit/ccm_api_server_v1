@@ -397,7 +397,7 @@ class DoctorScheduleController extends Controller
         error_log('in controller');
         $doctorRole = env('ROLE_DOCTOR');
 
-        $doctorId = $request->get('userId');    
+        $doctorId = $request->get('userId');
 
         $doctorScheduleDetailId = $request->post('DoctorScheduleDetailId');
         $noOfShift = $request->post('NoOfShift');
