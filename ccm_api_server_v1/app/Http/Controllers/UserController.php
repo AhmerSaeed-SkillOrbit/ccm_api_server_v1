@@ -976,19 +976,22 @@ class UserController extends Controller
         $id = $request->get('id');
 
         //First get and check if record exists or not
-        $data = UserModel::GetSingleUserViaId($id);
+        $getUser = UserModel::getUserViaId($id);
 
-        if (count($data) == 0) {
+        if (count($getUser) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
-
         //Binding data to variable.
-
         $dataToUpdate = array(
             "IsActive" => false
         );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        //now delete the account_invitation
+        //of this email
+
+        $update = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser[0]->EmailAddress, $dataToUpdate);
 
         if ($update == true) {
             return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);

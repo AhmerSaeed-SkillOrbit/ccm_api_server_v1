@@ -618,7 +618,7 @@ class DoctorScheduleController extends Controller
         $doctorScheduleDetail['YearName'] = $getRange->YearName;
         $doctorScheduleDetail['Id'] = $getRange->Id;
 
-        $getDetail = DoctorScheduleModel::getDoctorScheduleDetail($getRange->Id);
+        $getDetail = DoctorScheduleModel::getDoctorScheduleGetDoctorScheduleDetailAhmerDetail($getRange->Id);
         if (count($getDetail) > 0) {
             $doctorScheduleDetail['DoctorScheduleDetails'] = $getDetail;
         }
