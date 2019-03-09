@@ -300,7 +300,8 @@ class UserModel
                 ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
                 ->groupBy('user.Id')
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->get();
 
             error_log($query);
@@ -322,7 +323,8 @@ class UserModel
                 ->whereIn('user.Id', $destinationUserId)
                 ->groupBy('user.Id')
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->get();
 
             error_log($query);
@@ -401,7 +403,8 @@ class UserModel
                     ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
                     ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
                     ->where('role.CodeName', '=', $roleCode)
-                    ->offset($offset)->limit($limit)
+//                    ->offset($offset)->limit($limit)
+                    ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
                     ->get();
 
@@ -422,7 +425,8 @@ class UserModel
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
-                    ->offset($offset)->limit($limit)
+//                    ->offset($offset)->limit($limit)
+                    ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
                     ->get();
 
@@ -450,7 +454,8 @@ class UserModel
                     ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
                     ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
                     ->orWhere('FunctionalTitle', 'like', '%' . $keyword . '%')
-                    ->offset($offset)->limit($limit)
+//                    ->offset($offset)->limit($limit)
+                    ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
                     ->get();
 
@@ -467,7 +472,8 @@ class UserModel
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where('user.IsActive', '=', true)
-                    ->offset($offset)->limit($limit)
+//                    ->offset($offset)->limit($limit)
+                    ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
                     ->get();
             }
@@ -498,7 +504,8 @@ class UserModel
                 ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
                 ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
                 ->where('role.CodeName', '=', $roleCode)
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
                 ->first();
 
@@ -519,7 +526,8 @@ class UserModel
                     'destinationUser.EmailAddress as DestinationUserEmailAddress')
                 ->where($tableName . '.' . $columnName, $operator, $data)
                 ->where('role.CodeName', '=', $roleCode)
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
                 ->get();
 
@@ -589,7 +597,7 @@ class UserModel
 
     static public function GetSingleUserViaId($id)
     {
-        error_log('in model   k');
+        error_log('in model');
 
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')
@@ -695,7 +703,8 @@ class UserModel
                 ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
                 ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
                 ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%')
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy('account_invitation.Id', 'DESC')
                 ->get();
         } else {
@@ -706,7 +715,8 @@ class UserModel
                 ->select('user.EmailAddress as ByUserEmail', 'user.FirstName as ByUserFirstName', 'user.LastName as ByUserLastName',
                     'account_invitation.ToEmailAddress', 'account_invitation.ToMobileNumber', 'account_invitation.Status_')
                 ->where('account_invitation.IsActive', '=', true)
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy('account_invitation.Id', 'DESC')
                 ->get();
         }

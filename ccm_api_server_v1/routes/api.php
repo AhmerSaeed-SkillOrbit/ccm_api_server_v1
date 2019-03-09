@@ -71,6 +71,8 @@ Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
 //Adding schedule of doctor
 Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
+//Updating schedule of doctor
+Route::post('/doctor/schedule/update', 'DoctorScheduleController@UpdateDoctorSchedule');
 
 //Adding schedule of doctor
 Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetailAhmerUpdate');
@@ -79,6 +81,10 @@ Route::get('/doctor/schedule/single/ahsan', 'DoctorScheduleController@GetDoctorS
 
 //Get doctor facilitator list
 Route::get('/doctor/facilitator', 'UserController@GetAssociateFacilitator');
+//Doctor schedule list
+Route::get('/doctor/schedule/list', 'DoctorScheduleController@GetDoctorScheduleListViaPagination');
+//Doctor schedule list count
+Route::get('/doctor/schedule/list/count', 'DoctorScheduleController@GetDoctorScheduleListCount');
 
 
 Route::get('/', function () {
