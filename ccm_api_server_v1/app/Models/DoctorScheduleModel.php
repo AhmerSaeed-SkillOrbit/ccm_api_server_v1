@@ -136,7 +136,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -150,7 +150,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -181,6 +181,84 @@ class DoctorScheduleModel
             ->where("Id", "=", $doctorScheduleShiftId)
             ->where("IsActive", "=", true)
             ->first();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId)
+    {
+        error_log('in model');
+
+        $query = DB::table("shift_time_slot")
+            ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
+            ->where("DoctorScheduleShiftId", "=", $doctorScheduleShiftId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getLastAppointment()
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->select('AppointmentNumber')
+            ->where("IsActive", "=", true)
+            ->orderBy('Id', 'desc')
+            ->first();
+
+        return $query;
+    }
+
+    static public function getShiftSlotViaId($shiftSlotId)
+    {
+        error_log('in model');
+
+        $query = DB::table("shift_time_slot")
+            ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
+            ->where("Id", "=", $shiftSlotId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $patientIds, $pageNo, $limit)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+            ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->select('appointment.Id', 'appointment.AppointmentNumber', 'patient.FirstName AS PatientFirstName',
+                'patient.LastName AS PatientLastName', 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+            ->where("appointment.IsActive", "=", true)
+            ->where("appointment.DoctorId", "=", $doctorId)
+            ->whereIn("appointment.PatientId", $patientIds)
+            ->orderBy('appointment.Id', 'desc')
+            ->groupBy('appointment.Id')
+            ->skip($pageNo * $limit)
+            ->take($limit)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $patientIds)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+            ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->where("appointment.IsActive", "=", true)
+            ->where("appointment.DoctorId", "=", $doctorId)
+            ->whereIn("appointment.PatientId", $patientIds)
+            ->groupBy('appointment.Id')
+            ->count();
 
         return $query;
     }
