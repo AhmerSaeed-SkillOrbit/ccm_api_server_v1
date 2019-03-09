@@ -823,4 +823,27 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'Schedule date for a doctor should be in between start and end date'], 400);
         }
     }
+
+    function GetDoctorScheduleShiftSingleViaId(Request $request)
+    {
+        $doctorScheduleShiftId = $request->get('doctorScheduleShiftId');
+
+        $getDoctorScheduleShiftData = DoctorScheduleModel::getDoctorScheduleShiftViaId($doctorScheduleShiftId);
+
+        if ($getDoctorScheduleShiftData == null) {
+            return response()->json(['data' => null, 'message' => 'Doctor schedule shift not found'], 200);
+        } else {
+            error_log('doctor schedule shift found');
+            //Getting doctor time slots
+            $getDoctorScheduleShiftTimeSlot = DoctorScheduleModel::getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId);
+
+
+            $doctorScheduleShiftData['Id'] = $getDoctorScheduleShiftData->Id;
+            $doctorScheduleShiftData['StartTime'] = $getDoctorScheduleShiftData->StartTime;
+            $doctorScheduleShiftData['EndTime'] = $getDoctorScheduleShiftData->EndTime;
+
+            $doctorScheduleShiftData['TimeSlot'] = $getDoctorScheduleShiftTimeSlot;
+        }
+        return response()->json(['data' => $doctorScheduleShiftData, 'message' => 'Doctor schedule shift found'], 200);
+    }
 }

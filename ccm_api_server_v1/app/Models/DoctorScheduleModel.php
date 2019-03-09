@@ -185,4 +185,16 @@ class DoctorScheduleModel
         return $query;
     }
 
+    static public function getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId)
+    {
+        error_log('in model');
+
+        $query = DB::table("shift_time_slot")
+            ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
+            ->where("DoctorScheduleShiftId", "=", $doctorScheduleShiftId)
+            ->get();
+
+        return $query;
+    }
+
 }

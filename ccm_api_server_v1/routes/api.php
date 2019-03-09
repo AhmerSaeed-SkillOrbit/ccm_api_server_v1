@@ -79,6 +79,9 @@ Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorSchedul
 
 Route::get('/doctor/schedule/single/ahsan', 'DoctorScheduleController@GetDoctorScheduleDetail');
 
+//Adding schedule of doctor
+Route::get('/doctor/schedule/shift/single', 'DoctorScheduleController@GetDoctorScheduleShiftSingleViaId');
+
 //Get doctor facilitator list
 Route::get('/doctor/facilitator', 'UserController@GetAssociateFacilitator');
 //Doctor schedule list
