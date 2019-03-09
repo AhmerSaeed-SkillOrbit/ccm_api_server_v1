@@ -20,13 +20,15 @@ use Mail;
 
 class DoctorScheduleModel
 {
-    static public function getDoctorScheduleAhmer($doctorId)
+    static public function getDoctorScheduleAhmer($doctorId, $month, $year)
     {
         error_log('in model');
 
-        $query = DB::table('doctor_schedule')
-            ->select('Id', 'StartDate', 'EndDate')
+        $query = DB::table('doctor_schedule_copy1')
+            ->select('Id', 'StartDate', 'EndDate', 'MonthName', 'YearName')
             ->where('DoctorId', '=', $doctorId)
+            ->where('MonthName', '=', $month)
+            ->where('YearName', '=', $year)
             ->where('IsActive', '=', true)
             ->first();
 
@@ -37,7 +39,7 @@ class DoctorScheduleModel
     {
         error_log('in model');
 
-        $query = DB::table('doctor_schedule')
+        $query = DB::table('doctor_schedule_copy1')
             ->select('Id', 'StartDate', 'EndDate')
             ->where('DoctorId', '=', $doctorId)
             ->where('IsActive', '=', true)
@@ -46,7 +48,7 @@ class DoctorScheduleModel
         return $query;
     }
 
-    static public function getDoctorScheduleDetail($doctorScheduleId)
+    static public function getDoctorScheduleDetailOld($doctorScheduleId)
     {
         error_log('in model');
 
@@ -56,11 +58,59 @@ class DoctorScheduleModel
 //            ->where('IsActive', '=', true)
 //            ->get();
 
-        $query = DB::table("doctor_schedule_detail")
+        $query = DB::table("doctor_schedule_detail_copy1")
             ->select("Id", "ScheduleDate", "ShiftType",
-                "IsOffDay",DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                    DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                "IsOffDay", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
             ->where("DoctorScheduleId", "=", $doctorScheduleId)
+            ->where("IsActive", "=", true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleDetailNew($doctorScheduleId)
+    {
+        error_log('in model');
+
+//        $query = DB::table('doctor_schedule_detail')
+//            ->select('Id', 'ScheduleDate', 'EndTime', 'ShiftType', 'IsOffDay')
+//            ->where('DoctorScheduleId', '=', $doctorScheduleId)
+//            ->where('IsActive', '=', true)
+//            ->get();
+
+        $query = DB::table("doctor_schedule_detail_copy1")
+            ->select("Id", "ScheduleDate", "NoOfShift",
+                "IsOffDay")
+            ->where("DoctorScheduleId", "=", $doctorScheduleId)
+            ->where("IsActive", "=", true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleShift($doctorScheduleDetailId)
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift")
+            ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+            ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
+            ->where("IsActive", "=", true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getMultipleDoctorScheduleShift($doctorScheduleDetailId)
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift")
+            ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+            ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
 

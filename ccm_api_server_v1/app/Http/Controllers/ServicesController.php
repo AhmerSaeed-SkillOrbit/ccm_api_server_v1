@@ -89,7 +89,8 @@ class ServicesController extends Controller
         return Validator::make($data, [
             // 'EmailAddress' => ['required', 'string', 'email', 'max:255', 'unique:user'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'type' => ['required', 'string', 'min:6'],
+            'mobileNumber' => [],
+            'type' => ['required', 'string'],
         ]);
     }
 

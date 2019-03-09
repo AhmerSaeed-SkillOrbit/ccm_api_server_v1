@@ -177,7 +177,7 @@ class DoctorScheduleController extends Controller
         $doctorId = $request->get('doctorId');
         $scheduleDetail = $request->ScheduleDetail;
 
-        error_log('in controller  d');
+        error_log('in controller');
         //First check if logged in user role is doctor or not.
 
         $doctorData = UserModel::GetSingleUserViaId($doctorId);
@@ -210,7 +210,9 @@ class DoctorScheduleController extends Controller
             "StartDate" => $request->post('StartDate'),
             "EndDate" => $request->post('EndDate'),
             "CreatedOn" => $date["timestamp"],
-            "IsActive" => true
+            "IsActive" => true,
+            "MonthName" => $request->post('MonthName'),
+            "YearName" => $request->post('YearName')
         );
 
         //First insert doctor schedule data and then get id of that record
@@ -261,6 +263,135 @@ class DoctorScheduleController extends Controller
         }
     }
 
+    function AddDoctorScheduleUpdatedCode(Request $request)
+    {
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorId = $request->get('doctorId');
+        $scheduleDetail = $request->ScheduleDetail;
+
+        error_log('in controller');
+        //First check if logged in user role is doctor or not.
+
+        $doctorData = UserModel::GetSingleUserViaId($doctorId);
+
+        if (count($doctorData) == 0) {
+            return response()->json(['data' => null, 'message' => 'Doctor record not found'], 400);
+        }
+        //Means doctor record exist.
+        //Now checking it's role
+        if ($doctorData[0]->RoleCodeName != $doctorRole) {
+            return response()->json(['data' => null, 'message' => 'User does not belong to doctor'], 400);
+        }
+
+        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $request->post('MonthName'), $request->post('YearName'));
+
+        if ($getRange != null) {
+            return response()->json(['data' => null, 'message' => 'Schedule of this dr with same time already exists'], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        // First check if doctors schedule already exists or not
+        //If exists then get doctor detail record and delete it.
+        //And add the new one
+
+        if ($request->post('StartDate') > $request->post('EndDate')) {
+            error_log('start date is greater');
+            return response()->json(['data' => null, 'message' => 'Start date should not exceed end date'], 400);
+        }
+
+        DB::beginTransaction();
+
+        error_log('doctor schedule not found');
+        //Now making data to upload in doctor schedule and doctor schedule detail table
+        $doctorScheduleData = array(
+            "DoctorId" => $doctorId,
+            "StartDate" => $request->post('StartDate'),
+            "EndDate" => $request->post('EndDate'),
+            "CreatedOn" => $date["timestamp"],
+            "IsActive" => true,
+            "MonthName" => $request->post('MonthName'),
+            "YearName" => $request->post('YearName')
+        );
+
+        //First insert doctor schedule data and then get id of that record
+
+        $insertDoctorScheduleData = GenericModel::insertGenericAndReturnID('doctor_schedule_copy1', $doctorScheduleData);
+        if ($insertDoctorScheduleData == 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in adding doctor schedule data'], 400);
+        }
+
+        //Now making data for doctor schedule detail
+
+        $doctorScheduleDetailData = array();
+        $doctorScheduleShiftData = array();
+
+        foreach ($scheduleDetail as $item) {
+            if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
+
+                $doctorScheduleDetailData = array(
+                    "DoctorScheduleId" => $insertDoctorScheduleData,
+                    "ScheduleDate" => $item['ScheduleDate'],
+                    "NoOfShift" => $item['NoOfShift'],
+                    "IsOffDay" => $item['IsOffDay'],
+                    "CreatedOn" => $date["timestamp"],
+                    "IsActive" => true
+                );
+            } else {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
+            }
+            $checkInsertedData = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
+            error_log('$checkInsertedData of doctor schedule detail' . $checkInsertedData);
+            if ($checkInsertedData == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+            }
+            foreach ($item['ScheduleShift'] as $scheduleShift) {
+
+                error_log('$scheduleShift[\'StartTime\'] is : ' . $scheduleShift['StartTime']);
+                error_log('$scheduleShift[\'EndTime\'] is : ' . $scheduleShift['EndTime']);
+
+//                if ($scheduleShift['StartTime'] > $scheduleShift['EndTime']) {
+//                    DB::rollBack();
+//                    return response()->json(['data' => null, 'message' => 'Start time should not exceed end time'], 400);
+//                }
+                array_push
+                (
+                    $doctorScheduleShiftData,
+                    array(
+                        "DoctorScheduleDetailId" => $checkInsertedData,
+                        "StartTime" => $scheduleShift['StartTime'],
+                        "EndTime" => $scheduleShift['EndTime'],
+                        "IsActive" => true
+                    )
+                );
+            }
+
+            $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+            if ($checkInsertedData == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+            }
+        }
+
+        DB::commit();
+        return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
+
+        //Now inserting data
+//        $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_detail', $doctorScheduleDetailData);
+//        error_log('Check inserted data ' . $checkInsertedData);
+//        if ($checkInsertedData == true) {
+//            DB::commit();
+//            return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
+//        } else {
+//            DB::rollBack();
+//            return response()->json(['data' => null, 'message' => 'Error in scheduling doctor'], 400);
+//        }
+    }
+
     function GetDoctorScheduleDetail(Request $request)
     {
         error_log('in controller');
@@ -290,9 +421,44 @@ class DoctorScheduleController extends Controller
         error_log('in controller');
 
         $doctorId = $request->get('doctorId');
+        $loggedInUserId = $request->get('userId');
+        $month = $request->get('month');
+        $year = $request->get('year');
+
+        $patientRole = env('ROLE_PATIENT');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
         $doctorScheduleDetail = array();
 
-        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId);
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) == 0) {
+            return response()->json(['data' => null, 'message' => 'logged in user record not found'], 400);
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
+            //Now check if logged in patient is associated with given doctor id or not
+            $checkAssociatedPatient = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorPatientAssociation, $loggedInUserId);
+            error_log('$checkAssociatedPatient ' . $checkAssociatedPatient);
+            if ($checkAssociatedPatient == null) {
+                return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
+            }
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName == $facilitatorRole) {
+            //Now check if logged in patient is associated with given doctor id or not
+            $checkAssociatedFacilitator = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorFacilitatorAssociation, $loggedInUserId);
+            error_log('$checkAssociatedFacilitator ' . $checkAssociatedFacilitator);
+            if ($checkAssociatedFacilitator == null) {
+                return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
+            }
+        }
+
+
+        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $month, $year);
 
         if ($getRange == null) {
             return response()->json(['data' => null, 'message' => 'No schedule for this doctor'], 400);
@@ -300,11 +466,106 @@ class DoctorScheduleController extends Controller
 
         $doctorScheduleDetail['StartDate'] = $getRange->StartDate;
         $doctorScheduleDetail['EndDate'] = $getRange->EndDate;
+        $doctorScheduleDetail['MonthName'] = $getRange->MonthName;
+        $doctorScheduleDetail['YearName'] = $getRange->YearName;
         $doctorScheduleDetail['Id'] = $getRange->Id;
 
         $getDetail = DoctorScheduleModel::getDoctorScheduleGetDoctorScheduleDetailAhmerDetail($getRange->Id);
         if (count($getDetail) > 0) {
             $doctorScheduleDetail['DoctorScheduleDetails'] = $getDetail;
+        }
+
+        return response()->json(['data' => $doctorScheduleDetail, 'message' => 'Doctor schedule found'], 200);
+    }
+
+    function GetDoctorScheduleDetailAhmerUpdate(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+        $loggedInUserId = $request->get('userId');
+        $month = $request->get('month');
+        $year = $request->get('year');
+
+        $patientRole = env('ROLE_PATIENT');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $doctorScheduleDetail = array();
+
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) == 0) {
+            return response()->json(['data' => null, 'message' => 'logged in user record not found'], 400);
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
+            //Now check if logged in patient is associated with given doctor id or not
+            $checkAssociatedPatient = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorPatientAssociation, $loggedInUserId);
+            error_log('$checkAssociatedPatient ' . $checkAssociatedPatient);
+            if ($checkAssociatedPatient == null) {
+                return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
+            }
+        }
+
+        if ($loggedInUserData[0]->RoleCodeName == $facilitatorRole) {
+            //Now check if logged in patient is associated with given doctor id or not
+            $checkAssociatedFacilitator = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorFacilitatorAssociation, $loggedInUserId);
+            error_log('$checkAssociatedFacilitator ' . $checkAssociatedFacilitator);
+            if ($checkAssociatedFacilitator == null) {
+                return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
+            }
+        }
+
+
+        $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $month, $year);
+
+        if ($getRange == null) {
+            return response()->json(['data' => null, 'message' => 'No schedule for this doctor'], 400);
+        }
+
+        $doctorScheduleDetail['Id'] = $getRange->Id;
+        $doctorScheduleDetail['StartDate'] = $getRange->StartDate;
+        $doctorScheduleDetail['EndDate'] = $getRange->EndDate;
+        $doctorScheduleDetail['MonthName'] = $getRange->MonthName;
+        $doctorScheduleDetail['YearName'] = $getRange->YearName;
+
+        $getDetail = DoctorScheduleModel::getDoctorScheduleDetailNew($getRange->Id);
+
+        $scheduleDetailData = array();
+
+        if (count($getDetail) > 0) {
+            $counter = 0;
+            foreach ($getDetail as $item) {
+
+                error_log('loop iterating for : ' . $counter += 1);
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'ScheduleDate' => $item->ScheduleDate,
+                    'NoOfShift' => $item->NoOfShift,
+                    'IsOffDay' => $item->IsOffDay,
+                    'ScheduleShifts' => array()
+                );
+
+                //Now get doc tor schedule shift detail with respect to loops id
+
+                $doctorScheduleShiftData = DoctorScheduleModel::getDoctorScheduleShift($item->Id);
+                if (count($doctorScheduleShiftData) > 0) {
+                    $data['ScheduleShifts'] = $doctorScheduleShiftData;
+                } else {
+                    $data['ScheduleShifts'] = array();
+                }
+
+                array_push($scheduleDetailData, $data);
+            }
+
+            $doctorScheduleDetail['DoctorScheduleDetails'] = $scheduleDetailData;
+        } else {
+
+            $doctorScheduleDetail['DoctorScheduleDetails'] = null;
         }
 
         return response()->json(['data' => $doctorScheduleDetail, 'message' => 'Doctor schedule found'], 200);

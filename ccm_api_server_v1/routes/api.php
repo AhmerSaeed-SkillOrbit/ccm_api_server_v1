@@ -70,10 +70,10 @@ Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
 Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
 //Adding schedule of doctor
-Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleLatest');
+Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
 
 //Adding schedule of doctor
-Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetailAhmer');
+Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetailAhmerUpdate');
 
 Route::get('/doctor/schedule/single/ahsan', 'DoctorScheduleController@GetDoctorScheduleDetail');
 

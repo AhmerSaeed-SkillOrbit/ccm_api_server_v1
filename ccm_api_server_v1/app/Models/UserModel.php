@@ -828,6 +828,15 @@ class UserModel
             ->select('user.EmailAddress')
             ->where('Id', $userId)
             ->get();
+    }
+
+    static public function CheckAssociatedPatientAndFacilitator($doctorId, $associationType, $userId)
+    {
+        $result = DB::table('user_association')
+            ->where('SourceUserId', '=', $doctorId)
+            ->where('DestinationUserId', '=', $userId)
+            ->where('AssociationType', '=', $associationType)
+            ->first();
         return $result;
     }
 }
