@@ -675,6 +675,8 @@ class DoctorScheduleController extends Controller
         }
 
         $doctorScheduleDetail['Id'] = $getRange->Id;
+        $doctorScheduleDetail['FirstName'] = $loggedInUserData[0]->FirstName;
+        $doctorScheduleDetail['LastName'] = $loggedInUserData[0]->LastName;
         $doctorScheduleDetail['StartDate'] = $getRange->StartDate;
         $doctorScheduleDetail['EndDate'] = $getRange->EndDate;
         $doctorScheduleDetail['MonthName'] = $getRange->MonthName;
