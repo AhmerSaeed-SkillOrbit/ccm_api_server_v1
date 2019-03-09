@@ -232,7 +232,7 @@ class LoginModel
         try {
 
             $inviteCode = DB::table('account_invitation')
-                ->select('Id', 'Token', 'BelongTo')
+                ->select('Id', 'Token', 'BelongTo','ByUserId')
                 ->where('Token', '=', $inviteCode)
                 ->where('ToEmailAddress', '=', $email)
                 ->where('Status_', '=', "ignored")
@@ -244,6 +244,7 @@ class LoginModel
             if (count($checkInviteCode) > 0) {
 
                 $belongTo = $checkInviteCode[0]['BelongTo'];
+                $byUserId = $checkInviteCode[0]['ByUserId'];
 
                 $inviteUpdateData = array(
                     "Status_" => "accepted",
@@ -277,6 +278,15 @@ class LoginModel
 
                     if ($checkInsertUserId) {
 
+                        $insertUserAssociationData = array(
+                            "SourceUserId" => $byUserId,
+                            "DestinationUserId" => $checkInsertUserId,
+                            "AssociationType" => $belongTo,
+                            "IsActive" => 1
+                        );
+
+                        DB::table("user_association")->insertGetId($insertUserAssociationData);
+
                         $roleCode = "";
                         if ($belongTo == "superadmin_doctor") {
                             $roleCode = "doctor";
@@ -285,7 +295,6 @@ class LoginModel
                         } else {
                             $roleCode = "noRole";
                         }
-
 
                         $roleData = DB::table('role')
                             ->select('Id')
@@ -303,10 +312,9 @@ class LoginModel
                                 "IsActive" => 1
                             );
 
-                            $checkInsertRoleDataId = DB::table("user_access")->insertGetId($insertRoleData);
+                            DB::table("user_access")->insertGetId($insertRoleData);
 
                             if ($checkInsertUserId) {
-
 
                                 Mail::raw('Welcome to CCM', function ($message) use ($email) {
                                     $message->to($email)->subject("Invitation");
