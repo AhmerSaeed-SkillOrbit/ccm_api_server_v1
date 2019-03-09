@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\LoginModel;
+use App\Models\UserModel;
 use App\Models\GenericModel;
 use App\Models\HelperModel;
 use Illuminate\Http\Request;
@@ -80,15 +81,16 @@ class LoginController extends Controller
                 // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
                 return response()->json(['data' => $check['data'], 'message' => 'User Successfully Logged In'], 200);
             } else if ($check['status'] == "failed") {
-                return response()->json(['data' => null, 'message' => 'Email or password is incorrect'], 400);
-            } else {
+
+                return response()->json(['data' => null, 'message' => $check['message']], 400);
+            }
+            else {
                 return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
             }
         } catch (Exception $e) {
             return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
 
         }
-
 
     }
 
@@ -108,14 +110,23 @@ class LoginController extends Controller
                     return response()->json(['data' => $data, 'error' => $validator->errors(), 'message' => 'validation failed'], 400);
                 } else {
 
-                    $check = LoginModel::getRegisterTrans($request);
+                    //custom check for
+                    //email already exist
 
-                    if ($check['status'] == "success") {
-                        return response()->json(['data' => $check['data'], 'message' => $check['message']], 200);
-                    } else if ($check['status'] == "failed") {
-                        return response()->json(['data' => null, 'message' => $check['message']], 400);
+                    $isEmailAvailable = LoginModel::checkEmailAvailable($request->EmailAddress);
+
+                    if (count($isEmailAvailable) > 0) {
+                        return response()->json(['data' => 0, 'message' => "Email is already taken"], 200);
                     } else {
-                        return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+                        $check = LoginModel::getRegisterTrans($request);
+
+                        if ($check['status'] == "success") {
+                            return response()->json(['data' => $check['data'], 'message' => $check['message']], 200);
+                        } else if ($check['status'] == "failed") {
+                            return response()->json(['data' => null, 'message' => $check['message']], 400);
+                        } else {
+                            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+                        }
                     }
                 }
             } else {
@@ -151,7 +162,7 @@ class LoginController extends Controller
     protected function registerValidator(array $data)
     {
         return Validator::make($data, [
-            'EmailAddress' => ['required', 'string', 'email', 'max:255', 'unique:user'],
+            'EmailAddress' => ['required', 'string', 'email', 'max:255'],
 //            'BelongTo' => ['required'],
         ]);
     }

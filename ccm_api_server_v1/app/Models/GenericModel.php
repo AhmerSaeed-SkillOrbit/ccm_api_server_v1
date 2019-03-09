@@ -7,20 +7,16 @@ use Illuminate\Support\Facades\DB;
 class GenericModel
 {
 
-    function insertGeneric($tableName, $data)
+    static public function insertGeneric($tableName, $data)
     {
         $result = DB::table($tableName)->insert($data);
-
-        if (count($result) > 0)
-            return true;
-        else
-            return false;
-
+        return $result;
     }
 
     static public function insertGenericAndReturnID($tableName, $data)
     {
         $result = DB::table($tableName)->insertGetId($data);
+        error_log('$result ' . $result);
         return $result;
     }
 
@@ -30,7 +26,7 @@ class GenericModel
         return $result;
     }
 
-    function deleteGeneric($table, $whereField, $whereFieldValue)
+    static public function deleteGeneric($table, $whereField, $whereFieldValue)
     {
         $result = DB::table($table)->where($whereField, '=', $whereFieldValue)->delete();
         return $result;
@@ -55,14 +51,16 @@ class GenericModel
                 ->select('*')
                 ->where($columnName, $operator, $data)
                 ->Where($searchColumnName, 'like', '%' . $keyword . '%')
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy($orderBy, 'ASC')
                 ->get();
         } else {
             return DB::table($tableName)
                 ->select('*')
                 ->where($columnName, $operator, $data)
-                ->offset($offset)->limit($limit)
+//                ->offset($offset)->limit($limit)
+                ->skip($offset * $limit)->take($limit)
                 ->orderBy($orderBy, 'ASC')
                 ->get();
         }
@@ -75,7 +73,8 @@ class GenericModel
         return DB::table($tableName)
             ->select('*')
             ->where($columnName, $operator, $data)
-            ->offset($offset)->limit($limit)
+//            ->offset($offset)->limit($limit)
+            ->skip($offset * $limit)->take($limit)
             ->orderBy($orderby, 'ASC')
             ->get();
     }

@@ -48,6 +48,9 @@ Route::post('/user/block', 'UserController@UserBlock');
 //User unblock route
 Route::post('/user/unblock', 'UserController@UserUnblock');
 
+//Associate doctor to facilitator route
+Route::post('/associate/doctor/facilitator', 'UserController@AssociateFacilitatorsWithDoctor');
+
 //Dashboard API for super admin
 Route::get('/dashboard/superadmin', 'UserController@SuperAdminDashboard');
 
@@ -57,6 +60,31 @@ Route::get('/permission/list/search', 'PageController@PermissionListViaPaginatio
 Route::get('/permission/list', 'PageController@PermissionList');
 //permission list count
 Route::get('/permission/count', 'PageController@PermissionCount');
+//Role permission assign
+Route::post('/role/permission/assign', 'PageController@RolePermissionAssign');
+//Get permission via role Id
+Route::get('/permission/via/role/id', 'UserController@PermissionViaRoleId');
+//Get permission via user Id
+Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
+//Test file upload
+Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
+
+//Adding schedule of doctor
+Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
+//Updating schedule of doctor
+Route::post('/doctor/schedule/update', 'DoctorScheduleController@UpdateDoctorSchedule');
+
+//Adding schedule of doctor
+Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorScheduleDetailAhmerUpdate');
+
+Route::get('/doctor/schedule/single/ahsan', 'DoctorScheduleController@GetDoctorScheduleDetail');
+
+//Get doctor facilitator list
+Route::get('/doctor/facilitator', 'UserController@GetAssociateFacilitator');
+//Doctor schedule list
+Route::get('/doctor/schedule/list', 'DoctorScheduleController@GetDoctorScheduleListViaPagination');
+//Doctor schedule list count
+Route::get('/doctor/schedule/list/count', 'DoctorScheduleController@GetDoctorScheduleListCount');
 
 
 Route::get('/', function () {
@@ -67,6 +95,8 @@ Route::get('/test/list', 'PageController@testFunction');
 
 Route::get('/test/email', 'PageController@TestEmail');
 
+Route::get('/test/sms', 'PageController@TestSms');
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -75,6 +105,9 @@ Route::post('/login', 'LoginController@login');
 Route::post('/register', 'LoginController@register');
 Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
+
+//?doctorScheduleDetailId=1
+Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
 
 
 

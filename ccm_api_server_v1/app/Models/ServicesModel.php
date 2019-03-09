@@ -20,10 +20,15 @@ class ServicesModel
 
     static public function sendInviteTrans(Request $request)
     {
+        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
         $email = Input::get('email');
+        $mobileNumber = $phoneCode . Input::get('mobileNumber');
+
         $type = Input::get('type');
         $userId = Input::get('userId');
+
+        error_log($mobileNumber);
 
         $data = $request->all();
 
@@ -37,48 +42,81 @@ class ServicesModel
 
             $checkInvite = json_decode(json_encode($invite), true);
 
-            if (count($checkInvite) > 0) {
-
-                DB::rollBack();
-                return array("status" => "failed", "data" => null, "message" => "Invite is already sent to this Email address");
-
-            } else {
-
-                $token = md5(uniqid(rand(), true));
-                // $token = LoginModel::generateAccessToken();
-
-                if ($token != null) {
-
-                    $date = HelperModel::getDate();
-
-                    $insertData = array(
-                        "ByUserId" => $userId,
-                        "ToEmailAddress" => $email,
-                        "ToMobileNumber" => "",
-                        "Status_" => "pending",
-                        "Token" => $token,
-                        "BelongTo" => $type,
-                        "CreatedOn" => $date["timestamp"],
-                        "IsActive" => 1
-                    );
-
-                    $checkInsertTokenId = DB::table("account_invitation")->insertGetId($insertData);
-
-                    if ($checkInsertTokenId) {
-                        ServicesModel::sendEmail($email, $type, $token);
-
-                        DB::commit();
-                        return array("status" => "success", "data" => null);
-
-                    } else {
+            foreach ($invite as $i) {
+                error_log('in loop');
+                if ($i->Status_ == "accepted" || $i->Status_ == "pending") {
+                    if ($i->IsActive == 1) {
+                        error_log('is Active');
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null);
+                        return array("status" => "failed", "data" => null, "message" => "Invite is already sent to this Email address");
                     }
+                }
+            }
+
+            error_log('loop passed');
+
+            $token = md5(uniqid(rand(), true));
+
+            if ($token != null) {
+
+                $date = HelperModel::getDate();
+
+                $insertData = array(
+                    "ByUserId" => $userId,
+                    "ToEmailAddress" => $email,
+                    "ToMobileNumber" => "",
+                    "Status_" => "pending",
+                    "Token" => $token,
+                    "BelongTo" => $type,
+                    "CreatedOn" => $date["timestamp"],
+                    "IsActive" => 1
+                );
+
+                $checkInsertTokenId = DB::table("account_invitation")->insertGetId($insertData);
+
+                if ($checkInsertTokenId) {
+                    ServicesModel::sendEmail($email, $type, $token);
+
+                    error_log("email sent");
+
+                    ## Preparing Data for SMS  - START ##
+                    if ($mobileNumber != null) {
+                        $toNumber = array();
+                        $toNumber[0] = $mobileNumber;
+
+                        $content = getenv("ACCOUNT_INVITATION_SMS");
+                        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
+                        try {
+                            error_log('sms in try block');
+                            HelperModel::sendSms($toNumber, $content, $url);
+                        } catch (Exception $ex) {
+                            error_log('sms exception catched');
+                            return array("status" => "success", "data" => null);
+                        }
+                    }
+                    ## Preparing Data for SMS  - END ##
+
+                    DB::commit();
+                    return array("status" => "success", "data" => null);
+
                 } else {
                     DB::rollBack();
                     return array("status" => "failed", "data" => null);
                 }
+            } else {
+                DB::rollBack();
+                return array("status" => "failed", "data" => null);
             }
+
+//            if (count($checkInvite) > 0) {
+//
+//                DB::rollBack();
+//                return array("status" => "failed", "data" => null, "message" => "Invite is already sent to this Email address");
+//
+//            } else {
+//
+//
+//            }
 
         } catch (Exception $e) {
 
@@ -114,7 +152,7 @@ class ServicesModel
                     );
 
                     $inviteUpdate = DB::table('account_invitation')
-                        ->where('id', $checkInvite[0]['Id'])
+                        ->where('Id', $checkInvite[0]['Id'])
                         ->update($inviteUpdateData);
 
                     if ($inviteUpdate > 0) {
@@ -153,5 +191,4 @@ class ServicesModel
         });
         return true;
     }
-
 }

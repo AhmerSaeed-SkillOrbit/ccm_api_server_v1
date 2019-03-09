@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use PhpParser\Node\Stmt\Return_;
 use PHPUnit\Util\RegularExpressionTest;
+use App\Models\UserModel;
 
 use Exception;
 use Mail;
@@ -26,6 +27,10 @@ class LoginModel
 
         $hashedPassword = md5($password);
 
+        error_log($email);
+        error_log($password);
+        error_log($hashedPassword);
+
         DB::beginTransaction();
         try {
 
@@ -37,7 +42,36 @@ class LoginModel
 
             $checkLogin = json_decode(json_encode($login), true);
 
+            //Checking user if it is blocked or not
+            $checkUser = UserModel::GetSingleUserViaIdNewFunction($checkLogin[0]['Id']);
+
+            if ($checkUser != null || $checkUser != false) {
+                error_log('user data fetched');
+                error_log('$checkUser->IsBlock ' . $checkUser->IsBlock);
+                if ($checkUser->IsBlock == true) {
+                    return array("status" => "failed", "data" => null, "message" => "User is blocked");
+                }
+                error_log('$checkUser->IsActive ' . $checkUser->IsActive);
+                if ($checkUser->IsActive == false) {
+                    return array("status" => "failed", "data" => null, "message" => "User is not active");
+                }
+            }
+
             if (count($checkLogin) > 0) {
+                //Checking user if it is blocked or not
+                $checkUser = UserModel::GetSingleUserViaIdNewFunction($checkLogin[0]['Id']);
+
+                if ($checkUser != null || $checkUser != false) {
+                    error_log('user data fetched');
+                    error_log('$checkUser->IsBlock ' . $checkUser->IsBlock);
+                    if ($checkUser->IsBlock == true) {
+                        return array("status" => "failed", "data" => null, "message" => "User is blocked");
+                    }
+                    error_log('$checkUser->IsActive ' . $checkUser->IsActive);
+                    if ($checkUser->IsActive == false) {
+                        return array("status" => "failed", "data" => null, "message" => "User is not active");
+                    }
+                }
                 // $session = LoginModel::createLoginSession($request, $checkLogin);
                 // return redirect( $homeRedirect )->with($session);
 
@@ -84,34 +118,39 @@ class LoginModel
                             // return response()->json(['data' => $checkLogin, 'message' => 'Successfully Login'], 200);
                         } else {
                             DB::rollBack();
-                            return array("status" => "failed", "data" => null, "message" => "Get token data failed");
+                            error_log("Get token data failed");
+                            return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                         }
 
 
                     } else {
                         // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                         DB::rollBack();
-                        return array("status" => "failed", "data" => null, "message" => "Token failed to save");
+                        error_log("Token failed to save");
+                        return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                     }
 
                 } else {
                     // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                     DB::rollBack();
-                    return array("status" => "failed", "data" => null);
+                    error_log("Token Generation failed");
+                    return array("status" => "failed", "data" => null, 'message' => "Something went wrong");
                 }
             } else {
                 // return redirect($loginRedirect)->withErrors(['email or password is incorrect']);
                 DB::rollBack();
-                return array("status" => "failed", "data" => null);
+                return array("status" => "failed", "data" => null, 'message' => "Email or password is incorrect");
 
                 // return response()->json(['data' => null, 'message' => 'email or password is incorrect'], 400);
             }
 
         } catch (Exception $e) {
 
+            error_log('in exception');
+
             echo "error";
             DB::rollBack();
-            return array("status" => "error", "data" => null);
+            return array("status" => "error", "data" => null, 'message' => "Something went wrong");
             //   return $e;
         }
     }
@@ -377,5 +416,12 @@ class LoginModel
 
     }
 
-
+    static function checkEmailAvailable(string $email){
+        $result = DB::table('user')
+            ->select('*')
+            ->where('EmailAddress', '=', $email)
+            ->where('IsActive', '=', 1)
+            ->get();
+        return $result;
+    }
 }
