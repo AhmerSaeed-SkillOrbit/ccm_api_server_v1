@@ -833,6 +833,15 @@ class UserModel
         return $result;
     }
 
+    static public function getUserViaId($userId)
+    {
+        $result = DB::table('user')
+            ->select('user.EmailAddress')
+            ->where('Id', $userId)
+            ->get();
+        return $result;
+    }
+
     static public function CheckAssociatedPatientAndFacilitator($doctorId, $associationType, $userId)
     {
         $result = DB::table('user_association')
