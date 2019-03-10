@@ -652,7 +652,7 @@ class DoctorScheduleController extends Controller
         if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
             //Now check if logged in patient is associated with given doctor id or not
             $checkAssociatedPatient = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorPatientAssociation, $loggedInUserId);
-            error_log('$checkAssociatedPatient ' . $checkAssociatedPatient);
+         //   error_log('$checkAssociatedPatient ' . $checkAssociatedPatient);
             if ($checkAssociatedPatient == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
             }
@@ -661,7 +661,6 @@ class DoctorScheduleController extends Controller
         if ($loggedInUserData[0]->RoleCodeName == $facilitatorRole) {
             //Now check if logged in patient is associated with given doctor id or not
             $checkAssociatedFacilitator = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorFacilitatorAssociation, $loggedInUserId);
-            error_log('$checkAssociatedFacilitator ' . $checkAssociatedFacilitator);
             if ($checkAssociatedFacilitator == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
             }
