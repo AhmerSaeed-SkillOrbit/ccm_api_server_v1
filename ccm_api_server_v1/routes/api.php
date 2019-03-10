@@ -97,6 +97,8 @@ Route::get('/appointment/list', 'DoctorScheduleController@getDoctorAppointmentLi
 //get doctor schedule count
 Route::get('/appointment/list/count', 'DoctorScheduleController@getDoctorAppointmentListCount');
 
+Route::post('/appointment/request/status/update', 'DoctorScheduleController@updateAppointmentRequestStatus');
+
 
 Route::get('/', function () {
     return 'Hello';

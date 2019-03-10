@@ -1058,4 +1058,46 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
         }
     }
+
+    //function will update the request status mentioned in post
+    //agains the provided appointmentId
+    function updateAppointmentRequestStatus(Request $request){
+
+        error_log('in controller');
+        error_log('in updating appointment request status function');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $appointmentId = $request->get('aId');//refers to appointmentId
+        $doctorId = $request->get('userId');//refers to logged in userId
+        $reqStatus = $request->post('rStatus'); //means 'accepted || pending || rejected'
+
+        //first apply following check
+        //appointment id should belong to logged in user
+
+        //if rStatus = accepted
+        //if already rejected or pending do not update to accepted
+
+        //if rStatus = rejected
+        //if already accepted or pending do not update to rejected
+
+        //if rStatus = pending not allow to update status as pending
+        //status is a default status
+
+        //after checks update the status
+        $dataToUpdate = array(
+            "RequestStatus" => $reqStatus
+        );
+
+        DB::beginTransaction();
+        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+        if ($update <= 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
+        } else {
+            DB::commit();
+            return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
+        }
+
+    }
 }
