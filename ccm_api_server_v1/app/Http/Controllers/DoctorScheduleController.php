@@ -1070,7 +1070,7 @@ class DoctorScheduleController extends Controller
 
         $appointmentId = $request->get('aId');//refers to appointmentId
         $doctorId = $request->get('userId');//refers to logged in userId
-        $reqStatus = $request->post('rStatus'); //means 'accepted || pending || rejected'
+        $reqStatus = $request->post('rStatus'); //means 'accepted || rejected'
 
         //first apply following check
         //appointment id should belong to logged in user
