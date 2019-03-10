@@ -222,7 +222,7 @@ class DoctorScheduleModel
         return $query;
     }
 
-    static public function getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $patientIds, $pageNo, $limit)
+    static public function getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds, $pageNo, $limit)
     {
         error_log('in model');
 
@@ -235,6 +235,7 @@ class DoctorScheduleModel
                 'patient.LastName AS PatientLastName', 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
             ->where("appointment.IsActive", "=", true)
             ->where("appointment.DoctorId", "=", $doctorId)
+            ->where("appointment.RequestStatus", "=", $reqStatus)
             ->whereIn("appointment.PatientId", $patientIds)
             ->orderBy('appointment.Id', 'desc')
             ->groupBy('appointment.Id')
@@ -245,7 +246,27 @@ class DoctorScheduleModel
         return $query;
     }
 
-    static public function getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $patientIds)
+    static public function getSingleAppointmentViaId($appointmentId)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+            ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+            ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->select('appointment.*', 'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName',
+                'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+                'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+            ->where("appointment.IsActive", "=", true)
+            ->where('appointment.Id', '=', $appointmentId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds)
     {
         error_log('in model');
 
@@ -256,6 +277,7 @@ class DoctorScheduleModel
             ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
             ->where("appointment.IsActive", "=", true)
             ->where("appointment.DoctorId", "=", $doctorId)
+            ->where("appointment.RequestStatus", "=", $reqStatus)
             ->whereIn("appointment.PatientId", $patientIds)
             ->groupBy('appointment.Id')
             ->count();

@@ -839,6 +839,7 @@ class UserModel
             ->select('user.EmailAddress')
             ->where('Id', $userId)
             ->get();
+        return $result;
     }
 
     static public function CheckAssociatedPatientAndFacilitator($doctorId, $associationType, $userId)

@@ -94,9 +94,16 @@ Route::post('/appointment/add', 'DoctorScheduleController@AddAppointment');
 
 //get doctor appointment list
 Route::get('/appointment/list', 'DoctorScheduleController@getDoctorAppointmentListViaPagination');
+
+//get doctor appointment list
+Route::get('/appointment/single', 'DoctorScheduleController@getDoctorAppointmentSingleViaId');
+
 //get doctor schedule count
 Route::get('/appointment/list/count', 'DoctorScheduleController@getDoctorAppointmentListCount');
 
+Route::post('/appointment/request/status/update', 'DoctorScheduleController@updateAppointmentRequestStatus');
+
+Route::post('/appointment/cancel/', 'DoctorScheduleController@markAppointmentCancel');
 
 Route::get('/', function () {
     return 'Hello';

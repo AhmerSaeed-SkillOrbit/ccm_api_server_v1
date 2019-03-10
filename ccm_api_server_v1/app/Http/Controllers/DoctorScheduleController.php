@@ -671,7 +671,7 @@ class DoctorScheduleController extends Controller
         $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $month, $year);
 
         if ($getRange == null) {
-            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 400);
+            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 200);
         }
 
         $doctorScheduleDetail['Id'] = $getRange->Id;
@@ -971,7 +971,7 @@ class DoctorScheduleController extends Controller
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         $doctorId = $request->get('userId');
-
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
 
@@ -999,7 +999,7 @@ class DoctorScheduleController extends Controller
                         array_push($patientIds, $item->DestinationUserId);
                     }
 
-                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $patientIds, $pageNo, $limit);
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds, $pageNo, $limit);
                     if (count($getAppointmentData) > 0) {
                         return response()->json(['data' => $getAppointmentData, 'message' => 'Appointments fetched successfully'], 200);
                     } else {
@@ -1023,7 +1023,7 @@ class DoctorScheduleController extends Controller
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         $doctorId = $request->get('userId');
-
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
         $patientIds = array();
 
 
@@ -1048,7 +1048,7 @@ class DoctorScheduleController extends Controller
                         array_push($patientIds, $item->DestinationUserId);
                     }
 
-                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $patientIds);
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds);
                     return response()->json(['data' => $getAppointmentData, 'message' => 'Total Count'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
@@ -1056,6 +1056,120 @@ class DoctorScheduleController extends Controller
             }
         } else {
             return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
+
+    function getDoctorAppointmentSingleViaId(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $appointmentId = $request->get('appointmentId');
+        $doctorId = $request->get('userId');
+
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($getAppointmentData != null) {
+            return response()->json(['data' => $getAppointmentData, 'message' => 'Appointment fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 200);
+        }
+    }
+    //function will update the request status mentioned in post
+    //against the provided appointmentId
+    function updateAppointmentRequestStatus(Request $request)
+    {
+
+        error_log('in controller');
+        error_log('in updating appointment request status function');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $appointmentId = $request->get('aId');//refers to appointmentId
+        $doctorId = $request->get('userId');//refers to logged in userId
+        $reqStatus = $request->post('rStatus'); //means 'accepted || rejected'
+        $reason = $request->post('reason'); //refers to reject reason
+
+        //first apply following check
+        //appointment id should belong to logged in user
+
+        //if rStatus = accepted
+        //if already rejected or pending do not update to accepted
+
+        //if rStatus = rejected
+        //if already accepted or pending do not update to rejected
+
+        //if rStatus = pending not allow to update status as pending
+        //status is a default status
+
+        //after checks update the status
+        $dataToUpdate = array(
+            "RequestStatus" => $reqStatus,
+            "RequestStatusReason" => $reason
+        );
+
+        DB::beginTransaction();
+        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+        if ($update <= 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
+        } else {
+            DB::commit();
+            return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
+        }
+
+    }
+
+    //function will update the appointment held status
+    //to cancel, against the provided appointmentId
+    //appointment can be cancelled by doctor or patient
+    function markAppointmentCancel(Request $request)
+    {
+        error_log('in controller');
+        error_log('in mark appointment cancel function');
+
+        $doctorRoleCode = env('ROLE_DOCTOR');
+        $patientRoleCode = env('ROLE_PATIENT');
+
+        $appointmentCancelledByPatientStatus = env('APPOINTMENT_CANCELLED_BY_PATIENT');
+        $appointmentCancelledByDoctorStatus = env('APPOINTMENT_CANCELLED_BY_DOCTOR');
+
+        $appointmentId = $request->get('aId');//refers to appointmentId
+        $userId = $request->get('userId');//refers to logged in userId can be patient or doctor
+        $reason = $request->post('reason'); //refers to cancellation reason
+
+        //first apply following check
+        //appointment id should belong to logged in user
+
+        //if appointment is already completed
+        //it cannot be cancelled
+
+        //if appointment request is already rejected
+        //it cannot be cancelled
+
+        //for patient appointment can only be
+        //cancel before 48 hours of scheduled appointment
+        //fetch this from .env
+
+        //for doctor appointment can only be
+        //cancel before 24 hours of scheduled appointment
+        //fetch this from .env
+
+        //after checks update the status
+        $dataToUpdate = array(
+            "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
+            //   "AppointmentStatus" => $appointmentCancelledByPatientStatus,
+            "AppointmentStatusReason" => $reason
+        );
+
+        DB::beginTransaction();
+        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+        if ($update <= 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Appointment failed to cancel'], 500);
+        } else {
+            DB::commit();
+            return response()->json(['data' => $appointmentId, 'message' => 'Appointment successfully cancelled'], 200);
         }
     }
 }
