@@ -942,6 +942,9 @@ class DoctorScheduleController extends Controller
 
         $checkInsertedData = GenericModel::insertGenericAndReturnID('appointment', $dataToInsert);
 
+        $emailMessageForPatient = "Your appointment has been scheduled successfully";
+        $emailMessageForDoctor = "One of your patient has booked an appointment";
+
         error_log('Check updated data ' . $checkInsertedData);
         if ($checkInsertedData == true) {
             //Now insert update data and make time slot is Booked to true
@@ -954,6 +957,28 @@ class DoctorScheduleController extends Controller
                 return response()->json(['data' => null, 'message' => 'Error in making appointment'], 400);
             } else {
                 DB::commit();
+                UserModel::sendEmail($patientData[0]->EmailAddress, $emailMessageForPatient, null);
+                //Now sending sms to patient
+                if ($patientData[0]->MobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'Your appointment has been scheduled successfully', $url);
+                }
+                UserModel::sendEmail($DoctorData[0]->EmailAddress, $emailMessageForDoctor, null);
+
+                //Now sending sms to doctor
+                if ($DoctorData[0]->MobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'One of your patient has booked an appointment', $url);
+                }
+
                 return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment successfully created'], 200);
             }
         } else {
