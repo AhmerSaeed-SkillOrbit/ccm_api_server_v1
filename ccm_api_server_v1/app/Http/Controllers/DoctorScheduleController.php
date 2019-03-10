@@ -999,7 +999,7 @@ class DoctorScheduleController extends Controller
                         array_push($patientIds, $item->DestinationUserId);
                     }
 
-                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId,$reqStatus, $patientIds, $pageNo, $limit);
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds, $pageNo, $limit);
                     if (count($getAppointmentData) > 0) {
                         return response()->json(['data' => $getAppointmentData, 'message' => 'Appointments fetched successfully'], 200);
                     } else {
@@ -1048,7 +1048,7 @@ class DoctorScheduleController extends Controller
                         array_push($patientIds, $item->DestinationUserId);
                     }
 
-                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus,$patientIds);
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds);
                     return response()->json(['data' => $getAppointmentData, 'message' => 'Total Count'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
@@ -1060,8 +1060,9 @@ class DoctorScheduleController extends Controller
     }
 
     //function will update the request status mentioned in post
-    //agains the provided appointmentId
-    function updateAppointmentRequestStatus(Request $request){
+    //against the provided appointmentId
+    function updateAppointmentRequestStatus(Request $request)
+    {
 
         error_log('in controller');
         error_log('in updating appointment request status function');
@@ -1071,6 +1072,7 @@ class DoctorScheduleController extends Controller
         $appointmentId = $request->get('aId');//refers to appointmentId
         $doctorId = $request->get('userId');//refers to logged in userId
         $reqStatus = $request->post('rStatus'); //means 'accepted || rejected'
+        $reason = $request->post('reason'); //refers to reject reason
 
         //first apply following check
         //appointment id should belong to logged in user
@@ -1086,7 +1088,8 @@ class DoctorScheduleController extends Controller
 
         //after checks update the status
         $dataToUpdate = array(
-            "RequestStatus" => $reqStatus
+            "RequestStatus" => $reqStatus,
+            "RequestStatusReason" => $reason
         );
 
         DB::beginTransaction();
