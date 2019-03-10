@@ -99,6 +99,7 @@ Route::get('/appointment/list/count', 'DoctorScheduleController@getDoctorAppoint
 
 Route::post('/appointment/request/status/update', 'DoctorScheduleController@updateAppointmentRequestStatus');
 
+Route::post('/appointment/cancel/', 'DoctorScheduleController@markAppointmentCancel');
 
 Route::get('/', function () {
     return 'Hello';

@@ -1103,4 +1103,58 @@ class DoctorScheduleController extends Controller
         }
 
     }
+
+    //function will update the appointment held status
+    //to cancel, against the provided appointmentId
+    //appointment can be cancelled by doctor or patient
+    function markAppointmentCancel(Request $request)
+    {
+        error_log('in controller');
+        error_log('in mark appointment cancel function');
+
+        $doctorRoleCode = env('ROLE_DOCTOR');
+        $patientRoleCode = env('ROLE_PATIENT');
+
+        $appointmentCancelledByPatientStatus = env('APPOINTMENT_CANCELLED_BY_PATIENT');
+        $appointmentCancelledByDoctorStatus = env('APPOINTMENT_CANCELLED_BY_DOCTOR');
+
+        $appointmentId = $request->get('aId');//refers to appointmentId
+        $userId = $request->get('userId');//refers to logged in userId can be patient or doctor
+        $reason = $request->post('reason'); //refers to cancellation reason
+
+        //first apply following check
+        //appointment id should belong to logged in user
+
+        //if appointment is already completed
+        //it cannot be cancelled
+
+        //if appointment request is already rejected
+        //it cannot be cancelled
+
+        //for patient appointment can only be
+        //cancel before 48 hours of scheduled appointment
+        //fetch this from .env
+
+        //for doctor appointment can only be
+        //cancel before 24 hours of scheduled appointment
+        //fetch this from .env
+
+        //after checks update the status
+        $dataToUpdate = array(
+            "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
+         //   "AppointmentStatus" => $appointmentCancelledByPatientStatus,
+            "AppointmentStatusReason" => $reason
+        );
+
+        DB::beginTransaction();
+        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+        if ($update <= 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Appointment failed to cancel'], 500);
+        } else {
+            DB::commit();
+            return response()->json(['data' => $appointmentId, 'message' => 'Appointment successfully cancelled'], 200);
+        }
+
+    }
 }
