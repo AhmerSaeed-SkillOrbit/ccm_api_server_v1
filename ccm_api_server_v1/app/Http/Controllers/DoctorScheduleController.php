@@ -1058,4 +1058,21 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
         }
     }
+
+    function getDoctorAppointmentSingleViaId(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $appointmentId = $request->get('appointmentId');
+        $doctorId = $request->get('userId');
+
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId( $appointmentId);
+        if ($getAppointmentData != null) {
+            return response()->json(['data' => $getAppointmentData, 'message' => 'Appointment fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 200);
+        }
+    }
 }
