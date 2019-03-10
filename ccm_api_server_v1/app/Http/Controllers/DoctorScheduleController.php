@@ -942,8 +942,8 @@ class DoctorScheduleController extends Controller
 
         $checkInsertedData = GenericModel::insertGenericAndReturnID('appointment', $dataToInsert);
 
-        $emailMessageForPatient = "Your appointment has been scheduled successfully";
-        $emailMessageForDoctor = "One of your patient has booked an appointment";
+        $emailMessageForPatient = "Dear Patient, Your appointment request is submitted successfully";
+        $emailMessageForDoctor = "Dear Doctor, Your patient has request an appointment. View details from the following link";
 
         error_log('Check updated data ' . $checkInsertedData);
         if ($checkInsertedData == true) {
@@ -965,7 +965,7 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Your appointment has been scheduled successfully', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
                 }
                 UserModel::sendEmail($DoctorData[0]->EmailAddress, $emailMessageForDoctor, null);
 
@@ -976,14 +976,13 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'One of your patient has booked an appointment', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
                 }
-
-                return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment successfully created'], 200);
+                return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment request successfully created'], 200);
             }
         } else {
             DB::rollBack();
-            return response()->json(['data' => null, 'message' => 'Error in scheduling doctor'], 400);
+            return response()->json(['data' => null, 'message' => 'Error in creating Appointment request'], 400);
         }
     }
 
@@ -1148,7 +1147,7 @@ class DoctorScheduleController extends Controller
     //function will update the appointment held status
     //to cancel, against the provided appointmentId
     //appointment can be cancelled by doctor or patient
-    function markAppointmentCancel(Request $request)
+    function MarkAppointmentCancel(Request $request)
     {
         error_log('in controller');
         error_log('in mark appointment cancel function');
@@ -1195,6 +1194,28 @@ class DoctorScheduleController extends Controller
         } else {
             DB::commit();
             return response()->json(['data' => $appointmentId, 'message' => 'Appointment successfully cancelled'], 200);
+        }
+    }
+
+    //function to get associated doctor
+    //against the provided patient id
+    function GetPatientAssociatedDoctor(Request $request)
+    {
+        error_log('in controller');
+        error_log('in GetPatientAssociatedDoctor function');
+
+        $patientRole = env('ROLE_PATIENT');
+        $patientId = $request->get('patientId');
+
+        //apply check if provided patient id is
+        //exactly of patient by using role
+
+        $associatedDoctor = DoctorScheduleModel::fetAssociatedDoctor($patientId);
+
+        if ($associatedDoctor != null) {
+            return response()->json(['data' => $associatedDoctor, 'message' => 'Associated Doctor fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'No Associated Doctor for this Patient'], 200);
         }
     }
 }

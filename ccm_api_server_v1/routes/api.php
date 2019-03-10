@@ -103,7 +103,7 @@ Route::get('/appointment/list/count', 'DoctorScheduleController@getDoctorAppoint
 
 Route::post('/appointment/request/status/update', 'DoctorScheduleController@updateAppointmentRequestStatus');
 
-Route::post('/appointment/cancel/', 'DoctorScheduleController@markAppointmentCancel');
+Route::post('/appointment/cancel/', 'DoctorScheduleController@MarkAppointmentCancel');
 
 Route::get('/', function () {
     return 'Hello';
@@ -126,6 +126,9 @@ Route::post('/invite/update', 'ServicesController@inviteUpdate');
 
 //?doctorScheduleDetailId=1
 Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
+
+//temp api
+Route::get('/patient/associated/doctor', 'DoctorScheduleController@GetPatientAssociatedDoctor');
 
 
 

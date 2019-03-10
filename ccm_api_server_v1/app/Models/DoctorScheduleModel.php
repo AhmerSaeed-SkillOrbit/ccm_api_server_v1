@@ -285,4 +285,17 @@ class DoctorScheduleModel
         return $query;
     }
 
+    static public function fetAssociatedDoctor($patientId)
+    {
+        error_log('in model fetAssociatedDoctor');
+
+        $query = DB::table("user_association as ua")
+            ->leftjoin('user as doctor', 'ua.SourceUserId', 'doctor.Id')
+            ->select('doctor.Id AS DoctorId', 'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+                'doctor.FunctionalTitle AS DoctorFunctionalTitle')
+            ->where("ua.DestinationUserId", "=", $patientId)
+            ->first();
+
+        return $query;
+    }
 }
