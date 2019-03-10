@@ -1059,6 +1059,22 @@ class DoctorScheduleController extends Controller
         }
     }
 
+    function getDoctorAppointmentSingleViaId(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $appointmentId = $request->get('appointmentId');
+        $doctorId = $request->get('userId');
+
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($getAppointmentData != null) {
+            return response()->json(['data' => $getAppointmentData, 'message' => 'Appointment fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 200);
+        }
+    }
     //function will update the request status mentioned in post
     //against the provided appointmentId
     function updateAppointmentRequestStatus(Request $request)
@@ -1142,7 +1158,7 @@ class DoctorScheduleController extends Controller
         //after checks update the status
         $dataToUpdate = array(
             "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
-         //   "AppointmentStatus" => $appointmentCancelledByPatientStatus,
+            //   "AppointmentStatus" => $appointmentCancelledByPatientStatus,
             "AppointmentStatusReason" => $reason
         );
 
@@ -1155,6 +1171,5 @@ class DoctorScheduleController extends Controller
             DB::commit();
             return response()->json(['data' => $appointmentId, 'message' => 'Appointment successfully cancelled'], 200);
         }
-
     }
 }
