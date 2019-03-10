@@ -971,7 +971,7 @@ class DoctorScheduleController extends Controller
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         $doctorId = $request->get('userId');
-
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
 
@@ -999,7 +999,7 @@ class DoctorScheduleController extends Controller
                         array_push($patientIds, $item->DestinationUserId);
                     }
 
-                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $patientIds, $pageNo, $limit);
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId,$reqStatus, $patientIds, $pageNo, $limit);
                     if (count($getAppointmentData) > 0) {
                         return response()->json(['data' => $getAppointmentData, 'message' => 'Appointments fetched successfully'], 200);
                     } else {
@@ -1023,7 +1023,7 @@ class DoctorScheduleController extends Controller
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         $doctorId = $request->get('userId');
-
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
         $patientIds = array();
 
 
@@ -1048,7 +1048,7 @@ class DoctorScheduleController extends Controller
                         array_push($patientIds, $item->DestinationUserId);
                     }
 
-                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $patientIds);
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus,$patientIds);
                     return response()->json(['data' => $getAppointmentData, 'message' => 'Total Count'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
