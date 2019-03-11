@@ -326,9 +326,11 @@ class DoctorScheduleController extends Controller
         //Now making data for doctor schedule detail
 
         $doctorScheduleDetailData = array();
-        $doctorScheduleShiftData = array();
+
+        $outerCounter = 0;
 
         foreach ($scheduleDetail as $item) {
+            error_log('$outerCounter = ' . $outerCounter = $outerCounter + 1);
             if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
 
                 $doctorScheduleDetailData = array(
@@ -343,38 +345,40 @@ class DoctorScheduleController extends Controller
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
             }
-            $checkInsertedData = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
-            error_log('$checkInsertedData of doctor schedule detail' . $checkInsertedData);
-            if ($checkInsertedData == false) {
+            $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
+            error_log('$checkInsertedData of doctor schedule detail' . $getInsertedDataId);
+            if ($getInsertedDataId == 0) {
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
             }
-            foreach ($item['ScheduleShift'] as $scheduleShift) {
+            if (count($item['ScheduleShift']) > 0 || $item['ScheduleShift'] != []) {
+                $InnerCounter = 0;
+                error_log('Schedule shift is greater than 0 ');
 
-                error_log('$scheduleShift[\'StartTime\'] is : ' . $scheduleShift['StartTime']);
-                error_log('$scheduleShift[\'EndTime\'] is : ' . $scheduleShift['EndTime']);
+                foreach ($item['ScheduleShift'] as $scheduleShift) {
 
-//                if ($scheduleShift['StartTime'] > $scheduleShift['EndTime']) {
-//                    DB::rollBack();
-//                    return response()->json(['data' => null, 'message' => 'Start time should not exceed end time'], 400);
-//                }
-                array_push
-                (
-                    $doctorScheduleShiftData,
-                    array(
-                        "DoctorScheduleDetailId" => $checkInsertedData,
-                        "StartTime" => $scheduleShift['StartTime'],
-                        "EndTime" => $scheduleShift['EndTime'],
-                        "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
-                        "IsActive" => true
-                    )
-                );
-            }
+                    error_log('$InnerCounter = ' . $InnerCounter = $InnerCounter + 1);
+                    error_log('======================');
 
-            $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
-            if ($checkInsertedData == false) {
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    $doctorScheduleShiftData =
+                        array(
+                            "DoctorScheduleDetailId" => $getInsertedDataId,
+                            "StartTime" => $scheduleShift['StartTime'],
+                            "EndTime" => $scheduleShift['EndTime'],
+                            "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
+                            "IsActive" => true
+                        );
+
+                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+
+                    error_log('$checkInsertedData  = ' . $checkInsertedData);
+                    error_log('=========================');
+
+                    if ($checkInsertedData == false) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    }
+                }
             }
         }
 
@@ -652,7 +656,6 @@ class DoctorScheduleController extends Controller
         if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
             //Now check if logged in patient is associated with given doctor id or not
             $checkAssociatedPatient = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorPatientAssociation, $loggedInUserId);
-         //   error_log('$checkAssociatedPatient ' . $checkAssociatedPatient);
             if ($checkAssociatedPatient == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
             }
@@ -904,6 +907,29 @@ class DoctorScheduleController extends Controller
             //Now check if it is booked or not
             if ($shiftTimeSlotData->IsBooked == true) {
                 return response()->json(['data' => null, 'message' => 'This time slot is already booked'], 400);
+            } else {
+                //Now get the shceudle date with respect to schedule shift id
+                $getScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaId($request->post('DoctorScheduleShiftId'));
+                if ($getScheduleDate == null) {
+                    error_log('schedule date not found');
+                    return response()->json(['data' => null, 'message' => 'Schedule date not found'], 400);
+                } else {
+                    error_log('schedule date found ' . $getScheduleDate->ScheduleDate);
+                    //Now get check if particular patient has already taken appointment on this schedule date
+                    $getPatientsScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaPatientId($patientId);
+
+                    if (count($getPatientsScheduleDate) > 0) {
+                        error_log('patient appointment schedule date found ' . $getPatientsScheduleDate);
+                        //We have now got the patient schedule date
+                        //Now compare that schedule with the date which we got earlier via schedule shift id
+                        foreach ($getPatientsScheduleDate as $item) {
+                            if ($item->ScheduleDate == $getScheduleDate->ScheduleDate) {
+                                error_log('One of the date is equal to the appointment date which patient has already taken');
+                                return response()->json(['data' => null, 'message' => 'You have already taken an appointment on this date'], 400);
+                            }
+                        }
+                    }
+                }
             }
         } else {
             return response()->json(['data' => null, 'message' => 'Invalid time slot'], 400);
