@@ -256,8 +256,9 @@ class DoctorScheduleModel
             ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
-            ->select('appointment.*', 'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName',
-                'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+            ->select('appointment.*', 'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
+                'patient.MobileNumber AS PatientMobileNumber',
+                'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName', 'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
                 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
             ->where("appointment.IsActive", "=", true)
             ->where('appointment.Id', '=', $appointmentId)
