@@ -1011,7 +1011,7 @@ class DoctorScheduleController extends Controller
         }
     }
 
-    function getDoctorAppointmentListViaPagination(Request $request)
+    function getDoctorAppointmentListViaPagination_OLD(Request $request)
     {
         error_log('in controller');
 
@@ -1063,7 +1063,51 @@ class DoctorScheduleController extends Controller
         }
     }
 
-    function getDoctorAppointmentListCount(Request $request)
+    function getDoctorAppointmentListViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $patientRole = env('ROLE_PATIENT');
+
+        $loggedInUserId = $request->get('userId');
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+
+
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) > 0) {
+            error_log('user data fetched');
+            if ($loggedInUserData[0]->RoleCodeName == $doctorRole) {
+                error_log('login user is doctor');
+                //Now check if logged in user is doctor or not
+                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentViaDoctorId($loggedInUserId, $reqStatus, $pageNo, $limit);
+                if (count($getAppointmentListForDoctor) > 0) {
+                    return response()->json(['data' => $getAppointmentListForDoctor, 'message' => 'Appointments found'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'appointment not found'], 200);
+                }
+            } else if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
+                error_log('login user is patient');
+                //Now check if logged in user is patient or not
+                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentViaPatientId($loggedInUserId, $reqStatus, $pageNo, $limit);
+                if (count($getAppointmentListForPatient) > 0) {
+                    return response()->json(['data' => $getAppointmentListForPatient, 'message' => 'Appointments found'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'appointment not found'], 200);
+                }
+            } else {
+                error_log('login user is neither doctor or patient');
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor or patient'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
+
+    function getDoctorAppointmentListCount_OLD(Request $request)
     {
         error_log('in controller');
 
@@ -1102,6 +1146,40 @@ class DoctorScheduleController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
                 }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
+
+    function getDoctorAppointmentListCount(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $patientRole = env('ROLE_PATIENT');
+
+        $loggedInUserId = $request->get('userId');
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+
+
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) > 0) {
+            error_log('user data fetched');
+            if ($loggedInUserData[0]->RoleCodeName == $doctorRole) {
+                error_log('login user is doctor');
+                //Now check if logged in user is doctor or not
+                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentCountViaDoctorId($loggedInUserId, $reqStatus);
+                return response()->json(['data' => $getAppointmentListForDoctor, 'message' => 'Total count'], 200);
+            } else if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
+                error_log('login user is patient');
+                //Now check if logged in user is patient or not
+                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentCountViaPatientId($loggedInUserId, $reqStatus);
+                return response()->json(['data' => $getAppointmentListForPatient, 'message' => 'Total count'], 200);
+            } else {
+                error_log('login user is neither doctor or patient');
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor or patient'], 400);
             }
         } else {
             return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
