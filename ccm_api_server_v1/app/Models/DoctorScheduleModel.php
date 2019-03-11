@@ -270,16 +270,12 @@ class DoctorScheduleModel
     {
         error_log('in model');
 
+
         $query = DB::table("appointment")
-            ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
-            ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
-            ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
             ->where("appointment.IsActive", "=", true)
             ->where("appointment.DoctorId", "=", $doctorId)
             ->where("appointment.RequestStatus", "=", $reqStatus)
             ->whereIn("appointment.PatientId", $patientIds)
-            ->groupBy('appointment.Id')
             ->count();
 
         return $query;
@@ -294,6 +290,20 @@ class DoctorScheduleModel
             ->select('doctor.Id AS DoctorId', 'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
                 'doctor.FunctionalTitle AS DoctorFunctionalTitle')
             ->where("ua.DestinationUserId", "=", $patientId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleShiftDataViaId($doctorScheduleShiftId)
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift as dcf")
+            ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleData'))
+            ->where("Id", "=", $doctorScheduleShiftId)
+            ->where("IsActive", "=", true)
             ->first();
 
         return $query;
