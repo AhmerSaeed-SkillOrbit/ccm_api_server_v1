@@ -1151,22 +1151,52 @@ class DoctorScheduleController extends Controller
         //if rStatus = pending not allow to update status as pending
         //status is a default status
 
-        //after checks update the status
-        $dataToUpdate = array(
-            "RequestStatus" => $reqStatus,
-            "RequestStatusReason" => $reason
-        );
+//        First checking if appointment exists or not
 
-        DB::beginTransaction();
-        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
-        if ($update <= 0) {
-            DB::rollBack();
-            return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
+        $emailMessageForPatient = "Dear Patient, Your appointment request has been " . $reqStatus . '.';
+        $emailMessageForDoctor = "Dear Doctor, You have " . $reqStatus . " your patient appointment request. View details from the following link";
+
+        $checkAppointment = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($checkAppointment == null) {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 400);
         } else {
-            DB::commit();
-            return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
-        }
+            //after checks update the status
+            $dataToUpdate = array(
+                "RequestStatus" => $reqStatus,
+                "RequestStatusReason" => $reason
+            );
+            DB::beginTransaction();
+            $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+            if ($update <= 0) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
+            } else {
+                DB::commit();
 
+                UserModel::sendEmail($checkAppointment->PatientEmailAddress, $emailMessageForPatient, null);
+                //Now sending sms to patient
+                if ($checkAppointment->PatientMobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $checkAppointment->PatientMobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
+                }
+                UserModel::sendEmail($checkAppointment->DoctorEmailAddress, $emailMessageForDoctor, null);
+
+                //Now sending sms to doctor
+                if ($checkAppointment->DoctorMobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $checkAppointment->DoctorMobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
+                }
+                return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
+            }
+        }
     }
 
     //function will update the appointment held status
