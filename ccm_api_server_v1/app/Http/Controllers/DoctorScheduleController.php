@@ -326,9 +326,11 @@ class DoctorScheduleController extends Controller
         //Now making data for doctor schedule detail
 
         $doctorScheduleDetailData = array();
-        $doctorScheduleShiftData = array();
+
+        $outerCounter = 0;
 
         foreach ($scheduleDetail as $item) {
+            error_log('$outerCounter = ' . $outerCounter = $outerCounter + 1);
             if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
 
                 $doctorScheduleDetailData = array(
@@ -343,38 +345,40 @@ class DoctorScheduleController extends Controller
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
             }
-            $checkInsertedData = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
-            error_log('$checkInsertedData of doctor schedule detail' . $checkInsertedData);
-            if ($checkInsertedData == false) {
+            $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
+            error_log('$checkInsertedData of doctor schedule detail' . $getInsertedDataId);
+            if ($getInsertedDataId == 0) {
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
             }
-            foreach ($item['ScheduleShift'] as $scheduleShift) {
+            if (count($item['ScheduleShift']) > 0 || $item['ScheduleShift'] != []) {
+                $InnerCounter = 0;
+                error_log('Schedule shift is greater than 0 ');
 
-                error_log('$scheduleShift[\'StartTime\'] is : ' . $scheduleShift['StartTime']);
-                error_log('$scheduleShift[\'EndTime\'] is : ' . $scheduleShift['EndTime']);
+                foreach ($item['ScheduleShift'] as $scheduleShift) {
 
-//                if ($scheduleShift['StartTime'] > $scheduleShift['EndTime']) {
-//                    DB::rollBack();
-//                    return response()->json(['data' => null, 'message' => 'Start time should not exceed end time'], 400);
-//                }
-                array_push
-                (
-                    $doctorScheduleShiftData,
-                    array(
-                        "DoctorScheduleDetailId" => $checkInsertedData,
-                        "StartTime" => $scheduleShift['StartTime'],
-                        "EndTime" => $scheduleShift['EndTime'],
-                        "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
-                        "IsActive" => true
-                    )
-                );
-            }
+                    error_log('$InnerCounter = ' . $InnerCounter = $InnerCounter + 1);
+                    error_log('======================');
 
-            $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
-            if ($checkInsertedData == false) {
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    $doctorScheduleShiftData =
+                        array(
+                            "DoctorScheduleDetailId" => $getInsertedDataId,
+                            "StartTime" => $scheduleShift['StartTime'],
+                            "EndTime" => $scheduleShift['EndTime'],
+                            "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
+                            "IsActive" => true
+                        );
+
+                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+
+                    error_log('$checkInsertedData  = ' . $checkInsertedData);
+                    error_log('=========================');
+
+                    if ($checkInsertedData == false) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    }
+                }
             }
         }
 
