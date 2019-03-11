@@ -1213,6 +1213,10 @@ class DoctorScheduleController extends Controller
         $appointmentCancelledByPatientStatus = env('APPOINTMENT_CANCELLED_BY_PATIENT');
         $appointmentCancelledByDoctorStatus = env('APPOINTMENT_CANCELLED_BY_DOCTOR');
 
+        $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
+
+        $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
+
         $appointmentId = $request->get('aId');//refers to appointmentId
         $userId = $request->get('userId');//refers to logged in userId can be patient or doctor
         $reason = $request->post('reason'); //refers to cancellation reason
@@ -1220,12 +1224,27 @@ class DoctorScheduleController extends Controller
         //first apply following check
         //appointment id should belong to logged in user
 
-        //if appointment is already completed
-        //it cannot be cancelled
 
-        //if appointment request is already rejected
-        //it cannot be cancelled
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($getAppointmentData == null) {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 400);
+        } else {
 
+            //if appointment is already completed
+            //it cannot be cancelled
+
+            //if appointment request is already rejected
+            //it cannot be cancelled
+
+            if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
+                error_log('patient has already rejected');
+                return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+            }
+            if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                error_log('patient has already accepted');
+                return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it has already accepted'], 400);
+            }
+        }
         //for patient appointment can only be
         //cancel before 48 hours of scheduled appointment
         //fetch this from .env
@@ -1234,12 +1253,30 @@ class DoctorScheduleController extends Controller
         //cancel before 24 hours of scheduled appointment
         //fetch this from .env
 
-        //after checks update the status
-        $dataToUpdate = array(
-            "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
-            //   "AppointmentStatus" => $appointmentCancelledByPatientStatus,
-            "AppointmentStatusReason" => $reason
-        );
+        $userData = UserModel::GetSingleUserViaId($userId);
+
+        if (count($userData) > 0) {
+            if ($userData[0]->RoleCodeName == $patientRoleCode) {
+                error_log('Role is patient');
+
+                //after checks update the status
+                $dataToUpdate = array(
+                    "AppointmentStatus" => $appointmentCancelledByPatientStatus,
+                    "AppointmentStatusReason" => $reason
+                );
+            } else if ($userData[0]->RoleCodeName == $doctorRoleCode) {
+                error_log('Role is doctor');
+                $dataToUpdate = array(
+                    "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
+                    "AppointmentStatusReason" => $reason
+                );
+            } else {
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor or patient'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'User record not found'], 400);
+        }
+
 
         DB::beginTransaction();
         $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
