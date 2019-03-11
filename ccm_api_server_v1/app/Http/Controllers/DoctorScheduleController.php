@@ -903,6 +903,29 @@ class DoctorScheduleController extends Controller
             //Now check if it is booked or not
             if ($shiftTimeSlotData->IsBooked == true) {
                 return response()->json(['data' => null, 'message' => 'This time slot is already booked'], 400);
+            } else {
+                //Now get the shceudle date with respect to schedule shift id
+                $getScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaId($request->post('DoctorScheduleShiftId'));
+                if ($getScheduleDate == null) {
+                    error_log('schedule date not found');
+                    return response()->json(['data' => null, 'message' => 'Schedule date not found'], 400);
+                } else {
+                    error_log('schedule date found ' . $getScheduleDate->ScheduleDate);
+                    //Now get check if particular patient has already taken appointment on this schedule date
+                    $getPatientsScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaPatientId($patientId);
+
+                    if (count($getPatientsScheduleDate) > 0) {
+                        error_log('patient appointment schedule date found ' . $getPatientsScheduleDate);
+                        //We have now got the patient schedule date
+                        //Now compare that schedule with the date which we got earlier via schedule shift id
+                        foreach ($getPatientsScheduleDate as $item) {
+                            if ($item->ScheduleDate == $getScheduleDate->ScheduleDate) {
+                                error_log('One of the date is equal to the appointment date which patient has already taken');
+                                return response()->json(['data' => null, 'message' => 'You have already taken an appointment on this date'], 400);
+                            }
+                        }
+                    }
+                }
             }
         } else {
             return response()->json(['data' => null, 'message' => 'Invalid time slot'], 400);

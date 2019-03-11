@@ -301,10 +301,28 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dcf")
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
-            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleData'))
-            ->where("Id", "=", $doctorScheduleShiftId)
-            ->where("IsActive", "=", true)
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+            ->where("dcf.Id", "=", $doctorScheduleShiftId)
+            ->where("dcf.IsActive", "=", true)
             ->first();
+
+        return $query;
+    }
+
+    //Function to check if patient has already taken an appointment on the same date
+
+    static public function getDoctorScheduleShiftDataViaPatientId($patientId)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment as app")
+            ->leftjoin('doctor_schedule_shift as dcf', 'app.DoctorScheduleShiftId', 'dcf.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+            ->where("app.PatientId", "=", $patientId)
+            ->where("app.RequestStatus", "!=", "rejected")
+            ->where("app.IsActive", "=", true)
+            ->get();
 
         return $query;
     }
