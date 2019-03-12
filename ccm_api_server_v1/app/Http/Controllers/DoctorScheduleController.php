@@ -1217,63 +1217,116 @@ class DoctorScheduleController extends Controller
         $reqStatus = $request->post('rStatus'); //means 'accepted || rejected'
         $reason = $request->post('reason'); //refers to reject reason
 
-        //first apply following check
-        //appointment id should belong to logged in user
+        $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
+        $appointmentRequestPending = env('APPOINTMENT_PENDING_REQUEST_STATUS');
 
-        //if rStatus = accepted
-        //if already rejected or pending do not update to accepted
+        $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
 
-        //if rStatus = rejected
-        //if already accepted or pending do not update to rejected
+        $userData = UserModel::GetSingleUserViaId($doctorId);
 
-        //if rStatus = pending not allow to update status as pending
-        //status is a default status
+        if (count($userData) > 0) {
+            if ($userData[0]->RoleCodeName != $doctorRole) {
+                error_log('Role is NOT doctor');
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor'], 400);
+            } else {
+
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'User record not found'], 400);
+        }
 
 //        First checking if appointment exists or not
 
         $emailMessageForPatient = "Dear Patient, Your appointment request has been " . $reqStatus . '.';
         $emailMessageForDoctor = "Dear Doctor, You have " . $reqStatus . " your patient appointment request. View details from the following link";
 
-        $checkAppointment = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
-        if ($checkAppointment == null) {
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($getAppointmentData == null) {
             return response()->json(['data' => null, 'message' => 'Appointment not found'], 400);
         } else {
-            //after checks update the status
-            $dataToUpdate = array(
-                "RequestStatus" => $reqStatus,
-                "RequestStatusReason" => $reason
-            );
-            DB::beginTransaction();
-            $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
-            if ($update <= 0) {
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
-            } else {
-                DB::commit();
 
-                UserModel::sendEmail($checkAppointment->PatientEmailAddress, $emailMessageForPatient, null);
-                //Now sending sms to patient
-                if ($checkAppointment->PatientMobileNumber != null) {
-                    $url = env('WEB_URL') . '/#/';
-                    $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $checkAppointment->PatientMobileNumber;
-                    array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
-                }
-                UserModel::sendEmail($checkAppointment->DoctorEmailAddress, $emailMessageForDoctor, null);
+            //Check if this appointment belongs to logged in doctor or not
 
-                //Now sending sms to doctor
-                if ($checkAppointment->DoctorMobileNumber != null) {
-                    $url = env('WEB_URL') . '/#/';
-                    $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $checkAppointment->DoctorMobileNumber;
-                    array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
-                }
-                return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
+            if ($getAppointmentData->DoctorId != $doctorId) {
+                return response()->json(['data' => null, 'message' => 'This appointment does not belong to logged in doctor'], 400);
             }
+
+            //if rStatus = accepted
+            //if already rejected or pending do not update to accepted
+
+            if ($reqStatus == 'accepted') {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestRejected || $getAppointmentData->RequestStatus == $appointmentRequestPending) {
+                    error_log('patient has already rejected or request is in pending');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
+                } else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                    error_log('patient has already accepted');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
+                }
+            }
+
+            //if rStatus = rejected
+            //if already accepted or pending do not update to rejected
+
+            else if ($reqStatus == 'rejected') {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestPending) {
+                    error_log('patient has already in pending');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
+                } else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                    error_log('patient has already accepted');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
+                } else if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
+                    error_log('patient has already rejected or request is in pending');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+                }
+            }
+
+            //if rStatus = pending not allow to update status as pending
+            //status is a default status
+
+            else if ($reqStatus == 'pending') {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestPending) {
+                    error_log('patient has already rejected');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+                }
+            }
+
+        }
+        error_log('all checks clear');
+        //after checks update the status
+        $dataToUpdate = array(
+            "RequestStatus" => $reqStatus,
+            "RequestStatusReason" => $reason
+        );
+        DB::beginTransaction();
+        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+        if ($update <= 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
+        } else {
+            DB::commit();
+
+            UserModel::sendEmail($getAppointmentData->PatientEmailAddress, $emailMessageForPatient, null);
+            //Now sending sms to patient
+            if ($getAppointmentData->PatientMobileNumber != null) {
+                $url = env('WEB_URL') . '/#/';
+                $toNumber = array();
+                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                $mobileNumber = $phoneCode . $getAppointmentData->PatientMobileNumber;
+                array_push($toNumber, $mobileNumber);
+                HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
+            }
+            UserModel::sendEmail($getAppointmentData->DoctorEmailAddress, $emailMessageForDoctor, null);
+
+            //Now sending sms to doctor
+            if ($getAppointmentData->DoctorMobileNumber != null) {
+                $url = env('WEB_URL') . '/#/';
+                $toNumber = array();
+                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                $mobileNumber = $phoneCode . $getAppointmentData->DoctorMobileNumber;
+                array_push($toNumber, $mobileNumber);
+                HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
+            }
+            return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
         }
     }
 
@@ -1308,9 +1361,6 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'Appointment not found'], 400);
         } else {
 
-            //if appointment is already completed
-            //it cannot be cancelled
-
             //if appointment request is already rejected
             //it cannot be cancelled
 
@@ -1318,7 +1368,10 @@ class DoctorScheduleController extends Controller
                 error_log('patient has already rejected');
                 return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
             }
-            if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+
+            //if appointment is already completed
+            //it cannot be cancelled
+            else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
                 error_log('patient has already accepted');
                 return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it has already accepted'], 400);
             }
