@@ -1219,6 +1219,7 @@ class DoctorScheduleController extends Controller
 
         $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
         $appointmentRequestPending = env('APPOINTMENT_PENDING_REQUEST_STATUS');
+        $appointmentRequestAccepted = env('APPOINTMENT_REJECTED_ACCEPTED_STATUS');
 
         $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
 
@@ -1258,7 +1259,7 @@ class DoctorScheduleController extends Controller
                 if ($getAppointmentData->RequestStatus == $appointmentRequestRejected || $getAppointmentData->RequestStatus == $appointmentRequestPending) {
                     error_log('patient has already rejected or request is in pending');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
-                } else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
                     error_log('patient has already accepted');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 }
@@ -1271,11 +1272,11 @@ class DoctorScheduleController extends Controller
                 if ($getAppointmentData->RequestStatus == $appointmentRequestPending) {
                     error_log('patient has already in pending');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
-                } else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
                     error_log('patient has already accepted');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 } else if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
-                    error_log('patient has already rejected or request is in pending');
+                    error_log('patient has already rejected');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
                 }
             }
@@ -1345,6 +1346,7 @@ class DoctorScheduleController extends Controller
         $appointmentCancelledByDoctorStatus = env('APPOINTMENT_CANCELLED_BY_DOCTOR');
 
         $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
+        $appointmentRequestAccepted = env('APPOINTMENT_REJECTED_ACCEPTED_STATUS');
 
         $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
 
@@ -1371,7 +1373,8 @@ class DoctorScheduleController extends Controller
 
             //if appointment is already completed
             //it cannot be cancelled
-            else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+
+            else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted && $getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
                 error_log('patient has already accepted');
                 return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it has already accepted'], 400);
             }
