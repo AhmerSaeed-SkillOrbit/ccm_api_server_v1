@@ -130,7 +130,7 @@ Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@U
 //temp api
 Route::get('/patient/associated/doctor', 'DoctorScheduleController@GetPatientAssociatedDoctor');
 
-Route::get('/add/time/slot', 'DoctorScheduleController@GetPatientAssociatedDoctor');
+Route::get('/add/time/slot', 'DoctorScheduleController@AddTimeSlotDynamically');
 
 
 
