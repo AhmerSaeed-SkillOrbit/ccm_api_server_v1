@@ -135,8 +135,8 @@ class DoctorScheduleModel
         error_log('in model');
 
         $query = DB::table("doctor_schedule_shift")
-            ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
+            ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i") as EndTime', 'NoOfPatientAllowed'))
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -458,6 +458,18 @@ class DoctorScheduleModel
             ->where("app.RequestStatus", "!=", "rejected")
             ->where("app.IsActive", "=", true)
             ->get();
+
+        return $query;
+    }
+
+    static public function getTimeSlotTemp()
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift as dsf")
+            ->select("dsf.StartTime", 'dsf.EndTime')
+            ->where("dsf.Id", "=", 2760)
+            ->first();
 
         return $query;
     }
