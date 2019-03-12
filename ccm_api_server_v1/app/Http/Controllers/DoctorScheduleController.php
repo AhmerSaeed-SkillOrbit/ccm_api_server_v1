@@ -20,6 +20,7 @@ use App\Models\GenericModel;
 use App\Models\DoctorScheduleModel;
 use App\Models\HelperModel;
 use Carbon\Carbon;
+use phpDocumentor\Reflection\Types\Array_;
 
 
 class DoctorScheduleController extends Controller
@@ -266,6 +267,7 @@ class DoctorScheduleController extends Controller
     function AddDoctorScheduleUpdatedCode(Request $request)
     {
         $doctorRole = env('ROLE_DOCTOR');
+        $timeSlot = Array();
 
         $doctorId = $request->get('doctorId');
         $scheduleDetail = $request->ScheduleDetail;
@@ -360,14 +362,13 @@ class DoctorScheduleController extends Controller
                     error_log('$InnerCounter = ' . $InnerCounter = $InnerCounter + 1);
                     error_log('======================');
 
-                    $doctorScheduleShiftData =
-                        array(
-                            "DoctorScheduleDetailId" => $getInsertedDataId,
-                            "StartTime" => $scheduleShift['StartTime'],
-                            "EndTime" => $scheduleShift['EndTime'],
-                            "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
-                            "IsActive" => true
-                        );
+                    $doctorScheduleShiftData = array(
+                        "DoctorScheduleDetailId" => $getInsertedDataId,
+                        "StartTime" => $scheduleShift['StartTime'],
+                        "EndTime" => $scheduleShift['EndTime'],
+                        "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
+                        "IsActive" => true
+                    );
 
                     $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
 
@@ -378,6 +379,17 @@ class DoctorScheduleController extends Controller
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
                     }
+//                    else {
+//                        //insert calcuated time-slot
+//                        if ($scheduleShift['StartTime'] != null) {
+//
+//                            $endTimeSlot = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
+//
+//
+//
+//                            array_push($endTimeSlot);
+//                        }
+//                    }
                 }
             }
         }
