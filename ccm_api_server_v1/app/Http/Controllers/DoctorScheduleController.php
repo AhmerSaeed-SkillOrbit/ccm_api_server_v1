@@ -1072,6 +1072,7 @@ class DoctorScheduleController extends Controller
 
         $loggedInUserId = $request->get('userId');
         $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+        $searchKeyword = $request->get('search');
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
 
@@ -1083,7 +1084,7 @@ class DoctorScheduleController extends Controller
             if ($loggedInUserData[0]->RoleCodeName == $doctorRole) {
                 error_log('login user is doctor');
                 //Now check if logged in user is doctor or not
-                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentViaDoctorId($loggedInUserId, $reqStatus, $pageNo, $limit);
+                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentViaDoctorId($loggedInUserId, $searchKeyword, $reqStatus, $pageNo, $limit);
                 if (count($getAppointmentListForDoctor) > 0) {
                     return response()->json(['data' => $getAppointmentListForDoctor, 'message' => 'Appointments found'], 200);
                 } else {
@@ -1092,7 +1093,7 @@ class DoctorScheduleController extends Controller
             } else if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
                 error_log('login user is patient');
                 //Now check if logged in user is patient or not
-                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentViaPatientId($loggedInUserId, $reqStatus, $pageNo, $limit);
+                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentViaPatientId($loggedInUserId, $searchKeyword, $reqStatus, $pageNo, $limit);
                 if (count($getAppointmentListForPatient) > 0) {
                     return response()->json(['data' => $getAppointmentListForPatient, 'message' => 'Appointments found'], 200);
                 } else {
@@ -1160,6 +1161,7 @@ class DoctorScheduleController extends Controller
         $patientRole = env('ROLE_PATIENT');
 
         $loggedInUserId = $request->get('userId');
+        $searchKeyword = $request->get('search');
         $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
 
 
