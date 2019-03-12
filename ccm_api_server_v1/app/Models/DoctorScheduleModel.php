@@ -384,7 +384,8 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dcf")
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
-            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+//            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "YYYY-MM-DD") as ScheduleDate'))
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', 'dcdc.ScheduleDate as ScheduleDate')
             ->where("dcf.Id", "=", $doctorScheduleShiftId)
             ->where("dcf.IsActive", "=", true)
             ->first();
@@ -401,7 +402,8 @@ class DoctorScheduleModel
         $query = DB::table("appointment as app")
             ->leftjoin('doctor_schedule_shift as dcf', 'app.DoctorScheduleShiftId', 'dcf.Id')
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
-            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+//            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "YYYY-MM-DD") as ScheduleDate'))
+            ->select('dcdc.Id', 'DoctorScheduleDetailId', 'dcdc.ScheduleDate as ScheduleDate')
             ->where("app.PatientId", "=", $patientId)
             ->where("app.RequestStatus", "!=", "rejected")
             ->where("app.IsActive", "=", true)

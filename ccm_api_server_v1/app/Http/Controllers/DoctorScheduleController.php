@@ -910,6 +910,10 @@ class DoctorScheduleController extends Controller
             } else {
                 //Now get the shceudle date with respect to schedule shift id
                 $getScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaId($request->post('DoctorScheduleShiftId'));
+
+                error_log('$getScheduleDate');
+                error_log($getScheduleDate->ScheduleDate);
+
                 if ($getScheduleDate == null) {
                     error_log('schedule date not found');
                     return response()->json(['data' => null, 'message' => 'Schedule date not found'], 400);
@@ -923,6 +927,10 @@ class DoctorScheduleController extends Controller
                         //We have now got the patient schedule date
                         //Now compare that schedule with the date which we got earlier via schedule shift id
                         foreach ($getPatientsScheduleDate as $item) {
+
+                            error_log('$item');
+                            error_log($item->ScheduleDate);
+
                             if ($item->ScheduleDate == $getScheduleDate->ScheduleDate) {
                                 error_log('One of the date is equal to the appointment date which patient has already taken');
                                 return response()->json(['data' => null, 'message' => 'You have already taken an appointment on this date'], 400);
