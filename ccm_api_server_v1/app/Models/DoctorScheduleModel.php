@@ -136,7 +136,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -150,7 +150,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -185,4 +185,146 @@ class DoctorScheduleModel
         return $query;
     }
 
+    static public function getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId)
+    {
+        error_log('in model');
+
+        $query = DB::table("shift_time_slot")
+            ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
+            ->where("DoctorScheduleShiftId", "=", $doctorScheduleShiftId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getLastAppointment()
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->select('AppointmentNumber')
+            ->where("IsActive", "=", true)
+            ->orderBy('Id', 'desc')
+            ->first();
+
+        return $query;
+    }
+
+    static public function getShiftSlotViaId($shiftSlotId)
+    {
+        error_log('in model');
+
+        $query = DB::table("shift_time_slot")
+            ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
+            ->where("Id", "=", $shiftSlotId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds, $pageNo, $limit)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+            ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->select('appointment.Id', 'appointment.AppointmentNumber', 'patient.FirstName AS PatientFirstName',
+                'patient.LastName AS PatientLastName', 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+            ->where("appointment.IsActive", "=", true)
+            ->where("appointment.DoctorId", "=", $doctorId)
+            ->where("appointment.RequestStatus", "=", $reqStatus)
+            ->whereIn("appointment.PatientId", $patientIds)
+            ->orderBy('appointment.Id', 'desc')
+            ->groupBy('appointment.Id')
+            ->skip($pageNo * $limit)
+            ->take($limit)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getSingleAppointmentViaId($appointmentId)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment")
+            ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+            ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+            ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->select('appointment.*', 'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
+                'patient.MobileNumber AS PatientMobileNumber',
+                'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName', 'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
+                'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+            ->where("appointment.IsActive", "=", true)
+            ->where('appointment.Id', '=', $appointmentId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds)
+    {
+        error_log('in model');
+
+
+        $query = DB::table("appointment")
+            ->where("appointment.IsActive", "=", true)
+            ->where("appointment.DoctorId", "=", $doctorId)
+            ->where("appointment.RequestStatus", "=", $reqStatus)
+            ->whereIn("appointment.PatientId", $patientIds)
+            ->count();
+
+        return $query;
+    }
+
+    static public function fetAssociatedDoctor($patientId)
+    {
+        error_log('in model fetAssociatedDoctor');
+
+        $query = DB::table("user_association as ua")
+            ->leftjoin('user as doctor', 'ua.SourceUserId', 'doctor.Id')
+            ->select('doctor.Id AS DoctorId', 'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+                'doctor.FunctionalTitle AS DoctorFunctionalTitle')
+            ->where("ua.DestinationUserId", "=", $patientId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getDoctorScheduleShiftDataViaId($doctorScheduleShiftId)
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift as dcf")
+            ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+            ->where("dcf.Id", "=", $doctorScheduleShiftId)
+            ->where("dcf.IsActive", "=", true)
+            ->first();
+
+        return $query;
+    }
+
+    //Function to check if patient has already taken an appointment on the same date
+
+    static public function getDoctorScheduleShiftDataViaPatientId($patientId)
+    {
+        error_log('in model');
+
+        $query = DB::table("appointment as app")
+            ->leftjoin('doctor_schedule_shift as dcf', 'app.DoctorScheduleShiftId', 'dcf.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+            ->where("app.PatientId", "=", $patientId)
+            ->where("app.RequestStatus", "!=", "rejected")
+            ->where("app.IsActive", "=", true)
+            ->get();
+
+        return $query;
+    }
 }

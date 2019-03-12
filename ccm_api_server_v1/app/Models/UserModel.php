@@ -599,6 +599,7 @@ class UserModel
     {
         error_log('in model');
 
+
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')
             ->join('role', 'user_access.RoleId', 'role.Id')
@@ -838,6 +839,7 @@ class UserModel
             ->select('user.EmailAddress')
             ->where('Id', $userId)
             ->get();
+        return $result;
     }
 
     static public function CheckAssociatedPatientAndFacilitator($doctorId, $associationType, $userId)

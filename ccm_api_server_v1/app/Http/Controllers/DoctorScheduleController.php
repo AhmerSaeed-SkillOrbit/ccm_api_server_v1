@@ -326,9 +326,11 @@ class DoctorScheduleController extends Controller
         //Now making data for doctor schedule detail
 
         $doctorScheduleDetailData = array();
-        $doctorScheduleShiftData = array();
+
+        $outerCounter = 0;
 
         foreach ($scheduleDetail as $item) {
+            error_log('$outerCounter = ' . $outerCounter = $outerCounter + 1);
             if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
 
                 $doctorScheduleDetailData = array(
@@ -343,37 +345,40 @@ class DoctorScheduleController extends Controller
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
             }
-            $checkInsertedData = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
-            error_log('$checkInsertedData of doctor schedule detail' . $checkInsertedData);
-            if ($checkInsertedData == false) {
+            $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
+            error_log('$checkInsertedData of doctor schedule detail' . $getInsertedDataId);
+            if ($getInsertedDataId == 0) {
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
             }
-            foreach ($item['ScheduleShift'] as $scheduleShift) {
+            if (count($item['ScheduleShift']) > 0 || $item['ScheduleShift'] != []) {
+                $InnerCounter = 0;
+                error_log('Schedule shift is greater than 0 ');
 
-                error_log('$scheduleShift[\'StartTime\'] is : ' . $scheduleShift['StartTime']);
-                error_log('$scheduleShift[\'EndTime\'] is : ' . $scheduleShift['EndTime']);
+                foreach ($item['ScheduleShift'] as $scheduleShift) {
 
-//                if ($scheduleShift['StartTime'] > $scheduleShift['EndTime']) {
-//                    DB::rollBack();
-//                    return response()->json(['data' => null, 'message' => 'Start time should not exceed end time'], 400);
-//                }
-                array_push
-                (
-                    $doctorScheduleShiftData,
-                    array(
-                        "DoctorScheduleDetailId" => $checkInsertedData,
-                        "StartTime" => $scheduleShift['StartTime'],
-                        "EndTime" => $scheduleShift['EndTime'],
-                        "IsActive" => true
-                    )
-                );
-            }
+                    error_log('$InnerCounter = ' . $InnerCounter = $InnerCounter + 1);
+                    error_log('======================');
 
-            $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
-            if ($checkInsertedData == false) {
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    $doctorScheduleShiftData =
+                        array(
+                            "DoctorScheduleDetailId" => $getInsertedDataId,
+                            "StartTime" => $scheduleShift['StartTime'],
+                            "EndTime" => $scheduleShift['EndTime'],
+                            "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
+                            "IsActive" => true
+                        );
+
+                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+
+                    error_log('$checkInsertedData  = ' . $checkInsertedData);
+                    error_log('=========================');
+
+                    if ($checkInsertedData == false) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    }
+                }
             }
         }
 
@@ -397,7 +402,7 @@ class DoctorScheduleController extends Controller
         error_log('in controller');
         $doctorRole = env('ROLE_DOCTOR');
 
-        $doctorId = $request->get('userId');    
+        $doctorId = $request->get('userId');
 
         $doctorScheduleDetailId = $request->post('DoctorScheduleDetailId');
         $noOfShift = $request->post('NoOfShift');
@@ -473,6 +478,7 @@ class DoctorScheduleController extends Controller
                                         "DoctorScheduleDetailId" => $doctorScheduleDetailId,
                                         "StartTime" => $item['StartTime'],
                                         "EndTime" => $item['EndTime'],
+                                        "NoOfPatientAllowed" => $item['NoOfPatientAllowed'],
                                         "IsActive" => true
                                     );
 
@@ -650,7 +656,6 @@ class DoctorScheduleController extends Controller
         if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
             //Now check if logged in patient is associated with given doctor id or not
             $checkAssociatedPatient = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorPatientAssociation, $loggedInUserId);
-            error_log('$checkAssociatedPatient ' . $checkAssociatedPatient);
             if ($checkAssociatedPatient == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
             }
@@ -659,7 +664,6 @@ class DoctorScheduleController extends Controller
         if ($loggedInUserData[0]->RoleCodeName == $facilitatorRole) {
             //Now check if logged in patient is associated with given doctor id or not
             $checkAssociatedFacilitator = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorFacilitatorAssociation, $loggedInUserId);
-            error_log('$checkAssociatedFacilitator ' . $checkAssociatedFacilitator);
             if ($checkAssociatedFacilitator == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
             }
@@ -669,10 +673,12 @@ class DoctorScheduleController extends Controller
         $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $month, $year);
 
         if ($getRange == null) {
-            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 400);
+            return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 200);
         }
 
         $doctorScheduleDetail['Id'] = $getRange->Id;
+        $doctorScheduleDetail['FirstName'] = $loggedInUserData[0]->FirstName;
+        $doctorScheduleDetail['LastName'] = $loggedInUserData[0]->LastName;
         $doctorScheduleDetail['StartDate'] = $getRange->StartDate;
         $doctorScheduleDetail['EndDate'] = $getRange->EndDate;
         $doctorScheduleDetail['MonthName'] = $getRange->MonthName;
@@ -821,6 +827,450 @@ class DoctorScheduleController extends Controller
             }
         } else {
             return response()->json(['data' => null, 'message' => 'Schedule date for a doctor should be in between start and end date'], 400);
+        }
+    }
+
+    function GetDoctorScheduleShiftSingleViaId(Request $request)
+    {
+        $doctorScheduleShiftId = $request->get('doctorScheduleShiftId');
+
+        $getDoctorScheduleShiftData = DoctorScheduleModel::getDoctorScheduleShiftViaId($doctorScheduleShiftId);
+
+        if ($getDoctorScheduleShiftData == null) {
+            return response()->json(['data' => null, 'message' => 'Doctor schedule shift not found'], 200);
+        } else {
+            error_log('doctor schedule shift found');
+            //Getting doctor time slots
+            $getDoctorScheduleShiftTimeSlot = DoctorScheduleModel::getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId);
+
+
+            $doctorScheduleShiftData['Id'] = $getDoctorScheduleShiftData->Id;
+            $doctorScheduleShiftData['StartTime'] = $getDoctorScheduleShiftData->StartTime;
+            $doctorScheduleShiftData['EndTime'] = $getDoctorScheduleShiftData->EndTime;
+
+            $doctorScheduleShiftData['TimeSlot'] = $getDoctorScheduleShiftTimeSlot;
+        }
+        return response()->json(['data' => $doctorScheduleShiftData, 'message' => 'Doctor schedule shift found'], 200);
+    }
+
+    function AddAppointment(Request $request)
+    {
+
+        $patientRole = env('ROLE_PATIENT');
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $defaultAppointmentNumber = env('DEFAULT_APPOINTMENT_NUMBER');
+
+        $patientId = $request->get('PatientId');
+        $doctorId = $request->get('DoctorId');
+
+        $appointmentNumber = 0;
+
+
+        $patientData = UserModel::GetSingleUserViaId($patientId);
+
+        //First check if patient id is belonging to dr
+
+        if (count($patientData) > 0) {
+            if ($patientData[0]->RoleCodeName == $patientRole) {
+                error_log('Role is patient');
+                //Now check if logged in patient is associated with given doctor id or not
+                $checkAssociatedPatient = UserModel::CheckAssociatedPatientAndFacilitator($doctorId, $doctorPatientAssociation, $patientId);
+                error_log('checking patient association');
+                if ($checkAssociatedPatient == null) {
+                    return response()->json(['data' => null, 'message' => 'logged in user is not associated to this doctor'], 400);
+                }
+            } else {
+                return response()->json(['data' => null, 'message' => 'logged in user is not patient'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'Patient not found'], 400);
+        }
+
+        $DoctorData = UserModel::GetSingleUserViaId($doctorId);
+        if (count($DoctorData) > 0) {
+            if ($DoctorData[0]->RoleCodeName != $doctorRole) {
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'Doctor not found'], 400);
+        }
+
+        //Now check if shift slot is available
+        //Shift slot should not be booked
+        $shiftTimeSlotData = DoctorScheduleModel::getShiftSlotViaId($request->post('ShiftTimeSlotId'));
+        if ($shiftTimeSlotData != null) {
+            error_log('Shift time slot found');
+            //Now check if it is booked or not
+            if ($shiftTimeSlotData->IsBooked == true) {
+                return response()->json(['data' => null, 'message' => 'This time slot is already booked'], 400);
+            } else {
+                //Now get the shceudle date with respect to schedule shift id
+                $getScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaId($request->post('DoctorScheduleShiftId'));
+                if ($getScheduleDate == null) {
+                    error_log('schedule date not found');
+                    return response()->json(['data' => null, 'message' => 'Schedule date not found'], 400);
+                } else {
+                    error_log('schedule date found ' . $getScheduleDate->ScheduleDate);
+                    //Now get check if particular patient has already taken appointment on this schedule date
+                    $getPatientsScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaPatientId($patientId);
+
+                    if (count($getPatientsScheduleDate) > 0) {
+                        error_log('patient appointment schedule date found ' . $getPatientsScheduleDate);
+                        //We have now got the patient schedule date
+                        //Now compare that schedule with the date which we got earlier via schedule shift id
+                        foreach ($getPatientsScheduleDate as $item) {
+                            if ($item->ScheduleDate == $getScheduleDate->ScheduleDate) {
+                                error_log('One of the date is equal to the appointment date which patient has already taken');
+                                return response()->json(['data' => null, 'message' => 'You have already taken an appointment on this date'], 400);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'Invalid time slot'], 400);
+        }
+        //Now get the last appointment number
+        //If appointment number exists then add 1 to that
+        //else get default number from .env
+
+        $getLastAppointmentNumber = DoctorScheduleModel::getLastAppointment();
+        if ($getLastAppointmentNumber != null) {
+            error_log('appointment number found');
+            $appointmentNumber = 0000 . $getLastAppointmentNumber->AppointmentNumber + 1;
+        } else {
+            error_log('appointment number not found');
+            $appointmentNumber = $defaultAppointmentNumber;
+        }
+
+        //Now making data to insert appointment
+
+        $date = HelperModel::getDate();
+
+        $dataToInsert = array(
+            "AppointmentNumber" => $appointmentNumber,
+            "PatientId" => $patientId,
+            "DoctorId" => $doctorId,
+            "DoctorScheduleShiftId" => $request->post('DoctorScheduleShiftId'),
+            "ShiftTimeSlotId" => $request->post('ShiftTimeSlotId'),
+            "Description" => $request->post('Description'),
+            "IsActive" => true,
+            "CreatedBy" => $patientId,
+            "CreatedOn" => $date['timestamp']
+        );
+
+        DB::beginTransaction();
+
+        $checkInsertedData = GenericModel::insertGenericAndReturnID('appointment', $dataToInsert);
+
+        $emailMessageForPatient = "Dear Patient, Your appointment request is submitted successfully";
+        $emailMessageForDoctor = "Dear Doctor, Your patient has request an appointment. View details from the following link";
+
+        error_log('Check updated data ' . $checkInsertedData);
+        if ($checkInsertedData == true) {
+            //Now insert update data and make time slot is Booked to true
+            $dataToUpdate = array(
+                "IsBooked" => true
+            );
+            $update = GenericModel::updateGeneric('shift_time_slot', 'Id', $request->post('ShiftTimeSlotId'), $dataToUpdate);
+            if ($update == 0) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in making appointment'], 400);
+            } else {
+                DB::commit();
+                UserModel::sendEmail($patientData[0]->EmailAddress, $emailMessageForPatient, null);
+                //Now sending sms to patient
+                if ($patientData[0]->MobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
+                }
+                UserModel::sendEmail($DoctorData[0]->EmailAddress, $emailMessageForDoctor, null);
+
+                //Now sending sms to doctor
+                if ($DoctorData[0]->MobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
+                }
+                return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment request successfully created'], 200);
+            }
+        } else {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in creating Appointment request'], 400);
+        }
+    }
+
+    function getDoctorAppointmentListViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $doctorId = $request->get('userId');
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+
+        $patientIds = array();
+
+
+        //First check if patient id is belonging to dr
+
+        $DoctorData = UserModel::GetSingleUserViaId($doctorId);
+
+        if (count($DoctorData) > 0) {
+            error_log('user data fetched');
+            if ($DoctorData[0]->RoleCodeName != $doctorRole) {
+                error_log('login user is not doctor');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+            } else {
+                error_log('login user is doctor');
+                //Now get his associated patient ids
+
+                $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+                if (count($getAssociatedPatients) > 0) {
+                    //Now bind ids to an  array
+                    foreach ($getAssociatedPatients as $item) {
+                        array_push($patientIds, $item->DestinationUserId);
+                    }
+
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds, $pageNo, $limit);
+                    if (count($getAppointmentData) > 0) {
+                        return response()->json(['data' => $getAppointmentData, 'message' => 'Appointments fetched successfully'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'No appointment scheduled yet'], 200);
+                    }
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
+                }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
+
+    function getDoctorAppointmentListCount(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $doctorId = $request->get('userId');
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+        $patientIds = array();
+
+
+        //First check if patient id is belonging to dr
+
+        $DoctorData = UserModel::GetSingleUserViaId($doctorId);
+
+        if (count($DoctorData) > 0) {
+            error_log('user data fetched');
+            if ($DoctorData[0]->RoleCodeName != $doctorRole) {
+                error_log('login user is not doctor');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+            } else {
+                error_log('login user is doctor');
+                //Now get his associated patient ids
+
+                $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+                if (count($getAssociatedPatients) > 0) {
+                    //Now bind ids to an  array
+                    foreach ($getAssociatedPatients as $item) {
+                        array_push($patientIds, $item->DestinationUserId);
+                    }
+
+                    $getAppointmentData = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds);
+                    return response()->json(['data' => $getAppointmentData, 'message' => 'Total Count'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Patients not yet associated with this doctor'], 400);
+                }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
+
+    function getDoctorAppointmentSingleViaId(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $appointmentId = $request->get('appointmentId');
+        $doctorId = $request->get('userId');
+
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($getAppointmentData != null) {
+            return response()->json(['data' => $getAppointmentData, 'message' => 'Appointment fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 200);
+        }
+    }
+    //function will update the request status mentioned in post
+    //against the provided appointmentId
+    function updateAppointmentRequestStatus(Request $request)
+    {
+
+        error_log('in controller');
+        error_log('in updating appointment request status function');
+
+        $doctorRole = env('ROLE_DOCTOR');
+
+        $appointmentId = $request->get('aId');//refers to appointmentId
+        $doctorId = $request->get('userId');//refers to logged in userId
+        $reqStatus = $request->post('rStatus'); //means 'accepted || rejected'
+        $reason = $request->post('reason'); //refers to reject reason
+
+        //first apply following check
+        //appointment id should belong to logged in user
+
+        //if rStatus = accepted
+        //if already rejected or pending do not update to accepted
+
+        //if rStatus = rejected
+        //if already accepted or pending do not update to rejected
+
+        //if rStatus = pending not allow to update status as pending
+        //status is a default status
+
+//        First checking if appointment exists or not
+
+        $emailMessageForPatient = "Dear Patient, Your appointment request has been " . $reqStatus . '.';
+        $emailMessageForDoctor = "Dear Doctor, You have " . $reqStatus . " your patient appointment request. View details from the following link";
+
+        $checkAppointment = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($checkAppointment == null) {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 400);
+        } else {
+            //after checks update the status
+            $dataToUpdate = array(
+                "RequestStatus" => $reqStatus,
+                "RequestStatusReason" => $reason
+            );
+            DB::beginTransaction();
+            $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+            if ($update <= 0) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
+            } else {
+                DB::commit();
+
+                UserModel::sendEmail($checkAppointment->PatientEmailAddress, $emailMessageForPatient, null);
+                //Now sending sms to patient
+                if ($checkAppointment->PatientMobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $checkAppointment->PatientMobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
+                }
+                UserModel::sendEmail($checkAppointment->DoctorEmailAddress, $emailMessageForDoctor, null);
+
+                //Now sending sms to doctor
+                if ($checkAppointment->DoctorMobileNumber != null) {
+                    $url = env('WEB_URL') . '/#/';
+                    $toNumber = array();
+                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                    $mobileNumber = $phoneCode . $checkAppointment->DoctorMobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
+                }
+                return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
+            }
+        }
+    }
+
+    //function will update the appointment held status
+    //to cancel, against the provided appointmentId
+    //appointment can be cancelled by doctor or patient
+    function MarkAppointmentCancel(Request $request)
+    {
+        error_log('in controller');
+        error_log('in mark appointment cancel function');
+
+        $doctorRoleCode = env('ROLE_DOCTOR');
+        $patientRoleCode = env('ROLE_PATIENT');
+
+        $appointmentCancelledByPatientStatus = env('APPOINTMENT_CANCELLED_BY_PATIENT');
+        $appointmentCancelledByDoctorStatus = env('APPOINTMENT_CANCELLED_BY_DOCTOR');
+
+        $appointmentId = $request->get('aId');//refers to appointmentId
+        $userId = $request->get('userId');//refers to logged in userId can be patient or doctor
+        $reason = $request->post('reason'); //refers to cancellation reason
+
+        //first apply following check
+        //appointment id should belong to logged in user
+
+        //if appointment is already completed
+        //it cannot be cancelled
+
+        //if appointment request is already rejected
+        //it cannot be cancelled
+
+        //for patient appointment can only be
+        //cancel before 48 hours of scheduled appointment
+        //fetch this from .env
+
+        //for doctor appointment can only be
+        //cancel before 24 hours of scheduled appointment
+        //fetch this from .env
+
+        //after checks update the status
+        $dataToUpdate = array(
+            "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
+            //   "AppointmentStatus" => $appointmentCancelledByPatientStatus,
+            "AppointmentStatusReason" => $reason
+        );
+
+        DB::beginTransaction();
+        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+        if ($update <= 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Appointment failed to cancel'], 500);
+        } else {
+            DB::commit();
+            return response()->json(['data' => $appointmentId, 'message' => 'Appointment successfully cancelled'], 200);
+        }
+    }
+
+    //function to get associated doctor
+    //against the provided patient id
+    function GetPatientAssociatedDoctor(Request $request)
+    {
+        error_log('in controller');
+        error_log('in GetPatientAssociatedDoctor function');
+
+        $patientRole = env('ROLE_PATIENT');
+        $patientId = $request->get('patientId');
+
+        //apply check if provided patient id is
+        //exactly of patient by using role
+
+        $associatedDoctor = DoctorScheduleModel::fetAssociatedDoctor($patientId);
+
+        if ($associatedDoctor != null) {
+            return response()->json(['data' => $associatedDoctor, 'message' => 'Associated Doctor fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'No Associated Doctor for this Patient'], 200);
         }
     }
 }

@@ -79,6 +79,9 @@ Route::get('/doctor/schedule/single', 'DoctorScheduleController@GetDoctorSchedul
 
 Route::get('/doctor/schedule/single/ahsan', 'DoctorScheduleController@GetDoctorScheduleDetail');
 
+//Adding schedule of doctor
+Route::get('/doctor/schedule/shift/single', 'DoctorScheduleController@GetDoctorScheduleShiftSingleViaId');
+
 //Get doctor facilitator list
 Route::get('/doctor/facilitator', 'UserController@GetAssociateFacilitator');
 //Doctor schedule list
@@ -86,6 +89,21 @@ Route::get('/doctor/schedule/list', 'DoctorScheduleController@GetDoctorScheduleL
 //Doctor schedule list count
 Route::get('/doctor/schedule/list/count', 'DoctorScheduleController@GetDoctorScheduleListCount');
 
+//Adding doctor appointment
+Route::post('/appointment/add', 'DoctorScheduleController@AddAppointment');
+
+//get doctor appointment list
+Route::get('/appointment/list', 'DoctorScheduleController@getDoctorAppointmentListViaPagination');
+
+//get doctor appointment list
+Route::get('/appointment/single', 'DoctorScheduleController@getDoctorAppointmentSingleViaId');
+
+//get doctor schedule count
+Route::get('/appointment/list/count', 'DoctorScheduleController@getDoctorAppointmentListCount');
+
+Route::post('/appointment/request/status/update', 'DoctorScheduleController@updateAppointmentRequestStatus');
+
+Route::post('/appointment/cancel/', 'DoctorScheduleController@MarkAppointmentCancel');
 
 Route::get('/', function () {
     return 'Hello';
@@ -108,6 +126,9 @@ Route::post('/invite/update', 'ServicesController@inviteUpdate');
 
 //?doctorScheduleDetailId=1
 Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
+
+//temp api
+Route::get('/patient/associated/doctor', 'DoctorScheduleController@GetPatientAssociatedDoctor');
 
 
 
