@@ -910,6 +910,10 @@ class DoctorScheduleController extends Controller
             } else {
                 //Now get the shceudle date with respect to schedule shift id
                 $getScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaId($request->post('DoctorScheduleShiftId'));
+
+                error_log('$getScheduleDate');
+                error_log($getScheduleDate->ScheduleDate);
+
                 if ($getScheduleDate == null) {
                     error_log('schedule date not found');
                     return response()->json(['data' => null, 'message' => 'Schedule date not found'], 400);
@@ -923,6 +927,10 @@ class DoctorScheduleController extends Controller
                         //We have now got the patient schedule date
                         //Now compare that schedule with the date which we got earlier via schedule shift id
                         foreach ($getPatientsScheduleDate as $item) {
+
+                            error_log('$item');
+                            error_log($item->ScheduleDate);
+
                             if ($item->ScheduleDate == $getScheduleDate->ScheduleDate) {
                                 error_log('One of the date is equal to the appointment date which patient has already taken');
                                 return response()->json(['data' => null, 'message' => 'You have already taken an appointment on this date'], 400);
@@ -1072,6 +1080,7 @@ class DoctorScheduleController extends Controller
 
         $loggedInUserId = $request->get('userId');
         $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+        $searchKeyword = $request->get('search');
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
 
@@ -1083,7 +1092,7 @@ class DoctorScheduleController extends Controller
             if ($loggedInUserData[0]->RoleCodeName == $doctorRole) {
                 error_log('login user is doctor');
                 //Now check if logged in user is doctor or not
-                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentViaDoctorId($loggedInUserId, $reqStatus, $pageNo, $limit);
+                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentViaDoctorId($loggedInUserId, $searchKeyword, $reqStatus, $pageNo, $limit);
                 if (count($getAppointmentListForDoctor) > 0) {
                     return response()->json(['data' => $getAppointmentListForDoctor, 'message' => 'Appointments found'], 200);
                 } else {
@@ -1092,7 +1101,7 @@ class DoctorScheduleController extends Controller
             } else if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
                 error_log('login user is patient');
                 //Now check if logged in user is patient or not
-                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentViaPatientId($loggedInUserId, $reqStatus, $pageNo, $limit);
+                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentViaPatientId($loggedInUserId, $searchKeyword, $reqStatus, $pageNo, $limit);
                 if (count($getAppointmentListForPatient) > 0) {
                     return response()->json(['data' => $getAppointmentListForPatient, 'message' => 'Appointments found'], 200);
                 } else {
@@ -1160,6 +1169,7 @@ class DoctorScheduleController extends Controller
         $patientRole = env('ROLE_PATIENT');
 
         $loggedInUserId = $request->get('userId');
+        $searchKeyword = $request->get('search');
         $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
 
 
@@ -1219,6 +1229,7 @@ class DoctorScheduleController extends Controller
 
         $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
         $appointmentRequestPending = env('APPOINTMENT_PENDING_REQUEST_STATUS');
+        $appointmentRequestAccepted = env('APPOINTMENT_REJECTED_ACCEPTED_STATUS');
 
         $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
 
@@ -1258,7 +1269,7 @@ class DoctorScheduleController extends Controller
                 if ($getAppointmentData->RequestStatus == $appointmentRequestRejected || $getAppointmentData->RequestStatus == $appointmentRequestPending) {
                     error_log('patient has already rejected or request is in pending');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
-                } else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
                     error_log('patient has already accepted');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 }
@@ -1271,11 +1282,11 @@ class DoctorScheduleController extends Controller
                 if ($getAppointmentData->RequestStatus == $appointmentRequestPending) {
                     error_log('patient has already in pending');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
-                } else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
                     error_log('patient has already accepted');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 } else if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
-                    error_log('patient has already rejected or request is in pending');
+                    error_log('patient has already rejected');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
                 }
             }
@@ -1345,6 +1356,7 @@ class DoctorScheduleController extends Controller
         $appointmentCancelledByDoctorStatus = env('APPOINTMENT_CANCELLED_BY_DOCTOR');
 
         $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
+        $appointmentRequestAccepted = env('APPOINTMENT_REJECTED_ACCEPTED_STATUS');
 
         $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
 
@@ -1371,7 +1383,8 @@ class DoctorScheduleController extends Controller
 
             //if appointment is already completed
             //it cannot be cancelled
-            else if ($getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+
+            else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted && $getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
                 error_log('patient has already accepted');
                 return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it has already accepted'], 400);
             }
