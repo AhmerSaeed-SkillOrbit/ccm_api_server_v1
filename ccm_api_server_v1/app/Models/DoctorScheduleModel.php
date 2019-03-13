@@ -136,7 +136,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i") as EndTime'),'NoOfPatientAllowed')
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i") as EndTime'), 'NoOfPatientAllowed')
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -150,7 +150,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'),'NoOfPatientAllowed')
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'), 'NoOfPatientAllowed')
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -474,42 +474,94 @@ class DoctorScheduleModel
         return $query;
     }
 
-//    static public function CalculateTimeSlotDynamically($startTime, $endTime, $patientAllowed)
-//    {
-//        $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
-//        $endLastTime = array();
-//        $timeSlots = array();
-//
-//        error_log($startTime);
-//        error_log($endTime);
-//        error_log('time difference in min');
-//        error_log($diff);
-//
-//        $avg = round($diff / $patientAllowed);
-//
-//        error_log('avg time in hours');
-//        error_log($avg);
-//
-//        //convert to mints
-//        $min = round($avg * 60);
-//
-//        error_log('convert in mints');
-//        error_log($min);
-//
-////        $endTime = date("H:i", strtotime('+30 minutes', $time));
-////        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
-//
-//        $endSlot = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
-//
-//        array_push($endLastTime, $endSlot);
-//        $range = $startTime + '-' + $endSlot;
-//        array_push($timeSlots, $range);
-//
+    static public function CalculateTimeSlotDynamically($startTime, $endTime, $patientAllowed)
+    {
+        $indexItem = null;
+
+        if ($indexItem == null) {
+            error_log("$indexItem is start");
+
+            $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+            $endLastTime = array();
+            $timeSlots = array();
+
+            error_log($startTime);
+            error_log($endTime);
+            error_log('time difference in min');
+            error_log($diff);
+
+            $avg = round($diff / $patientAllowed);
+
+            error_log('avg time in hours');
+            error_log($avg);
+
+            //convert to mints
+            $min = round($avg * 60);
+
+            error_log('convert in mints');
+            error_log($min);
+
+//        $endTime = date("H:i", strtotime('+30 minutes', $time));
+//        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
+
+            $endSlot = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+            $indexItem = $endSlot;
+
+            error_log("end slot");
+            error_log($endSlot);
+
+            error_log("index Item");
+            error_log($indexItem);
+
+//            array_push($endLastTime, $endSlot);
+            $range = "'.$startTime . '-'. $endTime.'";
+
+            array_push($timeSlots, $range);
+        }
+        while ($indexItem <= $endTime) {
+            error_log("in loop");
+            $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+            $timeSlots = array();
+
+            error_log($startTime);
+            error_log($endTime);
+            error_log('time difference in min');
+            error_log($diff);
+
+            $avg = round($diff / $patientAllowed);
+
+            error_log('avg time in hours');
+            error_log($avg);
+
+            //convert to mints
+            $min = round($avg * 60);
+
+            error_log('convert in mints');
+            error_log($min);
+
+//        $endTime = date("H:i", strtotime('+30 minutes', $time));
+//        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
+
+            $endSlot = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+
+            error_log("end slot");
+            error_log($endSlot);
+
+            error_log("index Item");
+            error_log($indexItem);
+
+            $indexItem = $endSlot;
+
+//            array_push($endLastTime, $endSlot);
+            $range = $startTime + '-' + $endSlot;
+
+            array_push($timeSlots, $range);
+
 //        if (count($endLastTime) > 0) {
 //
 //            $indexItem = array_pull($endLastTime);
 //
-//            while ($indexItem == $endTime) {
+//            while ($indexItem != $endTime) {
 //
 //
 //            }
@@ -517,12 +569,8 @@ class DoctorScheduleModel
 //        } else {
 //
 //        }
-//
-//
-//        print_r($endTime);
-//        print_r($timeSlots);
-//
-//        error_log("end slot");
-//        error_log($endSlot);
-//    }
+        }
+
+        print_r($timeSlots);
+    }
 }

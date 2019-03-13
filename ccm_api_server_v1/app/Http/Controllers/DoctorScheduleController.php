@@ -1476,30 +1476,32 @@ class DoctorScheduleController extends Controller
         $startTime = $query->StartTime;
         $endTime = $query->EndTime;
 
-        $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+        DoctorScheduleModel::CalculateTimeSlotDynamically($startTime,$endTime,$patientAllowed);
 
-        error_log($startTime);
-        error_log($endTime);
-        error_log('time difference in min');
-        error_log($diff);
-
-        $avg = round($diff / $patientAllowed);
-
-        error_log('avg time in hours');
-        error_log($avg);
-
-        //convert to mints
-        $min = round($avg * 60);
-
-        error_log('convert in mints');
-        error_log($min);
-
-//        $endTime = date("H:i", strtotime('+30 minutes', $time));
-//        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
-
-        $endTime = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
-        error_log("added time");
-        error_log($endTime);
+//        $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+//
+//        error_log($startTime);
+//        error_log($endTime);
+//        error_log('time difference in min');
+//        error_log($diff);
+//
+//        $avg = round($diff / $patientAllowed);
+//
+//        error_log('avg time in hours');
+//        error_log($avg);
+//
+//        //convert to mints
+//        $min = round($avg * 60);
+//
+//        error_log('convert in mints');
+//        error_log($min);
+//
+////        $endTime = date("H:i", strtotime('+30 minutes', $time));
+////        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
+//
+//        $endTime = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+//        error_log("added time");
+//        error_log($endTime);
     }
 
 //    function calculateTimeSlots(){
