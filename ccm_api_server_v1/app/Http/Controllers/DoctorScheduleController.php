@@ -1192,12 +1192,12 @@ class DoctorScheduleController extends Controller
             if ($loggedInUserData[0]->RoleCodeName == $doctorRole) {
                 error_log('login user is doctor');
                 //Now check if logged in user is doctor or not
-                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentCountViaDoctorId($loggedInUserId, $reqStatus);
+                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentCountViaDoctorId($loggedInUserId, $searchKeyword, $reqStatus);
                 return response()->json(['data' => $getAppointmentListForDoctor, 'message' => 'Total count'], 200);
             } else if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
                 error_log('login user is patient');
                 //Now check if logged in user is patient or not
-                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentCountViaPatientId($loggedInUserId, $reqStatus);
+                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentCountViaPatientId($loggedInUserId, $searchKeyword, $reqStatus);
                 return response()->json(['data' => $getAppointmentListForPatient, 'message' => 'Total count'], 200);
             } else {
                 error_log('login user is neither doctor or patient');
