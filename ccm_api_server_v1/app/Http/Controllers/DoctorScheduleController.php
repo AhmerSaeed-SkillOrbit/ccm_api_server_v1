@@ -479,6 +479,7 @@ class DoctorScheduleController extends Controller
                                     $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
                                     if ($result == false) {
                                         DB::rollBack();
+                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
                                     }
                                 }
                             } else {
@@ -497,6 +498,7 @@ class DoctorScheduleController extends Controller
                                 $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
                                 if ($checkInsertedData == false) {
                                     DB::rollBack();
+                                    return response()->json(['data' => null, 'message' => 'Error in inserting schedule shift'], 400);
                                 }
                             }
                         } else {
@@ -517,6 +519,7 @@ class DoctorScheduleController extends Controller
                                     $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
                                     if ($result == false) {
                                         DB::rollBack();
+                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
                                     }
                                 }
                             } else {
@@ -532,26 +535,32 @@ class DoctorScheduleController extends Controller
                                 $update = GenericModel::updateGeneric('doctor_schedule_shift', 'Id', $item['Id'], $dataToUpdate);
                                 if ($update == false) {
                                     DB::rollBack();
+                                    return response()->json(['data' => null, 'message' => 'Error in updating schedule shift'], 400);
                                 }
                             }
-                        }
-                        error_log('Now updating doctor schedule details');
-
-                        $updateData = array(
-                            "NoOfShift" => $noOfShift,
-                            "IsOffDay" => $isOffDay,
-                            "UpdatedOn" => $date['timestamp'],
-                            "UpdatedBy" => $doctorId //fetch from doctor_schedule table
-                        );
-
-                        $update = GenericModel::updateGeneric('doctor_schedule_detail_copy1', 'Id', $doctorScheduleDetailId, $updateData);
-                        if ($update == false) {
-                            DB::rollBack();
                         }
                     }
                 }
             }
+
+
+            error_log('Now updating doctor schedule details');
+
+            $updateData = array(
+                "NoOfShift" => $noOfShift,
+                "IsOffDay" => $isOffDay,
+                "UpdatedOn" => $date['timestamp'],
+                "UpdatedBy" => $doctorId //fetch from doctor_schedule table
+            );
+
+            $update = GenericModel::updateGeneric('doctor_schedule_detail_copy1', 'Id', $doctorScheduleDetailId, $updateData);
+            if ($update == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in updating schedule detail'], 400);
+            }
+
         }
+
         DB::commit();
         return response()->json(['data' => null, 'message' => 'Doctor schedule shift updated successfully'], 200);
     }
