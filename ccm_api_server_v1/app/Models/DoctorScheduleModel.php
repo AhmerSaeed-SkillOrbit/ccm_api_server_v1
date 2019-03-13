@@ -136,7 +136,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i") as EndTime'),'NoOfPatientAllowed')
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i") as EndTime'), 'NoOfPatientAllowed')
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -150,7 +150,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'),'NoOfPatientAllowed')
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'), 'NoOfPatientAllowed')
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -352,28 +352,62 @@ class DoctorScheduleModel
         return $query;
     }
 
-    static public function getAppointmentCountViaPatientId($patientId, $reqStatus)
+    static public function getAppointmentCountViaPatientId($patientId, $searchKeyword, $reqStatus)
     {
         error_log('in model');
 
-        $query = DB::table("appointment")
-            ->where("appointment.IsActive", "=", true)
-            ->where("appointment.RequestStatus", "=", $reqStatus)
-            ->where("appointment.PatientId", '=', $patientId)
-            ->count();
+        if ($searchKeyword == "null" || $searchKeyword == null) {
+
+            $query = DB::table("appointment")
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.PatientId", '=', $patientId)
+                ->count();
+        } else {
+
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.PatientId", '=', $patientId)
+                ->Where('doctor.FirstName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orWhere('doctor.LastName', 'LIKE', '%' . $searchKeyword . '%')
+                ->count();
+        }
 
         return $query;
     }
 
-    static public function getAppointmentCountViaDoctorId($doctorId, $reqStatus)
+    static public function getAppointmentCountViaDoctorId($doctorId, $searchKeyword, $reqStatus)
     {
         error_log('in model');
 
-        $query = DB::table("appointment")
-            ->where("appointment.IsActive", "=", true)
-            ->where("appointment.RequestStatus", "=", $reqStatus)
-            ->where("appointment.DoctorId", '=', $doctorId)
-            ->count();
+        if ($searchKeyword == "null" || $searchKeyword == null) {
+
+            $query = DB::table("appointment")
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.DoctorId", '=', $doctorId)
+                ->count();
+        } else {
+
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.DoctorId", '=', $doctorId)
+                ->Where('patient.FirstName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orWhere('patient.LastName', 'LIKE', '%' . $searchKeyword . '%')
+                ->count();
+        }
 
         return $query;
     }
