@@ -1300,10 +1300,7 @@ class DoctorScheduleController extends Controller
             //if already accepted or pending do not update to rejected
 
             else if ($reqStatus == 'rejected') {
-                if ($getAppointmentData->RequestStatus == $appointmentRequestPending) {
-                    error_log('patient has already in pending');
-                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
-                } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
                     error_log('patient has already accepted');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 } else if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
