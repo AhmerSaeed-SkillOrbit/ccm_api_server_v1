@@ -1019,7 +1019,7 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
                 }
                 UserModel::sendEmail($DoctorData[0]->EmailAddress, $emailMessageForDoctor, null);
 
@@ -1030,7 +1030,7 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
                 }
                 return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment request successfully created'], 200);
             }

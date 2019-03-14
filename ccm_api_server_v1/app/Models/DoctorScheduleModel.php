@@ -511,13 +511,14 @@ class DoctorScheduleModel
     static public function CalculateTimeSlotDynamically($startTime, $endTime, $patientAllowed)
     {
         $indexItem = null;
+        $endLastTime = array();
+        $timeSlots = array();
+        $diff = 0;
 
         if ($indexItem == null) {
             error_log("$indexItem is start");
 
             $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
-            $endLastTime = array();
-            $timeSlots = array();
 
             error_log($startTime);
             error_log($endTime);
