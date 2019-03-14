@@ -105,6 +105,12 @@ Route::post('/appointment/request/status/update', 'DoctorScheduleController@upda
 
 Route::post('/appointment/cancel/', 'DoctorScheduleController@MarkAppointmentCancel');
 
+//Add tag
+Route::post('/tag/add', 'ForumController@AddTag');
+
+//get tag list
+Route::get('/tag/list', 'ForumController@getTagList');
+
 Route::get('/', function () {
     return 'Hello';
 });
