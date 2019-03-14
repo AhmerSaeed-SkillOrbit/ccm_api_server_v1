@@ -30,4 +30,26 @@ class ForumModel
 
         return $query;
     }
+
+    static public function getTagsViaTopicForumId($topicForumId)
+    {
+        error_log('in model, fetching tags via id');
+
+        $query = DB::table('forum_topic_tag')
+            ->where('ForumTopicId', '=', $topicForumId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getForumTopicViaId($forumTopicId)
+    {
+        $query = DB::table('forum_topic')
+            ->where('Id', '=', $forumTopicId)
+            ->where('IsActive', '=', true)
+            ->first();
+
+        return $query;
+    }
+
 }

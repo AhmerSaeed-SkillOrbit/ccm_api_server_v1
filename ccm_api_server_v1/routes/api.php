@@ -114,6 +114,9 @@ Route::get('/tag/list', 'ForumController@getTagList');
 //Add forum topic
 Route::post('/forum/topic/add', 'ForumController@AddForumTopic');
 
+//Update forum topic
+Route::post('/forum/topic/update', 'ForumController@UpdateForumTopic');
+
 Route::get('/', function () {
     return 'Hello';
 });
