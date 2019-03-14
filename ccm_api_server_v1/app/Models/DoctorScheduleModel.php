@@ -514,6 +514,9 @@ class DoctorScheduleModel
         $endLastTime = array();
         $timeSlots = array();
         $diff = 0;
+        $min = 0;
+        $endSlot1= 0;
+        $endSlot2=0;
 
         if ($indexItem == null) {
             error_log("$indexItem is start");
@@ -522,88 +525,60 @@ class DoctorScheduleModel
 
             error_log($startTime);
             error_log($endTime);
-            error_log('time difference in min');
+            error_log($patientAllowed);
+
+            error_log('time difference in hours');
             error_log($diff);
 
-            $avg = round($diff / $patientAllowed);
+//            $avg = round($diff / $patientAllowed);
+            $avg = $diff / $patientAllowed;
 
             error_log('avg time in hours');
             error_log($avg);
 
             //convert to mints
-            $min = round($avg * 60);
+//            $min = round($avg * 60);
+            $min = $avg * 60;
 
             error_log('convert in mints');
             error_log($min);
 
-//        $endTime = date("H:i", strtotime('+30 minutes', $time));
-//        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
-
-            $endSlot = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
-            $indexItem = $endSlot;
+            $endSlot1 = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+            $indexItem = $endSlot1;
 
             error_log("end slot");
-            error_log($endSlot);
+            error_log($endSlot1);
 
             error_log("index Item");
             error_log($indexItem);
 
-//            array_push($endLastTime, $endSlot);
-            $range = "'.$startTime . '-'. $endTime.'";
+            $range = $startTime . '-' . $endSlot1;
+
+            error_log("range");
+            error_log($range);
 
             array_push($timeSlots, $range);
         }
-        while ($indexItem <= $endTime) {
-            error_log("in loop");
-            $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
-            $timeSlots = array();
+        while ($indexItem < $endTime) {
 
-            error_log($startTime);
-            error_log($endTime);
-            error_log('time difference in min');
-            error_log($diff);
+            error_log("in while loop");
 
-            $avg = round($diff / $patientAllowed);
+            $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
+            $range = $endSlot1 . '-' . $endSlot2;
 
-            error_log('avg time in hours');
-            error_log($avg);
-
-            //convert to mints
-            $min = round($avg * 60);
-
-            error_log('convert in mints');
-            error_log($min);
-
-//        $endTime = date("H:i", strtotime('+30 minutes', $time));
-//        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
-
-            $endSlot = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+            $indexItem = $endSlot2;
+            $endSlot1 = $endSlot2;
 
             error_log("end slot");
-            error_log($endSlot);
+            error_log($endSlot1);
 
             error_log("index Item");
             error_log($indexItem);
 
-            $indexItem = $endSlot;
-
-//            array_push($endLastTime, $endSlot);
-            $range = $startTime + '-' + $endSlot;
+            error_log("range");
+            error_log($range);
 
             array_push($timeSlots, $range);
-
-//        if (count($endLastTime) > 0) {
-//
-//            $indexItem = array_pull($endLastTime);
-//
-//            while ($indexItem != $endTime) {
-//
-//
-//            }
-//
-//        } else {
-//
-//        }
         }
 
         print_r($timeSlots);
