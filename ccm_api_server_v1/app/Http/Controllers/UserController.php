@@ -991,7 +991,7 @@ class UserController extends Controller
         //now delete the account_invitation
         //of this email
 
-        $update = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser[0]->EmailAddress, $dataToUpdate);
+        $updateAccountInvitation = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser[0]->EmailAddress, $dataToUpdate);
 
         if ($update == true) {
             return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
