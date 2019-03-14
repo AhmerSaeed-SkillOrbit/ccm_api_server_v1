@@ -370,26 +370,28 @@ class DoctorScheduleController extends Controller
                         "IsActive" => true
                     );
 
-                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+                    $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
+//                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
 
-                    error_log('$checkInsertedData  = ' . $checkInsertedData);
+                    error_log('$checkInsertedData  = ' . $getInsertedDataId);
                     error_log('=========================');
 
-                    if ($checkInsertedData == false) {
+                    if ($getInsertedDataId == false) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    } else {
+                        //now insert dynamic time slots
+                        $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
+                        if (count($timeSlots) > 0) {
+                            foreach ($timeSlots as $i) {
+                                $timeSlotsData = array(
+                                    "DoctorScheduleShiftId" => $getInsertedDataId,
+                                    "TimeSlot" => $i,
+                                );
+                                $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                            }
+                        }
                     }
-//                    else {
-//                        //insert calcuated time-slot
-//                        if ($scheduleShift['StartTime'] != null) {
-//
-//                            $endTimeSlot = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
-//
-//
-//
-//                            array_push($endTimeSlot);
-//                        }
-//                    }
                 }
             }
         }
@@ -444,7 +446,8 @@ class DoctorScheduleController extends Controller
         //First check if dr schedule exist
         if ($getDoctorScheduleDetailData == null) {
             return response()->json(['data' => null, 'message' => 'Doctor schedule not found'], 400);
-        } else {
+        }
+        else {
             error_log('Schedule detail data found');
             //Doctor schedule found
             //LOGIC
@@ -494,11 +497,23 @@ class DoctorScheduleController extends Controller
                                         "NoOfPatientAllowed" => $item['NoOfPatientAllowed'],
                                         "IsActive" => true
                                     );
-
-                                $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
-                                if ($checkInsertedData == false) {
+                                $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
+//                                $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+                                if ($getInsertedDataId == false) {
                                     DB::rollBack();
                                     return response()->json(['data' => null, 'message' => 'Error in inserting schedule shift'], 400);
+                                }
+
+                                //now insert dynamic time slots
+                                $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($doctorScheduleShiftData['StartTime'], $doctorScheduleShiftData['EndTime'], $doctorScheduleShiftData['NoOfPatientAllowed']);
+                                if (count($timeSlots) > 0) {
+                                    foreach ($timeSlots as $i) {
+                                        $timeSlotsData = array(
+                                            "DoctorScheduleShiftId" => $getInsertedDataId,
+                                            "TimeSlot" => $i,
+                                        );
+                                        $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                                    }
                                 }
                             }
                         } else {
@@ -542,7 +557,6 @@ class DoctorScheduleController extends Controller
                     }
                 }
             }
-
 
             error_log('Now updating doctor schedule details');
 
@@ -1482,7 +1496,7 @@ class DoctorScheduleController extends Controller
         $startTime = $query->StartTime;
         $endTime = $query->EndTime;
 
-        DoctorScheduleModel::CalculateTimeSlotDynamically($startTime,$endTime,$patientAllowed);
+        DoctorScheduleModel::CalculateTimeSlotDynamically($startTime, $endTime, $patientAllowed);
 
 //        $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
 //

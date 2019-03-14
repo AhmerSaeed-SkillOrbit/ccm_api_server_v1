@@ -515,8 +515,8 @@ class DoctorScheduleModel
         $timeSlots = array();
         $diff = 0;
         $min = 0;
-        $endSlot1= 0;
-        $endSlot2=0;
+        $endSlot1 = 0;
+        $endSlot2 = 0;
 
         if ($indexItem == null) {
             error_log("$indexItem is start");
@@ -581,6 +581,15 @@ class DoctorScheduleModel
             array_push($timeSlots, $range);
         }
 
+//        foreach ($timeSlots as $i) {
+//            $timeSlotsData = array(
+//                "DoctorScheduleShiftId" => 1,
+//                "TimeSlot" => $i,
+//            );
+//            $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+//        }
+
+        return $timeSlots;
         print_r($timeSlots);
     }
 }
