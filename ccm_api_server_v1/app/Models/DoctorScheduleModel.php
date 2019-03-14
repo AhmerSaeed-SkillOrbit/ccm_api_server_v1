@@ -43,6 +43,7 @@ class DoctorScheduleModel
             ->select('Id', 'StartDate', 'EndDate', 'MonthName', 'YearName')
             ->where('DoctorId', '=', $doctorId)
             ->where('IsActive', '=', true)
+            ->orderBy('MonthName', 'ASC')
 //            ->offset($offset)->limit($limit)
             ->skip($offset * $limit)->take($limit)
             ->get();
@@ -111,6 +112,7 @@ class DoctorScheduleModel
                 "IsOffDay")
             ->where("DoctorScheduleId", "=", $doctorScheduleId)
             ->where("IsActive", "=", true)
+            ->orderBy('ScheduleDate', 'ASC')
             ->get();
 
         return $query;

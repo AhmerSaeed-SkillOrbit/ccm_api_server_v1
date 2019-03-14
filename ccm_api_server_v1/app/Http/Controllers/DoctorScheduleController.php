@@ -446,8 +446,7 @@ class DoctorScheduleController extends Controller
         //First check if dr schedule exist
         if ($getDoctorScheduleDetailData == null) {
             return response()->json(['data' => null, 'message' => 'Doctor schedule not found'], 400);
-        }
-        else {
+        } else {
             error_log('Schedule detail data found');
             //Doctor schedule found
             //LOGIC
@@ -1301,11 +1300,11 @@ class DoctorScheduleController extends Controller
             //if already rejected or pending do not update to accepted
 
             if ($reqStatus == 'accepted') {
-                if ($getAppointmentData->RequestStatus == $appointmentRequestRejected || $getAppointmentData->RequestStatus == $appointmentRequestPending) {
-                    error_log('patient has already rejected or request is in pending');
+                if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
+                    error_log('Doctor has already reject your request so it cannot be accept');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
                 } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
-                    error_log('patient has already accepted');
+                    error_log('Doctor has already accept your request');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 }
             }
@@ -1320,6 +1319,13 @@ class DoctorScheduleController extends Controller
                 } else if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
                     error_log('patient has already rejected');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+                } else {
+                    
+                    //update book status to 0 bcz appointment is rejected
+                    $dataToUpdate = array(
+                        "IsBooked" => 0
+                    );
+                    $update = GenericModel::updateGeneric('shift_time_slot', 'Id', $getAppointmentData->ShiftTimeSlotId, $dataToUpdate);
                 }
             }
 
