@@ -416,7 +416,7 @@ class ForumController extends Controller
                 if ($update == false) {
                     return response()->json(['data' => null, 'message' => 'Error in deleting forum topic'], 400);
                 } else {
-                    return response()->json(['data' => null, 'message' => 'Forum topic successfully deleted'], 200);
+                    return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic successfully deleted'], 200);
                 }
             }
         }
