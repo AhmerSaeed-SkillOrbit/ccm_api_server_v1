@@ -473,7 +473,6 @@ class ForumController extends Controller
         error_log('in controller');
 
         $forumCommentId = $request->input('ForumTopicCommentId');
-        $forumTopicId = $request->input('ForumTopicId');
         $userId = $request->input('UserId');
 
         $comment = $request->input('Comment');
@@ -486,44 +485,84 @@ class ForumController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
         } else {
             error_log('logged in user data found');
+//            fetch the single comment to check if this comment exists or not
 
-            //Now check if this forum exists or not
-            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
-            if ($getForumTopicData == null) {
-                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+            $getComment = ForumModel::getSingleCommentViaCommentId($forumCommentId);
+
+            if ($getComment == null) {
+                error_log('comment not found');
+                return response()->json(['data' => null, 'message' => 'Comment not found'], 400);
             } else {
-                error_log('forum found');
+                error_log('comment found');
+                //Now making data to update forum_topic_comment table
 
-                //Now fetch the single comment to check if this comment exists or not
+                if ($getComment->UserId != $userId) {
+                    return response()->json(['data' => null, 'message' => 'This comment is not given by you'], 400);
+                }
 
-                $getComment = ForumModel::getSingleCommentViaCommentId($forumCommentId);
+                $date = HelperModel::getDate();
 
-                if ($getComment == null) {
-                    return response()->json(['data' => null, 'message' => 'Comment not found'], 400);
+                $dataToUpdate = array(
+                    "Comment" => $comment,
+                    "UserId" => $userId,
+                    "UpdatedBy" => $userId,
+                    "UpdatedOn" => $date["timestamp"]
+                );
+
+                $update = GenericModel::updateGeneric('forum_topic_comment', 'Id', $forumCommentId, $dataToUpdate);
+
+                if ($update == false) {
+                    return response()->json(['data' => null, 'message' => 'Error in updating comment'], 400);
                 } else {
-                    //Now making data to update forum_topic_comment table
+                    return response()->json(['data' => $forumCommentId, 'message' => 'Comment updated successfully'], 200);
+                }
+            }
+        }
+    }
 
-                    if ($getComment->UserId != $userId) {
-                        return response()->json(['data' => null, 'message' => 'This comment is not given by you'], 400);
-                    }
+    function DeleteForumTopicComment(Request $request)
+    {
+        error_log('in controller');
 
-                    $date = HelperModel::getDate();
+        $forumCommentId = $request->get('forumTopicCommentId');
+        $userId = $request->get('userId');
 
-                    $dataToUpdate = array(
-                        "ForumTopicId" => $forumTopicId,
-                        "Comment" => $comment,
-                        "UserId" => $userId,
-                        "UpdatedBy" => $userId,
-                        "UpdatedOn" => $date["timestamp"]
-                    );
+        //First check if logged if user id is valid or not
 
-                    $update = GenericModel::updateGeneric('forum_topic_comment', 'Id', $forumCommentId, $dataToUpdate);
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
 
-                    if ($update == false) {
-                        return response()->json(['data' => null, 'message' => 'Error in updating comment'], 400);
-                    } else {
-                        return response()->json(['data' => $forumCommentId, 'message' => 'Comment updated successfully'], 200);
-                    }
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now fetch the single comment to check if this comment exists or not
+
+            $getComment = ForumModel::getSingleCommentViaCommentId($forumCommentId);
+
+            if ($getComment == null) {
+                return response()->json(['data' => null, 'message' => 'Comment not found'], 400);
+            } else {
+                //Now making data to update forum_topic_comment table
+
+                if ($getComment->UserId != $userId) {
+                    return response()->json(['data' => null, 'message' => 'This comment is not given by you'], 400);
+                }
+
+                $date = HelperModel::getDate();
+
+                $dataToUpdate = array(
+                    "IsActive" => false,
+                    "UpdatedBy" => $userId,
+                    "UpdatedOn" => $date["timestamp"]
+                );
+
+                $update = GenericModel::updateGeneric('forum_topic_comment', 'Id', $forumCommentId, $dataToUpdate);
+
+                if ($update == false) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting comment'], 400);
+                } else {
+                    return response()->json(['data' => $forumCommentId, 'message' => 'Comment deleted successfully'], 200);
                 }
             }
         }
