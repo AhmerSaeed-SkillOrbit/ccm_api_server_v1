@@ -376,4 +376,49 @@ class ForumController extends Controller
             return response()->json(['data' => $getForumTopicData, 'message' => 'Total count'], 200);
         }
     }
+
+    function DeleteForumTopic(Request $request)
+    {
+        error_log('in controller');
+
+        $forumTopicId = $request->get('forumTopicId');
+        $userId = $request->get('UserId');
+
+        //First check if logged if user id is valid or not
+
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now check if this forum exists or not
+            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+            if ($getForumTopicData == null) {
+                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+            } else {
+                error_log('forum found');
+                //Now get forum tags
+                //Delete them and insert new ones
+
+                //Now making data to update forum_topic table
+
+                $date = HelperModel::getDate();
+
+                $forumTopicDataToUpdate = array(
+                    "IsActive" => false,
+                    "UpdatedBy" => $userId,
+                    "UpdatedOn" => $date["timestamp"]
+                );
+
+                $update = GenericModel::updateGeneric('forum_topic', 'Id', $forumTopicId, $forumTopicDataToUpdate);
+                if ($update == false) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting forum topic'], 400);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Forum topic successfully deleted'], 200);
+                }
+            }
+        }
+    }
 }
