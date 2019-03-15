@@ -567,4 +567,32 @@ class ForumController extends Controller
             }
         }
     }
+
+    function GetSingleForumTopicComment(Request $request)
+    {
+        error_log('in controller');
+
+        $forumCommentId = $request->get('forumTopicCommentId');
+        $userId = $request->get('userId');
+
+        //First check if logged if user id is valid or not
+
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now fetch the single comment to check if this comment exists or not
+
+            $getComment = ForumModel::getSingleCommentViaCommentId($forumCommentId);
+
+            if ($getComment == null) {
+                return response()->json(['data' => null, 'message' => 'Comment not found'], 200);
+            } else {
+                return response()->json(['data' => $getComment, 'message' => 'Comment found'], 200);
+            }
+        }
+    }
 }

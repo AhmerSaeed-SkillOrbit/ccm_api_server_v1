@@ -137,6 +137,9 @@ Route::post('/forum/topic/comment/update', 'ForumController@UpdateForumTopicComm
 //Delete forum comment
 Route::post('/forum/topic/comment/delete', 'ForumController@DeleteForumTopicComment');
 
+//get single forum comment
+Route::get('/forum/topic/comment/single', 'ForumController@GetSingleForumTopicComment');
+
 Route::get('/', function () {
     return 'Hello';
 });
