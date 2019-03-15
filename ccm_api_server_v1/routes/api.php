@@ -120,6 +120,9 @@ Route::post('/forum/topic/update', 'ForumController@UpdateForumTopic');
 //Get single forum topic
 Route::get('/forum/topic/single', 'ForumController@GetSingleForumTopic');
 
+//Get forum topic list
+Route::get('/forum/topic/list', 'ForumController@GetForumTopicList');
+
 Route::get('/', function () {
     return 'Hello';
 });
