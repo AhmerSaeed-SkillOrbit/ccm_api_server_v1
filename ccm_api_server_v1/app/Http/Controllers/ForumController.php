@@ -294,7 +294,7 @@ class ForumController extends Controller
         }
     }
 
-    function GetForumTopicList(Request $request)
+    function GetForumTopicListViaPagination(Request $request)
     {
         $userId = $request->get('userId');
         $pageNo = $request->get('pageNo');
@@ -351,6 +351,29 @@ class ForumController extends Controller
             } else {
                 return response()->json(['data' => $forumListData, 'message' => 'Forum topic list not found'], 200);
             }
+        }
+    }
+
+    function GetForumTopicListCount(Request $request)
+    {
+        $userId = $request->get('userId');
+
+        $forumListData = array();
+
+        //First check logged in user data if it is valid or not
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now check if forum exists.
+            //If exists fetched the record
+
+            $getForumTopicData = ForumModel::getForumTopicListCount();
+
+            return response()->json(['data' => $getForumTopicData, 'message' => 'Total count'], 200);
         }
     }
 }

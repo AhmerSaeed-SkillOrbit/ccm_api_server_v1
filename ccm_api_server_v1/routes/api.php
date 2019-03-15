@@ -121,7 +121,9 @@ Route::post('/forum/topic/update', 'ForumController@UpdateForumTopic');
 Route::get('/forum/topic/single', 'ForumController@GetSingleForumTopic');
 
 //Get forum topic list
-Route::get('/forum/topic/list', 'ForumController@GetForumTopicList');
+Route::get('/forum/topic/list', 'ForumController@GetForumTopicListViaPagination');
+
+Route::get('/forum/topic/list/count', 'ForumController@GetForumTopicListCount');
 
 Route::get('/', function () {
     return 'Hello';
