@@ -117,7 +117,7 @@ Route::post('/forum/topic/add', 'ForumController@AddForumTopic');
 //Update forum topic
 Route::post('/forum/topic/update', 'ForumController@UpdateForumTopic');
 
-//Update forum topic
+//Delete forum topic
 Route::post('/forum/topic/delete', 'ForumController@DeleteForumTopic');
 
 //Get single forum topic
@@ -127,6 +127,9 @@ Route::get('/forum/topic/single', 'ForumController@GetSingleForumTopic');
 Route::get('/forum/topic/list', 'ForumController@GetForumTopicListViaPagination');
 
 Route::get('/forum/topic/list/count', 'ForumController@GetForumTopicListCount');
+
+//Add forum comment
+Route::post('/forum/topic/comment/add', 'ForumController@AddForumTopicComment');
 
 Route::get('/', function () {
     return 'Hello';

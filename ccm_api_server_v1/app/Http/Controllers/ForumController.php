@@ -399,8 +399,6 @@ class ForumController extends Controller
                 return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
             } else {
                 error_log('forum found');
-                //Now get forum tags
-                //Delete them and insert new ones
 
                 //Now making data to update forum_topic table
 
@@ -417,6 +415,56 @@ class ForumController extends Controller
                     return response()->json(['data' => null, 'message' => 'Error in deleting forum topic'], 400);
                 } else {
                     return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic successfully deleted'], 200);
+                }
+            }
+        }
+    }
+
+    function AddForumTopicComment(Request $request)
+    {
+        error_log('in controller');
+
+        $forumTopicId = $request->input('ForumTopicId');
+        $userId = $request->input('UserId');
+
+        $comment = $request->input('Comment');
+
+        error_log('$comment ' . $comment);
+
+        //First check if logged if user id is valid or not
+
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now check if this forum exists or not
+            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+            if ($getForumTopicData == null) {
+                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+            } else {
+                error_log('forum found');
+
+                //Now making data to update forum_topic_comment table
+
+                $date = HelperModel::getDate();
+
+                $forumTopicCommentData = array(
+                    "ForumTopicId" => $forumTopicId,
+                    "Comment" => $comment,
+                    "UserId" => $userId,
+                    "IsActive" => true,
+                    "CreatedBy" => $userId,
+                    "CreatedOn" => $date["timestamp"]
+                );
+
+                $insertedData = GenericModel::insertGenericAndReturnID('forum_topic_comment', $forumTopicCommentData);
+                if ($insertedData == false) {
+                    return response()->json(['data' => null, 'message' => 'Error in adding comment'], 400);
+                } else {
+                    return response()->json(['data' => $insertedData, 'message' => 'Comment given successfully'], 200);
                 }
             }
         }
