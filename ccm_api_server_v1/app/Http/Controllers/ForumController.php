@@ -595,4 +595,42 @@ class ForumController extends Controller
             }
         }
     }
+
+    function GetForumTopicCommentsViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $forumTopicId = $request->get('forumTopicId');
+        $userId = $request->get('userId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+
+        //First check if logged if user id is valid or not
+
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now check if this forum exists or not
+            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+            if ($getForumTopicData == null) {
+                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+            } else {
+                error_log('forum found');
+
+                //Now fetch the list of comment to check if this comment exists or not
+
+                $getComment = ForumModel::getCommentsViaTopicForumId($pageNo, $limit, $forumTopicId);
+
+                if (count($getComment) > 0) {
+                    return response()->json(['data' => $getComment, 'message' => 'Comment found'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Comment not found'], 200);
+                }
+            }
+        }
+    }
 }

@@ -80,6 +80,7 @@ class ForumModel
             ->leftjoin('forum_topic_tag as ftg', 'ftg.ForumTopicId', 'forum_topic.Id')
             ->select('forum_topic.*')
             ->where('forum_topic.IsActive', '=', true)
+            ->orderBy('forum_topic.Id', 'DESC')
             ->skip($pageNo * $limit)
             ->take($limit)
             ->get();
@@ -107,6 +108,21 @@ class ForumModel
             ->where('IsActive', '=', true)
             ->where('Id', '=', $commentId)
             ->first();
+
+        return $query;
+    }
+
+    static public function getCommentsViaTopicForumId($pageNo, $limit, $topicForumId)
+    {
+        error_log('in model, fetching comments via forum topic id');
+
+        $query = DB::table('forum_topic_comment')
+            ->where('IsActive', '=', true)
+            ->where('ForumTopicId', '=', $topicForumId)
+            ->orderBy('forum_topic_comment.Id', 'DESC')
+            ->skip($pageNo * $limit)
+            ->take($limit)
+            ->get();
 
         return $query;
     }
