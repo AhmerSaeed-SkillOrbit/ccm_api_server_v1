@@ -78,8 +78,9 @@ class ForumModel
 
         $query = DB::table('forum_topic')
             ->leftjoin('forum_topic_tag as ftg', 'ftg.ForumTopicId', 'forum_topic.Id')
-            ->leftjoin('tag as tag', 'ftg.TagId', 'tag.Id')
-            ->leftjoin('forum_topic_comment as comment', 'comment.ForumTopicId', 'forum_topic.Id')
+//            ->leftjoin('tag as tag', 'ftg.TagId', 'tag.Id')
+//            ->leftjoin('forum_topic_comment as comment', 'comment.ForumTopicId', 'forum_topic.Id')
+            ->select('forum_topic.*')
             ->where('forum_topic.IsActive', '=', true)
             ->skip($pageNo * $limit)
             ->take($limit)
