@@ -58,4 +58,18 @@ class ForumModel
         return $query;
     }
 
+    static public function getForumCommentsViaForumTopicId($topicForumId)
+    {
+        error_log('in model, fetching tags via id');
+
+        $query = DB::table('forum_topic_comment')
+            ->select('forum_topic_comment.Id', 'forum_topic_comment.Comment',
+                'forum_topic_comment.CreatedOn', 'forum_topic_comment.UpdatedOn')
+            ->where('forum_topic_comment.ForumTopicId', '=', $topicForumId)
+            ->where('forum_topic_comment.IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
 }

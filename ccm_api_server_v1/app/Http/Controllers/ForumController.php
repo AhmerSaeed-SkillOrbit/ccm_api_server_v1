@@ -238,33 +238,59 @@ class ForumController extends Controller
     {
         $userId = $request->get('userId');
         $forumTopicId = $request->get('forumTopicId');
+        $comment = $request->get('comment');
 
-        //Now check if forum exists.
-        //If exists fetched the record
+        //First check logged in user data if it is valid or not
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
 
-        $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
-        if ($getForumTopicData == null) {
-            error_log('forum topic not found');
-            return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
         } else {
-            error_log('forum topic found');
+            error_log('logged in user data found');
 
-            $forumTopicData['Id'] = $getForumTopicData->Id;
-            $forumTopicData['Title'] = $getForumTopicData->Title;
-            $forumTopicData['Description'] = $getForumTopicData->Description;
+            //Now check if forum exists.
+            //If exists fetched the record
 
-            //After fetching this data
-            //Now we will fetch tags data
-
-            $getForumTagViaId = ForumModel::getTagsViaTopicForumId($forumTopicId);
-            if (count($getForumTagViaId) > 0) {
-                error_log('tags found');
-                $forumTopicData['Tags'] = $getForumTagViaId;
+            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+            if ($getForumTopicData == null) {
+                error_log('forum topic not found');
+                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
             } else {
-                $forumTopicData['Tags'] = array();
+                error_log('forum topic found');
+
+                $forumTopicData['Id'] = $getForumTopicData->Id;
+                $forumTopicData['Title'] = $getForumTopicData->Title;
+                $forumTopicData['Description'] = $getForumTopicData->Description;
+
+                //After fetching this data
+                //Now we will fetch tags data
+
+                $getForumTagViaId = ForumModel::getTagsViaTopicForumId($forumTopicId);
+                if (count($getForumTagViaId) > 0) {
+                    error_log('tags found');
+                    $forumTopicData['Tags'] = $getForumTagViaId;
+                } else {
+                    $forumTopicData['Tags'] = array();
+                }
+
+                //Now weill fetch comments of the forum
+                if ($comment == "yes") {
+                    error_log('YES comments');
+                    $getForumComments = ForumModel::getForumCommentsViaForumTopicId($forumTopicId);
+                    if (count($getForumComments) > 0) {
+                        error_log('Comments found found');
+                        $forumTopicData['Comments'] = $getForumComments;
+                    } else {
+                        $forumTopicData['Comments'] = array();
+                    }
+                } else {
+                    error_log('NO comments');
+                    $forumTopicData['Comments'] = array();
+                }
+
+                return response()->json(['data' => $forumTopicData, 'message' => 'Forum topic data found'], 200);
             }
 
-            return response()->json(['data' => $forumTopicData, 'message' => 'Forum topic data found'], 200);
         }
     }
 }
