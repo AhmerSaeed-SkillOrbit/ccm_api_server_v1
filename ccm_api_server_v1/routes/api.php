@@ -131,6 +131,9 @@ Route::get('/forum/topic/list/count', 'ForumController@GetForumTopicListCount');
 //Add forum comment
 Route::post('/forum/topic/comment/add', 'ForumController@AddForumTopicComment');
 
+//Update forum comment
+Route::post('/forum/topic/comment/update', 'ForumController@UpdateForumTopicComment');
+
 Route::get('/', function () {
     return 'Hello';
 });

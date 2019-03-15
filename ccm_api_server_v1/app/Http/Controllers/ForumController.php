@@ -424,12 +424,11 @@ class ForumController extends Controller
     {
         error_log('in controller');
 
+        $forumCommentId = $request->input('ForumTopicCommentId');
         $forumTopicId = $request->input('ForumTopicId');
         $userId = $request->input('UserId');
 
         $comment = $request->input('Comment');
-
-        error_log('$comment ' . $comment);
 
         //First check if logged if user id is valid or not
 
@@ -446,8 +445,7 @@ class ForumController extends Controller
                 return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
             } else {
                 error_log('forum found');
-
-                //Now making data to update forum_topic_comment table
+                //Now making data to insert forum_topic_comment table
 
                 $date = HelperModel::getDate();
 
@@ -465,6 +463,64 @@ class ForumController extends Controller
                     return response()->json(['data' => null, 'message' => 'Error in adding comment'], 400);
                 } else {
                     return response()->json(['data' => $insertedData, 'message' => 'Comment given successfully'], 200);
+                }
+            }
+        }
+    }
+
+    function UpdateForumTopicComment(Request $request)
+    {
+        error_log('in controller');
+
+        $forumCommentId = $request->input('ForumTopicCommentId');
+        $forumTopicId = $request->input('ForumTopicId');
+        $userId = $request->input('UserId');
+
+        $comment = $request->input('Comment');
+
+        //First check if logged if user id is valid or not
+
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now check if this forum exists or not
+            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+            if ($getForumTopicData == null) {
+                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+            } else {
+                error_log('forum found');
+
+                //Now fetch the single comment to check if this comment exists or not
+
+                $getComment = ForumModel::getSingleCommentViaCommentId($forumCommentId);
+
+                if ($getComment == null) {
+                    return response()->json(['data' => null, 'message' => 'Comment not found'], 400);
+                } else {
+                    //Now making data to update forum_topic_comment table
+
+                    $date = HelperModel::getDate();
+
+                    $dataToUpdate = array(
+                        "ForumTopicId" => $forumTopicId,
+                        "Comment" => $comment,
+                        "UserId" => $userId,
+                        "IsActive" => true,
+                        "UpdatedBy" => $userId,
+                        "UpdatedOn" => $date["timestamp"]
+                    );
+
+                    $update = GenericModel::updateGeneric('forum_topic_comment', 'Id', $forumCommentId, $dataToUpdate);
+
+                    if ($update == false) {
+                        return response()->json(['data' => null, 'message' => 'Error in updating comment'], 400);
+                    } else {
+                        return response()->json(['data' => $forumCommentId, 'message' => 'Comment updated successfully'], 200);
+                    }
                 }
             }
         }

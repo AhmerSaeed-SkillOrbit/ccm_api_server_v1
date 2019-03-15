@@ -99,4 +99,16 @@ class ForumModel
         return $query;
     }
 
+    static public function getSingleCommentViaCommentId($commentId)
+    {
+        error_log('in model, fetching comment via comment id');
+
+        $query = DB::table('forum_topic_comment')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $commentId)
+            ->first();
+
+        return $query;
+    }
+
 }
