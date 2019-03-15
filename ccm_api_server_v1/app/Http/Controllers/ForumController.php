@@ -233,4 +233,38 @@ class ForumController extends Controller
             }
         }
     }
+
+    function GetSingleForumTopic(Request $request)
+    {
+        $userId = $request->get('userId');
+        $forumTopicId = $request->get('forumTopicId');
+
+        //Now check if forum exists.
+        //If exists fetched the record
+
+        $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+        if ($getForumTopicData == null) {
+            error_log('forum topic not found');
+            return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+        } else {
+            error_log('forum topic found');
+
+            $forumTopicData['Id'] = $getForumTopicData->Id;
+            $forumTopicData['Title'] = $getForumTopicData->Title;
+            $forumTopicData['Description'] = $getForumTopicData->Description;
+
+            //After fetching this data
+            //Now we will fetch tags data
+
+            $getForumTagViaId = ForumModel::getTagsViaTopicForumId($forumTopicId);
+            if (count($getForumTagViaId) > 0) {
+                error_log('tags found');
+                $forumTopicData['Tags'] = $getForumTagViaId;
+            } else {
+                $forumTopicData['Tags'] = array();
+            }
+
+            return response()->json(['data' => $forumTopicData, 'message' => 'Forum topic data found'], 200);
+        }
+    }
 }

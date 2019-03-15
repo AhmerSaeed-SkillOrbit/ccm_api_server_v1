@@ -36,7 +36,11 @@ class ForumModel
         error_log('in model, fetching tags via id');
 
         $query = DB::table('forum_topic_tag')
-            ->where('ForumTopicId', '=', $topicForumId)
+            ->select('tag.Id', 'tag.Name', 'tag.Code', 'tag.ToolTip', 'tag.Description')
+            ->leftjoin('tag as tag', 'forum_topic_tag.TagId', 'tag.Id')
+            ->where('forum_topic_tag.ForumTopicId', '=', $topicForumId)
+            ->where('tag.IsActive', '=', true)
+            ->groupBy('forum_topic_tag.TagId')
             ->get();
 
         return $query;
@@ -44,6 +48,8 @@ class ForumModel
 
     static public function getForumTopicViaId($forumTopicId)
     {
+        error_log('in model , fetching forum topic');
+
         $query = DB::table('forum_topic')
             ->where('Id', '=', $forumTopicId)
             ->where('IsActive', '=', true)

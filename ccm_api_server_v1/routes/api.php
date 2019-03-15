@@ -117,6 +117,9 @@ Route::post('/forum/topic/add', 'ForumController@AddForumTopic');
 //Update forum topic
 Route::post('/forum/topic/update', 'ForumController@UpdateForumTopic');
 
+//Get single forum topic
+Route::get('/forum/topic/single', 'ForumController@GetSingleForumTopic');
+
 Route::get('/', function () {
     return 'Hello';
 });
