@@ -503,13 +503,16 @@ class ForumController extends Controller
                 } else {
                     //Now making data to update forum_topic_comment table
 
+                    if ($getComment->UserId != $userId) {
+                        return response()->json(['data' => null, 'message' => 'This comment is not given by you'], 400);
+                    }
+
                     $date = HelperModel::getDate();
 
                     $dataToUpdate = array(
                         "ForumTopicId" => $forumTopicId,
                         "Comment" => $comment,
                         "UserId" => $userId,
-                        "IsActive" => true,
                         "UpdatedBy" => $userId,
                         "UpdatedOn" => $date["timestamp"]
                     );
