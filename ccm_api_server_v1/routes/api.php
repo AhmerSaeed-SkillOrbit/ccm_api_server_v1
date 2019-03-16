@@ -105,6 +105,44 @@ Route::post('/appointment/request/status/update', 'DoctorScheduleController@upda
 
 Route::post('/appointment/cancel/', 'DoctorScheduleController@MarkAppointmentCancel');
 
+//Add tag
+Route::post('/tag/add', 'ForumController@AddTag');
+
+//get tag list
+Route::get('/tag/list', 'ForumController@getTagList');
+
+//Add forum topic
+Route::post('/forum/topic/add', 'ForumController@AddForumTopic');
+
+//Update forum topic
+Route::post('/forum/topic/update', 'ForumController@UpdateForumTopic');
+
+//Delete forum topic
+Route::post('/forum/topic/delete', 'ForumController@DeleteForumTopic');
+
+//Get single forum topic
+Route::get('/forum/topic/single', 'ForumController@GetSingleForumTopic');
+
+//Get forum topic list
+Route::get('/forum/topic/list', 'ForumController@GetForumTopicListViaPagination');
+
+Route::get('/forum/topic/list/count', 'ForumController@GetForumTopicListCount');
+
+//Add forum comment
+Route::post('/forum/topic/comment/add', 'ForumController@AddForumTopicComment');
+
+//Update forum comment
+Route::post('/forum/topic/comment/update', 'ForumController@UpdateForumTopicComment');
+
+//Delete forum comment
+Route::post('/forum/topic/comment/delete', 'ForumController@DeleteForumTopicComment');
+
+//get single forum comment
+Route::get('/forum/topic/comment/single', 'ForumController@GetSingleForumTopicComment');
+
+//get single forum comment
+Route::get('/forum/topic/comment/list', 'ForumController@GetForumTopicCommentsViaPagination');
+
 Route::get('/', function () {
     return 'Hello';
 });

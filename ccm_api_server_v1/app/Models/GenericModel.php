@@ -16,7 +16,6 @@ class GenericModel
     static public function insertGenericAndReturnID($tableName, $data)
     {
         $result = DB::table($tableName)->insertGetId($data);
-        error_log('$result ' . $result);
         return $result;
     }
 
