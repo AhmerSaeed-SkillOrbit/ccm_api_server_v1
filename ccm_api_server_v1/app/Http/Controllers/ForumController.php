@@ -327,8 +327,12 @@ class ForumController extends Controller
                         'Description' => $item->Description,
                         'CreatedOn' => $item->CreatedOn,
                         'UpdatedOn' => $item->UpdatedOn,
+                        'CreatedBy' => array(),
                         'Tags' => array()
                     );
+
+                    $data['CreatedBy']['FirstName'] = $item->FirstName;
+                    $data['CreatedBy']['LastName'] = $item->LastName;
 
                     //Now get doc tor schedule shift detail with respect to loops id
 
@@ -625,8 +629,28 @@ class ForumController extends Controller
 
                 $getComment = ForumModel::getCommentsViaTopicForumId($pageNo, $limit, $forumTopicId);
 
+                $commentsData = array();
+
                 if (count($getComment) > 0) {
-                    return response()->json(['data' => $getComment, 'message' => 'Comment found'], 200);
+                    error_log('comments found');
+                    foreach ($getComment as $item) {
+
+                        $data = array(
+                            "Id" => $item->Id,
+                            "Comment" => $item->Comment,
+                            "CreatedOn" => $item->CreatedOn,
+                            "Vote" => $item->Vote,
+                            "CreatedBy" => array()
+                        );
+
+                        $data['CreatedBy']['FirstName'] = $item->FirstName;
+                        $data['CreatedBy']['LastName'] = $item->LastName;
+
+                        array_push($commentsData, $data);
+
+                    }
+
+                    return response()->json(['data' => $commentsData, 'message' => 'Comment found'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Comment not found'], 200);
                 }

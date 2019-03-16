@@ -78,7 +78,8 @@ class ForumModel
 
         $query = DB::table('forum_topic')
             ->leftjoin('forum_topic_tag as ftg', 'ftg.ForumTopicId', 'forum_topic.Id')
-            ->select('forum_topic.*')
+            ->leftjoin('user as user', 'forum_topic.CreatedBy', 'user.Id')
+            ->select('forum_topic.*', 'user.FirstName', 'user.LastName')
             ->where('forum_topic.IsActive', '=', true)
             ->orderBy('forum_topic.Id', 'DESC')
             ->skip($pageNo * $limit)
@@ -117,8 +118,10 @@ class ForumModel
         error_log('in model, fetching comments via forum topic id');
 
         $query = DB::table('forum_topic_comment')
-            ->where('IsActive', '=', true)
-            ->where('ForumTopicId', '=', $topicForumId)
+            ->leftjoin('user as user', 'forum_topic_comment.CreatedBy', 'user.Id')
+            ->select('forum_topic_comment.*', 'user.FirstName', 'user.LastName')
+            ->where('forum_topic_comment.IsActive', '=', true)
+            ->where('forum_topic_comment.ForumTopicId', '=', $topicForumId)
             ->orderBy('forum_topic_comment.Id', 'DESC')
             ->skip($pageNo * $limit)
             ->take($limit)
