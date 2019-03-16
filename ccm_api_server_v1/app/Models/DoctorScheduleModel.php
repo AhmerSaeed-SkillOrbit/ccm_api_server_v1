@@ -43,6 +43,7 @@ class DoctorScheduleModel
             ->select('Id', 'StartDate', 'EndDate', 'MonthName', 'YearName')
             ->where('DoctorId', '=', $doctorId)
             ->where('IsActive', '=', true)
+            ->orderBy('MonthName', 'ASC')
 //            ->offset($offset)->limit($limit)
             ->skip($offset * $limit)->take($limit)
             ->get();
@@ -111,6 +112,7 @@ class DoctorScheduleModel
                 "IsOffDay")
             ->where("DoctorScheduleId", "=", $doctorScheduleId)
             ->where("IsActive", "=", true)
+            ->orderBy('ScheduleDate', 'ASC')
             ->get();
 
         return $query;
@@ -515,8 +517,8 @@ class DoctorScheduleModel
         $timeSlots = array();
         $diff = 0;
         $min = 0;
-        $endSlot1= 0;
-        $endSlot2=0;
+        $endSlot1 = 0;
+        $endSlot2 = 0;
 
         if ($indexItem == null) {
             error_log("$indexItem is start");
@@ -581,6 +583,15 @@ class DoctorScheduleModel
             array_push($timeSlots, $range);
         }
 
+//        foreach ($timeSlots as $i) {
+//            $timeSlotsData = array(
+//                "DoctorScheduleShiftId" => 1,
+//                "TimeSlot" => $i,
+//            );
+//            $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+//        }
+
+        return $timeSlots;
         print_r($timeSlots);
     }
 }
