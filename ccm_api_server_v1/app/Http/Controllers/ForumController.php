@@ -633,4 +633,36 @@ class ForumController extends Controller
             }
         }
     }
+
+    function GetForumTopicCommentsCount(Request $request)
+    {
+        error_log('in controller');
+
+        $forumTopicId = $request->get('forumTopicId');
+        $userId = $request->get('userId');
+
+        //First check if logged if user id is valid or not
+
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now check if this forum exists or not
+            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+            if ($getForumTopicData == null) {
+                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+            } else {
+                error_log('forum found');
+
+                //Now fetch the list of comment to check if this comment exists or not
+
+                $getCommentCount = ForumModel::getCommentsCountViaTopicForumId($forumTopicId);
+
+                return response()->json(['data' => $getCommentCount, 'message' => 'Total count'], 200);
+            }
+        }
+    }
 }

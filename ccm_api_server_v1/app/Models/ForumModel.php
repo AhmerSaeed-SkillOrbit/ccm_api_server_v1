@@ -127,4 +127,15 @@ class ForumModel
         return $query;
     }
 
+    static public function getCommentsCountViaTopicForumId($topicForumId)
+    {
+        error_log('in model, fetching comments via forum topic id');
+
+        $query = DB::table('forum_topic_comment')
+            ->where('IsActive', '=', true)
+            ->where('ForumTopicId', '=', $topicForumId)
+            ->count();
+
+        return $query;
+    }
 }
