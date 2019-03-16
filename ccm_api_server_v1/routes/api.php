@@ -140,8 +140,11 @@ Route::post('/forum/topic/comment/delete', 'ForumController@DeleteForumTopicComm
 //get single forum comment
 Route::get('/forum/topic/comment/single', 'ForumController@GetSingleForumTopicComment');
 
-//get single forum comment
+//get forum comment list
 Route::get('/forum/topic/comment/list', 'ForumController@GetForumTopicCommentsViaPagination');
+
+//get forum comment list count
+Route::get('/forum/topic/comment/list/count', 'ForumController@GetForumTopicCommentsCount');
 
 Route::get('/', function () {
     return 'Hello';

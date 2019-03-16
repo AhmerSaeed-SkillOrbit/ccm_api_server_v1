@@ -321,7 +321,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
@@ -392,7 +393,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $patientRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -464,7 +466,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
@@ -487,7 +490,6 @@ class UserController extends Controller
                     }
                 }
             }
-
         }
     }
 

@@ -327,8 +327,12 @@ class ForumController extends Controller
                         'Description' => $item->Description,
                         'CreatedOn' => $item->CreatedOn,
                         'UpdatedOn' => $item->UpdatedOn,
+                        'CreatedBy' => array(),
                         'Tags' => array()
                     );
+
+                    $data['CreatedBy']['FirstName'] = $item->FirstName;
+                    $data['CreatedBy']['LastName'] = $item->LastName;
 
                     //Now get doc tor schedule shift detail with respect to loops id
 
@@ -625,11 +629,63 @@ class ForumController extends Controller
 
                 $getComment = ForumModel::getCommentsViaTopicForumId($pageNo, $limit, $forumTopicId);
 
+                $commentsData = array();
+
                 if (count($getComment) > 0) {
-                    return response()->json(['data' => $getComment, 'message' => 'Comment found'], 200);
+                    error_log('comments found');
+                    foreach ($getComment as $item) {
+
+                        $data = array(
+                            "Id" => $item->Id,
+                            "Comment" => $item->Comment,
+                            "CreatedOn" => $item->CreatedOn,
+                            "Vote" => $item->Vote,
+                            "CreatedBy" => array()
+                        );
+
+                        $data['CreatedBy']['FirstName'] = $item->FirstName;
+                        $data['CreatedBy']['LastName'] = $item->LastName;
+
+                        array_push($commentsData, $data);
+
+                    }
+
+                    return response()->json(['data' => $commentsData, 'message' => 'Comment found'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Comment not found'], 200);
                 }
+            }
+        }
+    }
+
+    function GetForumTopicCommentsCount(Request $request)
+    {
+        error_log('in controller');
+
+        $forumTopicId = $request->get('forumTopicId');
+        $userId = $request->get('userId');
+
+        //First check if logged if user id is valid or not
+
+        $checkUserData = UserModel::GetSingleUserViaId($userId);
+
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('logged in user data found');
+
+            //Now check if this forum exists or not
+            $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+            if ($getForumTopicData == null) {
+                return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+            } else {
+                error_log('forum found');
+
+                //Now fetch the list of comment to check if this comment exists or not
+
+                $getCommentCount = ForumModel::getCommentsCountViaTopicForumId($forumTopicId);
+
+                return response()->json(['data' => $getCommentCount, 'message' => 'Total count'], 200);
             }
         }
     }
