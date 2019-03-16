@@ -79,7 +79,7 @@ class ForumModel
         $query = DB::table('forum_topic')
             ->leftjoin('forum_topic_tag as ftg', 'ftg.ForumTopicId', 'forum_topic.Id')
             ->leftjoin('user as user', 'forum_topic.CreatedBy', 'user.Id')
-            ->select('forum_topic.*', 'user.FirstName', 'user.LastName')
+            ->select('forum_topic.*', 'user.Id as CreatedById','user.FirstName', 'user.LastName')
             ->where('forum_topic.IsActive', '=', true)
             ->orderBy('forum_topic.Id', 'DESC')
             ->skip($pageNo * $limit)
@@ -119,7 +119,7 @@ class ForumModel
 
         $query = DB::table('forum_topic_comment')
             ->leftjoin('user as user', 'forum_topic_comment.CreatedBy', 'user.Id')
-            ->select('forum_topic_comment.*', 'user.FirstName', 'user.LastName')
+            ->select('forum_topic_comment.*','user.Id as CreatedById', 'user.FirstName', 'user.LastName')
             ->where('forum_topic_comment.IsActive', '=', true)
             ->where('forum_topic_comment.ForumTopicId', '=', $topicForumId)
             ->orderBy('forum_topic_comment.Id', 'DESC')
