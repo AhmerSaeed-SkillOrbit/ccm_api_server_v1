@@ -370,26 +370,28 @@ class DoctorScheduleController extends Controller
                         "IsActive" => true
                     );
 
-                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+                    $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
+//                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
 
-                    error_log('$checkInsertedData  = ' . $checkInsertedData);
+                    error_log('$checkInsertedData  = ' . $getInsertedDataId);
                     error_log('=========================');
 
-                    if ($checkInsertedData == false) {
+                    if ($getInsertedDataId == false) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    } else {
+                        //now insert dynamic time slots
+                        $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
+                        if (count($timeSlots) > 0) {
+                            foreach ($timeSlots as $i) {
+                                $timeSlotsData = array(
+                                    "DoctorScheduleShiftId" => $getInsertedDataId,
+                                    "TimeSlot" => $i,
+                                );
+                                $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                            }
+                        }
                     }
-//                    else {
-//                        //insert calcuated time-slot
-//                        if ($scheduleShift['StartTime'] != null) {
-//
-//                            $endTimeSlot = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
-//
-//
-//
-//                            array_push($endTimeSlot);
-//                        }
-//                    }
                 }
             }
         }
@@ -494,11 +496,23 @@ class DoctorScheduleController extends Controller
                                         "NoOfPatientAllowed" => $item['NoOfPatientAllowed'],
                                         "IsActive" => true
                                     );
-
-                                $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
-                                if ($checkInsertedData == false) {
+                                $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
+//                                $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+                                if ($getInsertedDataId == false) {
                                     DB::rollBack();
                                     return response()->json(['data' => null, 'message' => 'Error in inserting schedule shift'], 400);
+                                }
+
+                                //now insert dynamic time slots
+                                $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($doctorScheduleShiftData['StartTime'], $doctorScheduleShiftData['EndTime'], $doctorScheduleShiftData['NoOfPatientAllowed']);
+                                if (count($timeSlots) > 0) {
+                                    foreach ($timeSlots as $i) {
+                                        $timeSlotsData = array(
+                                            "DoctorScheduleShiftId" => $getInsertedDataId,
+                                            "TimeSlot" => $i,
+                                        );
+                                        $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                                    }
                                 }
                             }
                         } else {
@@ -542,7 +556,6 @@ class DoctorScheduleController extends Controller
                     }
                 }
             }
-
 
             error_log('Now updating doctor schedule details');
 
@@ -1019,7 +1032,7 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
                 }
                 UserModel::sendEmail($DoctorData[0]->EmailAddress, $emailMessageForDoctor, null);
 
@@ -1030,7 +1043,7 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
                 }
                 return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment request successfully created'], 200);
             }
@@ -1287,11 +1300,11 @@ class DoctorScheduleController extends Controller
             //if already rejected or pending do not update to accepted
 
             if ($reqStatus == 'accepted') {
-                if ($getAppointmentData->RequestStatus == $appointmentRequestRejected || $getAppointmentData->RequestStatus == $appointmentRequestPending) {
-                    error_log('patient has already rejected or request is in pending');
+                if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
+                    error_log('Doctor has already reject your request so it cannot be accept');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
                 } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
-                    error_log('patient has already accepted');
+                    error_log('Doctor has already accept your request');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 }
             }
@@ -1300,15 +1313,19 @@ class DoctorScheduleController extends Controller
             //if already accepted or pending do not update to rejected
 
             else if ($reqStatus == 'rejected') {
-                if ($getAppointmentData->RequestStatus == $appointmentRequestPending) {
-                    error_log('patient has already in pending');
-                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
-                } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
                     error_log('patient has already accepted');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
                 } else if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
                     error_log('patient has already rejected');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+                } else {
+                    
+                    //update book status to 0 bcz appointment is rejected
+                    $dataToUpdate = array(
+                        "IsBooked" => 0
+                    );
+                    $update = GenericModel::updateGeneric('shift_time_slot', 'Id', $getAppointmentData->ShiftTimeSlotId, $dataToUpdate);
                 }
             }
 
@@ -1485,30 +1502,32 @@ class DoctorScheduleController extends Controller
         $startTime = $query->StartTime;
         $endTime = $query->EndTime;
 
-        $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+        DoctorScheduleModel::CalculateTimeSlotDynamically($startTime, $endTime, $patientAllowed);
 
-        error_log($startTime);
-        error_log($endTime);
-        error_log('time difference in min');
-        error_log($diff);
-
-        $avg = round($diff / $patientAllowed);
-
-        error_log('avg time in hours');
-        error_log($avg);
-
-        //convert to mints
-        $min = round($avg * 60);
-
-        error_log('convert in mints');
-        error_log($min);
-
-//        $endTime = date("H:i", strtotime('+30 minutes', $time));
-//        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
-
-        $endTime = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
-        error_log("added time");
-        error_log($endTime);
+//        $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+//
+//        error_log($startTime);
+//        error_log($endTime);
+//        error_log('time difference in min');
+//        error_log($diff);
+//
+//        $avg = round($diff / $patientAllowed);
+//
+//        error_log('avg time in hours');
+//        error_log($avg);
+//
+//        //convert to mints
+//        $min = round($avg * 60);
+//
+//        error_log('convert in mints');
+//        error_log($min);
+//
+////        $endTime = date("H:i", strtotime('+30 minutes', $time));
+////        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
+//
+//        $endTime = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+//        error_log("added time");
+//        error_log($endTime);
     }
 
 //    function calculateTimeSlots(){
