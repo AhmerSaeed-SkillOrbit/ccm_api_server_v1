@@ -333,6 +333,7 @@ class DoctorScheduleController extends Controller
 
         foreach ($scheduleDetail as $item) {
             error_log('$outerCounter = ' . $outerCounter = $outerCounter + 1);
+
             if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
 
                 $doctorScheduleDetailData = array(
@@ -348,7 +349,7 @@ class DoctorScheduleController extends Controller
                 return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
             }
             $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
-            error_log('$checkInsertedData of doctor schedule detail' . $getInsertedDataId);
+            error_log('$checkInsertedData of doctor schedule detail = ' . $getInsertedDataId);
             if ($getInsertedDataId == 0) {
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
@@ -359,7 +360,7 @@ class DoctorScheduleController extends Controller
 
                 foreach ($item['ScheduleShift'] as $scheduleShift) {
 
-                    error_log('$InnerCounter = ' . $InnerCounter = $InnerCounter + 1);
+                    error_log('$InnerCounter for schedule shift = ' . $InnerCounter = $InnerCounter + 1);
                     error_log('======================');
 
                     $doctorScheduleShiftData = array(
@@ -370,13 +371,13 @@ class DoctorScheduleController extends Controller
                         "IsActive" => true
                     );
 
-                    $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
+                    $getInsertedDataOfShiftId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
 //                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
 
-                    error_log('$checkInsertedData  = ' . $getInsertedDataId);
+                    error_log('$checkInsertedData of schedule shift  = ' . $getInsertedDataOfShiftId);
                     error_log('=========================');
 
-                    if ($getInsertedDataId == false) {
+                    if ($getInsertedDataOfShiftId == false) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
                     } else {
@@ -385,7 +386,7 @@ class DoctorScheduleController extends Controller
                         if (count($timeSlots) > 0) {
                             foreach ($timeSlots as $i) {
                                 $timeSlotsData = array(
-                                    "DoctorScheduleShiftId" => $getInsertedDataId,
+                                    "DoctorScheduleShiftId" => $getInsertedDataOfShiftId,
                                     "TimeSlot" => $i,
                                 );
                                 $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
