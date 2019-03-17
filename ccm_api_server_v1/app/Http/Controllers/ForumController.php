@@ -341,6 +341,7 @@ class ForumController extends Controller
                         'Tags' => array()
                     );
 
+                    $data['CreatedBy']['Id'] = $item->CreatedById;
                     $data['CreatedBy']['FirstName'] = $item->FirstName;
                     $data['CreatedBy']['LastName'] = $item->LastName;
 
@@ -657,6 +658,7 @@ class ForumController extends Controller
                             "CreatedBy" => array()
                         );
 
+                        $data['CreatedBy']['Id'] = $item->CreatedById;
                         $data['CreatedBy']['FirstName'] = $item->FirstName;
                         $data['CreatedBy']['LastName'] = $item->LastName;
 
