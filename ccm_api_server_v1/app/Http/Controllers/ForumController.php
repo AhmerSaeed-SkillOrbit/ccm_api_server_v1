@@ -262,6 +262,15 @@ class ForumController extends Controller
                 $forumTopicData['Title'] = $getForumTopicData->Title;
                 $forumTopicData['Description'] = $getForumTopicData->Description;
 
+                $forumTopicData['CreatedBy'] = array();
+
+                $forumTopicData['CreatedBy']['FirstName'] = $getForumTopicData->FirstName;
+                $forumTopicData['CreatedBy']['LastName'] = $getForumTopicData->LastName;
+
+                $forumTopicData['Role']['Id'] = $getForumTopicData->RoleId;
+                $forumTopicData['Role']['Name'] = $getForumTopicData->RoleName;
+                $forumTopicData['Role']['CodeName'] = $getForumTopicData->RoleCodeName;
+
                 //After fetching this data
                 //Now we will fetch tags data
 
@@ -328,12 +337,17 @@ class ForumController extends Controller
                         'CreatedOn' => $item->CreatedOn,
                         'UpdatedOn' => $item->UpdatedOn,
                         'CreatedBy' => array(),
+                        'Role' => array(),
                         'Tags' => array()
                     );
 
                     $data['CreatedBy']['Id'] = $item->CreatedById;
                     $data['CreatedBy']['FirstName'] = $item->FirstName;
                     $data['CreatedBy']['LastName'] = $item->LastName;
+
+                    $data['Role']['Id'] = $item->RoleId;
+                    $data['Role']['Name'] = $item->RoleName;
+                    $data['Role']['CodeName'] = $item->RoleCodeName;
 
                     //Now get doc tor schedule shift detail with respect to loops id
 
