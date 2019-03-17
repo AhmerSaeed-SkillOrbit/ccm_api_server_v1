@@ -122,7 +122,7 @@ class ForumModel
             ->select('forum_topic_comment.*', 'user.FirstName', 'user.LastName')
             ->where('forum_topic_comment.IsActive', '=', true)
             ->where('forum_topic_comment.ForumTopicId', '=', $topicForumId)
-            ->orderBy('forum_topic_comment.Id', 'DESC')
+            ->orderBy('forum_topic_comment.Id', 'ASC')
             ->skip($pageNo * $limit)
             ->take($limit)
             ->get();
