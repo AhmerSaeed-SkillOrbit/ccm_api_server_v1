@@ -334,7 +334,7 @@ class ForumController extends Controller
                         'Id' => $item->Id,
                         'Title' => $item->Title,
                         'Description' => $item->Description,
-                        'CreatedOn' => $item->CreatedOn,
+                        'CreatedOn' => ForumModel::calculateTopicAnCommentTime($item->CreatedOn),
                         'UpdatedOn' => $item->UpdatedOn,
                         'CreatedBy' => array(),
                         'Role' => array(),
@@ -653,7 +653,7 @@ class ForumController extends Controller
                         $data = array(
                             "Id" => $item->Id,
                             "Comment" => $item->Comment,
-                            "CreatedOn" => $item->CreatedOn,
+                            "CreatedOn" => ForumModel::calculateTopicAnCommentTime($item->CreatedOn),
                             "Vote" => $item->Vote,
                             "CreatedBy" => array()
                         );

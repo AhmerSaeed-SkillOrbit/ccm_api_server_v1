@@ -85,7 +85,7 @@ class ForumModel
             ->leftjoin('user as user', 'forum_topic.CreatedBy', 'user.Id')
             ->join('user_access', 'user_access.UserId', 'user.Id')
             ->join('role', 'user_access.RoleId', 'role.Id')
-            ->select('forum_topic.*','user.Id as CreatedById', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->select('forum_topic.*', 'user.Id as CreatedById', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
             ->where('forum_topic.IsActive', '=', true)
             ->orderBy('forum_topic.Id', 'DESC')
             ->skip($pageNo * $limit)
@@ -93,6 +93,15 @@ class ForumModel
             ->get();
 
         return $query;
+    }
+
+    //function to convert time as now, 1 min ago
+    static public function getFormattedTime($uTCTime)
+    {
+
+        error_log($uTCTime);
+
+
     }
 
     static public function getForumTopicListCount()
@@ -125,7 +134,7 @@ class ForumModel
 
         $query = DB::table('forum_topic_comment')
             ->leftjoin('user as user', 'forum_topic_comment.CreatedBy', 'user.Id')
-            ->select('forum_topic_comment.*','user.Id as CreatedById', 'user.FirstName', 'user.LastName')
+            ->select('forum_topic_comment.*', 'user.Id as CreatedById', 'user.FirstName', 'user.LastName')
             ->where('forum_topic_comment.IsActive', '=', true)
             ->where('forum_topic_comment.ForumTopicId', '=', $topicForumId)
             ->orderBy('forum_topic_comment.Id', 'ASC')
@@ -146,5 +155,61 @@ class ForumModel
             ->count();
 
         return $query;
+    }
+
+    static public function calculateTopicAnCommentTime($createdOn)
+    {
+        $formatMessage = null;
+//
+//        $timestamp = $request->get('t');
+//        error_log($timestamp);
+
+        $topicCreatedTime = Carbon::createFromTimestamp($createdOn);
+        $currentTime = Carbon::now("UTC");
+
+        $diffInYears = $currentTime->diffInYears($topicCreatedTime);
+        $diffInMonths = $currentTime->diffInMonths($topicCreatedTime);
+        $diffInWeeks = $currentTime->diffInWeeks($topicCreatedTime);
+        $diffInDays = $currentTime->diffInDays($topicCreatedTime);
+        $diffInHours = $currentTime->diffInHours($topicCreatedTime);
+        $diffInMints = $currentTime->diffInMinutes($topicCreatedTime);
+        $diffInSec = $currentTime->diffInSeconds($topicCreatedTime);
+
+        error_log($topicCreatedTime);
+        error_log($currentTime);
+        error_log($diffInYears);
+        error_log($diffInMonths);
+        error_log($diffInWeeks);
+        error_log($diffInDays);
+        error_log($diffInHours);
+        error_log($diffInMints);
+        error_log($diffInSec);
+
+        if ($diffInYears > 0) {
+            $formatMessage = $diffInYears . 'Y ago';
+            return $formatMessage;
+        } else if ($diffInMonths > 0) {
+            $formatMessage = $diffInMonths . 'Mon ago';
+            return $formatMessage;
+        } else if ($diffInWeeks > 0) {
+            $formatMessage = $diffInWeeks . 'W ago';
+            return $formatMessage;
+        } else if ($diffInDays > 0) {
+            $formatMessage = $diffInDays . 'D ago';
+            return $formatMessage;
+        } else if ($diffInHours > 0) {
+            $formatMessage = $diffInHours . 'H ago';
+            return $formatMessage;
+        } else if ($diffInMints > 0) {
+            $formatMessage = $diffInMints . 'Min ago';
+            return $formatMessage;
+        } else if ($diffInSec >= 30) {
+            $formatMessage = $diffInMints . 'Sec ago';
+            return $formatMessage;
+        } else {
+            //seconds
+            $formatMessage = 'Now';
+            return $formatMessage;
+        }
     }
 }

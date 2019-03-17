@@ -1321,7 +1321,7 @@ class DoctorScheduleController extends Controller
                     error_log('patient has already rejected');
                     return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
                 } else {
-                    
+
                     //update book status to 0 bcz appointment is rejected
                     $dataToUpdate = array(
                         "IsBooked" => 0
@@ -1531,8 +1531,59 @@ class DoctorScheduleController extends Controller
 //        error_log($endTime);
     }
 
-//    function calculateTimeSlots(){
-//
-//    }
+    function FormatTime(Request $request)
+    {
+        $formatMessage = null;
 
+        $timestamp = $request->get('t');
+        error_log($timestamp);
+
+        $topicCreatedTime = Carbon::createFromTimestamp($timestamp);
+        $currentTime = Carbon::now("UTC");
+
+        $diffInYears = $currentTime->diffInYears($topicCreatedTime);
+        $diffInMonths = $currentTime->diffInMonths($topicCreatedTime);
+        $diffInWeeks = $currentTime->diffInWeeks($topicCreatedTime);
+        $diffInDays = $currentTime->diffInDays($topicCreatedTime);
+        $diffInHours = $currentTime->diffInHours($topicCreatedTime);
+        $diffInMints = $currentTime->diffInMinutes($topicCreatedTime);
+        $diffInSec = $currentTime->diffInSeconds($topicCreatedTime);
+
+        error_log($topicCreatedTime);
+        error_log($currentTime);
+        error_log($diffInYears);
+        error_log($diffInMonths);
+        error_log($diffInWeeks);
+        error_log($diffInDays);
+        error_log($diffInHours);
+        error_log($diffInMints);
+        error_log($diffInSec);
+
+        if ($diffInYears > 0) {
+            $formatMessage = $diffInYears . 'Y ago';
+            return $formatMessage;
+        } else if ($diffInMonths > 0) {
+            $formatMessage = $diffInMonths . 'Mon ago';
+            return $formatMessage;
+        } else if ($diffInWeeks > 0) {
+            $formatMessage = $diffInWeeks . 'W ago';
+            return $formatMessage;
+        } else if ($diffInDays > 0) {
+            $formatMessage = $diffInDays . 'D ago';
+            return $formatMessage;
+        } else if ($diffInHours > 0) {
+            $formatMessage = $diffInHours . 'H ago';
+            return $formatMessage;
+        } else if ($diffInMints > 0) {
+            $formatMessage = $diffInMints . 'Min ago';
+            return $formatMessage;
+        } else if ($diffInSec >= 30) {
+            $formatMessage = $diffInMints . 'Sec ago';
+            return $formatMessage;
+        } else {
+            //seconds
+            $formatMessage = 'Now';
+            return $formatMessage;
+        }
+    }
 }

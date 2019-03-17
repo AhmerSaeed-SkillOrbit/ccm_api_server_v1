@@ -173,5 +173,10 @@ Route::get('/patient/associated/doctor', 'DoctorScheduleController@GetPatientAss
 
 Route::get('/add/time/slot', 'DoctorScheduleController@AddTimeSlotDynamically');
 
+Route::get('/format/time/', 'DoctorScheduleController@FormatTime');
+
+//$time = strtotime($dateInUTC.' UTC');
+//$dateInLocal = date("Y-m-d H:i:s", $time);
+
 
 
