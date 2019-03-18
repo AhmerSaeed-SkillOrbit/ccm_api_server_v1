@@ -80,7 +80,7 @@ class TicketController extends Controller
 
                 $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
                 if ($insertedDataId == 0) {
-                    return response()->json(['data' => null, 'message' => 'Error in inserting forum topic'], 400);
+                    return response()->json(['data' => null, 'message' => 'Error in inserting ticket'], 400);
                 } else {
                     return response()->json(['data' => $insertedDataId, 'message' => 'ticket successfully created'], 200);
                 }
@@ -213,6 +213,66 @@ class TicketController extends Controller
             $ticketListCount = TicketModel::GetTicketListCount();
 
             return response()->json(['data' => $ticketListCount, 'message' => 'Total count'], 200);
+        }
+    }
+
+    function GetTicketPriorities(Request $request)
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getPriorities();
+
+        return response()->json(['data' => $ticketPriorities, 'message' => 'Priorities found'], 200);
+    }
+
+    function UpdateTicket(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketId = $request->get('ticketId');
+        $openTrackStatus = env('TICKET_TRACK_STATUS_OPEN');
+
+        $date = HelperModel::getDate();
+
+        // First check if user data found or not via user ID
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            //Now fetch the ticket and check if it exists
+            $getSingleTicket = TicketModel::GetTicketViaId($ticketId);
+            if ($getSingleTicket == null) {
+                return response()->json(['data' => null, 'message' => 'Ticket not found'], 400);
+            } else {
+                error_log('Ticket found');
+                error_log('Now checking if ticket is already open');
+                //Only open tickets will be updated
+
+                if ($getSingleTicket->TrackStatus != $openTrackStatus) {
+                    return response()->json(['data' => null, 'message' => 'Only open tickets can be updated'], 400);
+                } else {
+                    error_log('User record found');
+                    //Now we will make data and will insert it
+                    $ticketData = array(
+                        "Title" => $request->input('Title'),
+                        "Description" => $request->input('Description'),
+                        "Priority" => $request->input('Priority'),
+                        "OtherType" => $request->input('OtherType'),
+                        "Type" => $request->input('Type'),
+                        "UpdatedBy" => $userId,
+                        "UpdatedOn" => $date["timestamp"],
+                        "IsActive" => true
+                    );
+
+                    $insertedDataId = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
+                    if ($insertedDataId == false) {
+                        return response()->json(['data' => null, 'message' => 'Error in updating ticket'], 400);
+                    } else {
+                        return response()->json(['data' => $ticketId, 'message' => 'ticket successfully updated'], 200);
+                    }
+                }
+            }
         }
     }
 

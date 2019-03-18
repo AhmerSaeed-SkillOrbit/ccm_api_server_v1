@@ -77,4 +77,21 @@ class TicketModel
         return $query;
     }
 
+    public static function getPriorities()
+    {
+        $type = DB::select(DB::raw("SHOW COLUMNS FROM ticket WHERE Field = 'priority'"))[0]->Type;
+        preg_match('/^enum\((.*)\)$/', $type, $matches);
+        $enum = array();
+        foreach (explode(',', $matches[1]) as $value) {
+            $v = trim($value, "'");
+//            $enum = array_add($enum, $v, $v);
+
+            $data = array(
+                $v => $v
+            );
+            array_push($enum, $data);
+        }
+        return $enum;
+    }
+
 }

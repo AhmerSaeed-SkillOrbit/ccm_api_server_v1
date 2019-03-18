@@ -158,6 +158,12 @@ Route::get('/ticket/list', 'TicketController@TicketListViaPagination');
 //get ticket list count
 Route::get('/ticket/list/count', 'TicketController@TicketListCount');
 
+//get ticket list count
+Route::get('/ticket/priority/list', 'TicketController@GetTicketPriorities');
+
+//Update ticket
+Route::post('/ticket/update', 'TicketController@UpdateTicket');
+
 
 
 Route::get('/', function () {
