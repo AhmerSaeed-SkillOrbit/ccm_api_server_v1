@@ -258,12 +258,16 @@ class ForumController extends Controller
             } else {
                 error_log('forum topic found');
 
+                $getCommentCount = ForumModel::getCommentsCountViaTopicForumId($forumTopicId);
+
                 $forumTopicData['Id'] = $getForumTopicData->Id;
                 $forumTopicData['Title'] = $getForumTopicData->Title;
                 $forumTopicData['Description'] = $getForumTopicData->Description;
+                $forumTopicData['CommentCount'] = $getCommentCount;
 
                 $forumTopicData['CreatedBy'] = array();
 
+                $forumTopicData['CreatedBy']['Id'] = $getForumTopicData->CreatedBy;
                 $forumTopicData['CreatedBy']['FirstName'] = $getForumTopicData->FirstName;
                 $forumTopicData['CreatedBy']['LastName'] = $getForumTopicData->LastName;
 
