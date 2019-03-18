@@ -88,8 +88,7 @@ class ForumModel
             ->select('forum_topic.*', 'user.Id as CreatedById', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
             ->where('forum_topic.IsActive', '=', true)
             ->orderBy('forum_topic.Id', 'DESC')
-            ->skip($pageNo * $limit)
-            ->take($limit)
+            ->offset($pageNo)->limit($limit)
             ->get();
 
         return $query;
@@ -144,7 +143,9 @@ class ForumModel
             ->where('forum_topic_comment.IsActive', '=', true)
             ->where('forum_topic_comment.ForumTopicId', '=', $topicForumId)
             ->orderBy('forum_topic_comment.Id', 'ASC')
-            ->offset($pageNo)->limit($limit)
+            ->skip($pageNo * $limit)
+            ->take($limit)
+            >offset($pageNo)->limit($limit)
             ->get();
 
         return $query;
