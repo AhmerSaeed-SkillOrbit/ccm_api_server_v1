@@ -78,7 +78,7 @@ class ForumController extends Controller
 
         //First check if logged if user id is valid or not
 
-        $checkUserData = UserModel::GetSingleUserViaId($userId);
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
 
         if ($checkUserData == null) {
             return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
