@@ -149,6 +149,9 @@ Route::get('/forum/topic/comment/list/count', 'ForumController@GetForumTopicComm
 //Create ticket
 Route::post('/ticket/create', 'TicketController@CreateTicket');
 
+//get ticket single
+Route::get('/ticket/single', 'TicketController@TicketSingle');
+
 //get ticket list via pagination
 Route::get('/ticket/list', 'TicketController@TicketListViaPagination');
 

@@ -49,6 +49,23 @@ class TicketModel
         return $query;
     }
 
+    static public function GetTicketViaId($ticketId)
+    {
+        error_log('in model, fetching single ticket via id');
+
+        $query = DB::table('ticket')
+            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('ticket.*', 'user.FirstName', 'user.LastName',
+                'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('ticket.IsActive', '=', true)
+            ->where('ticket.Id', '=', $ticketId)
+            ->first();
+
+        return $query;
+    }
+
     static public function GetTicketListCount()
     {
         error_log('in model, fetching tickets count');

@@ -146,6 +146,56 @@ class TicketController extends Controller
         }
     }
 
+    function TicketSingle(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketId = $request->get('ticketId');
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('user record found');
+            //Now fetch all the tickets with respect to ticket id
+
+            $ticketData = TicketModel::GetTicketViaId($ticketId);
+            if ($ticketData == null) {
+                error_log('ticket data not found');
+                return response()->json(['data' => $ticketData, 'message' => 'ticket data not found'], 200);
+
+            } else {
+                error_log('ticket data found');
+
+                //Now making data
+                $data['Id'] = $ticketData->Id;
+                $data['Title'] = $ticketData->Title;
+                $data['Description'] = $ticketData->Description;
+                $data['Priority'] = $ticketData->Priority;
+                $data['TrackStatus'] = $ticketData->TrackStatus;
+                $data['OtherType'] = $ticketData->OtherType;
+                $data['Type'] = $ticketData->Type;
+                $data['RaisedFrom'] = $ticketData->RaisedFrom;
+                $data['CreatedOn'] = ForumModel::calculateTopicAnCommentTime($ticketData->CreatedOn);
+                $data['Role'] = array();
+                $data['CreatedBy'] = array();
+
+
+                $data['CreatedBy']['Id'] = $ticketData->CreatedBy;
+                $data['CreatedBy']['FirstName'] = $ticketData->FirstName;
+                $data['CreatedBy']['LastName'] = $ticketData->LastName;
+
+                $data['Role']['Id'] = $ticketData->RoleId;
+                $data['Role']['Name'] = $ticketData->RoleName;
+                $data['Role']['CodeName'] = $ticketData->RoleCodeName;
+
+
+                return response()->json(['data' => $data, 'message' => 'ticket data found'], 200);
+            }
+        }
+    }
+
     function TicketListCount(Request $request)
     {
         error_log('in controller');
