@@ -160,6 +160,7 @@ Route::get('/ticket/list/count', 'TicketController@TicketListCount');
 
 //get ticket list count
 Route::get('/ticket/priority/list', 'TicketController@GetTicketPriorities');
+Route::get('/ticket/type/list', 'TicketController@GetTicketTypes');
 
 //Update ticket
 Route::post('/ticket/update', 'TicketController@UpdateTicket');

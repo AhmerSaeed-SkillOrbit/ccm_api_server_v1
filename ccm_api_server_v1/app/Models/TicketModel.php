@@ -84,12 +84,19 @@ class TicketModel
         $enum = array();
         foreach (explode(',', $matches[1]) as $value) {
             $v = trim($value, "'");
-//            $enum = array_add($enum, $v, $v);
+            $enum = array_add($enum, $v, $v);
+        }
+        return $enum;
+    }
 
-            $data = array(
-                $v => $v
-            );
-            array_push($enum, $data);
+    public static function getEnumValues($columnName)
+    {
+        $type = DB::select(DB::raw("SHOW COLUMNS FROM ticket WHERE Field = '" . $columnName . "'"))[0]->Type;
+        preg_match('/^enum\((.*)\)$/', $type, $matches);
+        $enum = array();
+        foreach (explode(',', $matches[1]) as $value) {
+            $v = trim($value, "'");
+            $enum = array_add($enum, $v, $v);
         }
         return $enum;
     }

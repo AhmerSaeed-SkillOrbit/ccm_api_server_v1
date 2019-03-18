@@ -216,13 +216,28 @@ class TicketController extends Controller
         }
     }
 
-    function GetTicketPriorities(Request $request)
+    function GetTicketPriorities()
     {
         error_log('in controller');
 
-        $ticketPriorities = TicketModel::getPriorities();
+        $ticketPriorities = TicketModel::getEnumValues('Priority');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Priorities not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Priorities found'], 200);
+        }
+    }
 
-        return response()->json(['data' => $ticketPriorities, 'message' => 'Priorities found'], 200);
+    function GetTicketTypes()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('Type');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Types not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Types found'], 200);
+        }
     }
 
     function UpdateTicket(Request $request)
