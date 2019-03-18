@@ -271,6 +271,7 @@ class ForumController extends Controller
                 $forumTopicData['CreatedBy']['FirstName'] = $getForumTopicData->FirstName;
                 $forumTopicData['CreatedBy']['LastName'] = $getForumTopicData->LastName;
 
+                $forumTopicData['Role'] = array();
                 $forumTopicData['Role']['Id'] = $getForumTopicData->RoleId;
                 $forumTopicData['Role']['Name'] = $getForumTopicData->RoleName;
                 $forumTopicData['Role']['CodeName'] = $getForumTopicData->RoleCodeName;
@@ -334,6 +335,8 @@ class ForumController extends Controller
 
                     error_log('loop iterating for : ' . $counter += 1);
 
+                    $getCommentCount = ForumModel::getCommentsCountViaTopicForumId($item->Id);
+
                     $data = array(
                         'Id' => $item->Id,
                         'Title' => $item->Title,
@@ -341,6 +344,7 @@ class ForumController extends Controller
                         'CreatedOn' => ForumModel::calculateTopicAnCommentTime($item->CreatedOn),
                         'UpdatedOn' => $item->UpdatedOn,
                         'CreatedBy' => array(),
+                        'CommentCount' => $getCommentCount,
                         'Role' => array(),
                         'Tags' => array()
                     );
@@ -614,7 +618,24 @@ class ForumController extends Controller
             if ($getComment == null) {
                 return response()->json(['data' => null, 'message' => 'Comment not found'], 200);
             } else {
-                return response()->json(['data' => $getComment, 'message' => 'Comment found'], 200);
+
+                $data['Id'] = $getComment->Id;
+                $data['Comment'] = $getComment->Comment;
+                $data['Vote'] = $getComment->Vote;
+                $data['CreatedOn'] = ForumModel::calculateTopicAnCommentTime($getComment->CreatedOn);
+
+                $data['CreatedBy'] = array();
+                $data['Role'] = array();
+
+                $data['CreatedBy']['Id'] = $getComment->CreatedBy;
+                $data['CreatedBy']['FirstName'] = $getComment->FirstName;
+                $data['CreatedBy']['LastName'] = $getComment->LastName;
+
+                $data['Role']['Id'] = $getComment->RoleId;
+                $data['Role']['Name'] = $getComment->RoleName;
+                $data['Role']['CodeName'] = $getComment->RoleCodeName;
+
+                return response()->json(['data' => $data, 'message' => 'Comment found'], 200);
             }
         }
     }
@@ -659,12 +680,17 @@ class ForumController extends Controller
                             "Comment" => $item->Comment,
                             "CreatedOn" => ForumModel::calculateTopicAnCommentTime($item->CreatedOn),
                             "Vote" => $item->Vote,
-                            "CreatedBy" => array()
+                            "CreatedBy" => array(),
+                            "Role" => array()
                         );
 
-                        $data['CreatedBy']['Id'] = $item->CreatedById;
+                        $data['CreatedBy']['Id'] = $item->CreatedBy;
                         $data['CreatedBy']['FirstName'] = $item->FirstName;
                         $data['CreatedBy']['LastName'] = $item->LastName;
+
+                        $data['Role']['Id'] = $item->RoleId;
+                        $data['Role']['Name'] = $item->RoleName;
+                        $data['Role']['CodeName'] = $item->RoleCodeName;
 
                         array_push($commentsData, $data);
 

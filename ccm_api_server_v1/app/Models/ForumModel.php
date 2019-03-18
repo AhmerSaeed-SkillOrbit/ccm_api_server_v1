@@ -121,8 +121,12 @@ class ForumModel
         error_log('in model, fetching comment via comment id');
 
         $query = DB::table('forum_topic_comment')
-            ->where('IsActive', '=', true)
-            ->where('Id', '=', $commentId)
+            ->leftjoin('user as user', 'forum_topic_comment.CreatedBy', 'user.Id')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('forum_topic_comment.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('forum_topic_comment.IsActive', '=', true)
+            ->where('forum_topic_comment.Id', '=', $commentId)
             ->first();
 
         return $query;
@@ -134,12 +138,13 @@ class ForumModel
 
         $query = DB::table('forum_topic_comment')
             ->leftjoin('user as user', 'forum_topic_comment.CreatedBy', 'user.Id')
-            ->select('forum_topic_comment.*', 'user.Id as CreatedById', 'user.FirstName', 'user.LastName')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('forum_topic_comment.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
             ->where('forum_topic_comment.IsActive', '=', true)
             ->where('forum_topic_comment.ForumTopicId', '=', $topicForumId)
             ->orderBy('forum_topic_comment.Id', 'ASC')
-            ->skip($pageNo * $limit)
-            ->take($limit)
+            ->offset($pageNo)->limit($limit)
             ->get();
 
         return $query;
