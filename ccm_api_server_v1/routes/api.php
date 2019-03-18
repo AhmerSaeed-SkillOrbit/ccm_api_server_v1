@@ -152,6 +152,9 @@ Route::post('/ticket/create', 'TicketController@CreateTicket');
 //get ticket list via pagination
 Route::get('/ticket/list', 'TicketController@TicketListViaPagination');
 
+//get ticket list count
+Route::get('/ticket/list/count', 'TicketController@TicketListCount');
+
 
 
 Route::get('/', function () {

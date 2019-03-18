@@ -146,4 +146,24 @@ class TicketController extends Controller
         }
     }
 
+    function TicketListCount(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('user record found');
+            //Now fetch all the tickets with respect to pagination
+            $ticketData = array();
+
+            $ticketListCount = TicketModel::GetTicketListCount();
+
+            return response()->json(['data' => $ticketListCount, 'message' => 'Total count'], 200);
+        }
+    }
+
 }

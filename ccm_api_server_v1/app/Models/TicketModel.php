@@ -49,4 +49,15 @@ class TicketModel
         return $query;
     }
 
+    static public function GetTicketListCount()
+    {
+        error_log('in model, fetching tickets count');
+
+        $query = DB::table('ticket')
+            ->where('ticket.IsActive', '=', true)
+            ->count();
+
+        return $query;
+    }
+
 }
