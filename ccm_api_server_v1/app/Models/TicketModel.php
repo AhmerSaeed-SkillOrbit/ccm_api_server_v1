@@ -31,4 +31,22 @@ class TicketModel
         return $query;
     }
 
+    static public function GetTicketListViaPagination($pageNo, $limit)
+    {
+        error_log('in model, fetching tickets generated');
+
+        $query = DB::table('ticket')
+            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('ticket.IsActive', '=', true)
+            ->orderBy('ticket.Id', 'DESC')
+            ->skip($pageNo * $limit)
+            ->take($limit)
+            ->get();
+
+        return $query;
+    }
+
 }

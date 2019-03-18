@@ -145,7 +145,6 @@ class ForumModel
             ->orderBy('forum_topic_comment.Id', 'ASC')
             ->skip($pageNo * $limit)
             ->take($limit)
-            >offset($pageNo)->limit($limit)
             ->get();
 
         return $query;

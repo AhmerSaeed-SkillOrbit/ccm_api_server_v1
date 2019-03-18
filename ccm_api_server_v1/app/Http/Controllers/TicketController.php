@@ -90,4 +90,60 @@ class TicketController extends Controller
         }
     }
 
+    function TicketListViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('user record found');
+            //Now fetch all the tickets with respect to pagination
+            $ticketData = array();
+
+            $ticketListData = TicketModel::GetTicketListViaPagination($pageNo, $limit);
+            if (count($ticketListData) > 0) {
+                error_log('ticket data found');
+
+                foreach ($ticketListData as $item) {
+                    //Now making data
+                    $data = array(
+                        'TicketNumber' => $item->TicketNumber,
+                        'Title' => $item->Title,
+                        'Description' => $item->Description,
+                        'Priority' => $item->Priority,
+                        'TrackStatus' => $item->TrackStatus,
+                        'OtherType' => $item->OtherType,
+                        'Type' => $item->Type,
+                        'RaisedFrom' => $item->RaisedFrom,
+                        'CreatedOn' => ForumModel::calculateTopicAnCommentTime($item->CreatedOn),
+                        'Role' => array(),
+                        'CreatedBy' => array(),
+                    );
+
+                    $data['CreatedBy']['Id'] = $item->CreatedBy;
+                    $data['CreatedBy']['FirstName'] = $item->FirstName;
+                    $data['CreatedBy']['LastName'] = $item->LastName;
+
+                    $data['Role']['Id'] = $item->RoleId;
+                    $data['Role']['Name'] = $item->RoleName;
+                    $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                    array_push($ticketData, $data);
+                }
+
+                return response()->json(['data' => $ticketData, 'message' => 'ticket data found'], 200);
+
+            } else {
+                error_log('ticket data not found');
+                return response()->json(['data' => $ticketData, 'message' => 'ticket data not found'], 200);
+            }
+        }
+    }
+
 }
