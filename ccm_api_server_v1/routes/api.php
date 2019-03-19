@@ -148,6 +148,8 @@ Route::get('/forum/topic/comment/list/count', 'ForumController@GetForumTopicComm
 
 //Create ticket
 Route::post('/ticket/create', 'TicketController@CreateTicket');
+//Update ticket
+Route::post('/ticket/update', 'TicketController@UpdateTicket');
 
 //get ticket single
 Route::get('/ticket/single', 'TicketController@TicketSingle');
@@ -165,9 +167,11 @@ Route::get('/ticket/type/list', 'TicketController@GetTicketTypes');
 //Create ticket reply
 Route::post('/ticket/reply/add', 'TicketController@AddTicketReply');
 
-//Update ticket
-Route::post('/ticket/update', 'TicketController@UpdateTicket');
+//get ticket single
+Route::get('/ticket/reply/single', 'TicketController@TicketReplySingle');
 
+//Update ticket reply
+Route::post('/ticket/reply/update', 'TicketController@UpdateTicketReply');
 
 
 Route::get('/', function () {

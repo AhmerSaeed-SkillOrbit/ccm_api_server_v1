@@ -121,4 +121,21 @@ class TicketModel
         return $query;
     }
 
+    public static function GetTicketReplySingle($ticketReplyId)
+    {
+        error_log('in model, fetching ticket reply single');
+
+        $query = DB::table('ticket_reply')
+            ->leftjoin('user as repliedBy', 'ticket_reply.ReplyById', 'repliedBy.Id')
+            ->join('user_access', 'user_access.UserId', 'repliedBy.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('ticket_reply.*', 'repliedBy.FirstName', 'repliedBy.LastName',
+                'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('ticket_reply.IsActive', '=', true)
+            ->where('ticket_reply.Id', '=', $ticketReplyId)
+            ->first();
+
+        return $query;
+    }
+
 }

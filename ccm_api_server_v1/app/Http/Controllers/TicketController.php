@@ -381,4 +381,97 @@ class TicketController extends Controller
         }
     }
 
+    function TicketReplySingle(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketReplyId = $request->get('ticketReplyId');
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            error_log('user record found');
+            //Now fetch all the tickets with respect to ticket id
+
+            $ticketReplyData = TicketModel::GetTicketReplySingle($ticketReplyId);
+            if ($ticketReplyData == null) {
+                error_log('ticket reply data not found');
+                return response()->json(['data' => $ticketReplyData, 'message' => 'ticket data not found'], 200);
+
+            } else {
+                error_log('ticket data found');
+
+                //Now making data
+                $data['Id'] = $ticketReplyData->Id;
+                $data['Reply'] = $ticketReplyData->Reply;
+                $data['CreatedOn'] = ForumModel::calculateTopicAnCommentTime($ticketReplyData->CreatedOn);
+                $data['Role'] = array();
+                $data['ReplyBy'] = array();
+
+
+                $data['ReplyBy']['Id'] = $ticketReplyData->CreatedBy;
+                $data['ReplyBy']['FirstName'] = $ticketReplyData->FirstName;
+                $data['ReplyBy']['LastName'] = $ticketReplyData->LastName;
+
+                $data['Role']['Id'] = $ticketReplyData->RoleId;
+                $data['Role']['Name'] = $ticketReplyData->RoleName;
+                $data['Role']['CodeName'] = $ticketReplyData->RoleCodeName;
+
+
+                return response()->json(['data' => $data, 'message' => 'ticket reply data found'], 200);
+            }
+        }
+    }
+
+    function UpdateTicketReply(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketReplyId = $request->get('ticketReplyId');
+
+        $date = HelperModel::getDate();
+
+        // First check if user data found or not via user ID
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            //Now fetch the ticket and check if it exists
+            $ticketReplyData = TicketModel::GetTicketReplySingle($ticketReplyId);
+            if ($ticketReplyData == null) {
+                error_log('ticket reply data not found');
+                return response()->json(['data' => $ticketReplyData, 'message' => 'ticket data not found'], 200);
+
+            } else {
+                error_log('ticket reply data found');
+
+                //Now we will make data and will insert it
+
+                //Checking if logged in person is that one who has given reply or someone else
+                if ($ticketReplyData->ReplyById != $userId) {
+                    return response()->json(['data' => null, 'message' => 'This reply has not given by you'], 400);
+                } else {
+
+
+                    $ticketReplyData = array(
+                        "ReplyById" => $userId,
+                        "Reply" => $request->input('Reply'),
+                        "UpdatedBy" => $userId,
+                        "UpdatedOn" => $date["timestamp"]
+                    );
+
+                    $insertedDataId = GenericModel::updateGeneric('ticket_reply', 'Id', $ticketReplyId, $ticketReplyData);
+                    if ($insertedDataId == false) {
+                        return response()->json(['data' => null, 'message' => 'Error in updating ticket reply'], 400);
+                    } else {
+                        return response()->json(['data' => $ticketReplyId, 'message' => 'Ticket reply successfully updated'], 200);
+                    }
+                }
+            }
+        }
+    }
+
 }
