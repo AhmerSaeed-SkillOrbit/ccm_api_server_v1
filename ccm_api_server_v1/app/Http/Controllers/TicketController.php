@@ -474,4 +474,58 @@ class TicketController extends Controller
         }
     }
 
+    function AssignTicket(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketId = $request->get('ticketId');
+
+        $date = HelperModel::getDate();
+        DB::beginTransaction();
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            //Now check if this ticket is already assigned to someone or not
+            error_log('User record found');
+
+            //Now check if given ticket exists or not
+
+            $ticketData = TicketModel::GetTicketViaId($ticketId);
+            if ($ticketData == null) {
+                error_log('ticket data not found');
+                return response()->json(['data' => $ticketData, 'message' => 'ticket data not found'], 200);
+
+            } else {
+
+                error_log('ticket data found');
+                //Now checking if logged in user is assigning ticket to himself or not
+
+                if ($userId == $request->input('AssignToId')) {
+                    return response()->json(['data' => null, 'message' => 'You cannot assign this ticket to yourself'], 400);
+                } else {
+                    $ticketAssigneeData = array(
+                        "TicketId" => $ticketId,
+                        "AssignToId" => $request->input('AssignToId'),
+                        "AssignById" => $userId,
+                        "CreatedBy" => $userId,
+                        "CreatedOn" => $date["timestamp"],
+                        "IsActive" => true,
+                        "AssignByDescription" => $request->input('AssignByDescription')
+                    );
+
+                    $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_assignee', $ticketAssigneeData);
+                    if ($insertedDataId == 0) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
+                    } else {
+                        DB::commit();
+                        return response()->json(['data' => $insertedDataId, 'message' => 'ticket assigned successfully given'], 200);
+                    }
+                }
+            }
+        }
+    }
 }

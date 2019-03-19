@@ -173,6 +173,9 @@ Route::get('/ticket/reply/single', 'TicketController@TicketReplySingle');
 //Update ticket reply
 Route::post('/ticket/reply/update', 'TicketController@UpdateTicketReply');
 
+//ticket assign
+Route::post('/ticket/assign', 'TicketController@AssignTicket');
+
 
 Route::get('/', function () {
     return 'Hello';
