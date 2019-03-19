@@ -146,6 +146,11 @@ Route::get('/forum/topic/comment/list', 'ForumController@GetForumTopicCommentsVi
 //get forum comment list count
 Route::get('/forum/topic/comment/list/count', 'ForumController@GetForumTopicCommentsCount');
 
+//Create ticket
+Route::post('/ticket/create', 'TicketController@CreateTicket');
+
+
+
 Route::get('/', function () {
     return 'Hello';
 });
