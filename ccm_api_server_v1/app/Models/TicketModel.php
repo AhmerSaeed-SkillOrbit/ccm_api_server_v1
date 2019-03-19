@@ -84,14 +84,58 @@ class TicketModel
         $enum = array();
         foreach (explode(',', $matches[1]) as $value) {
             $v = trim($value, "'");
-//            $enum = array_add($enum, $v, $v);
-
-            $data = array(
-                $v => $v
-            );
-            array_push($enum, $data);
+            $enum = array_add($enum, $v, $v);
         }
         return $enum;
+    }
+
+    public static function getEnumValues($columnName)
+    {
+        $type = DB::select(DB::raw("SHOW COLUMNS FROM ticket WHERE Field = '" . $columnName . "'"))[0]->Type;
+        preg_match('/^enum\((.*)\)$/', $type, $matches);
+        $enum = array();
+        foreach (explode(',', $matches[1]) as $value) {
+            $v = trim($value, "'");
+            $enum = array_add($enum, $v, $v);
+        }
+        return $enum;
+    }
+
+    public static function GetAssigneeViaTicketId($ticketId)
+    {
+        error_log('in model, fetching ticket assignee data');
+
+        $query = DB::table('ticket_assignee')
+            ->leftjoin('user as assignBy', 'ticket_assignee.AssignById', 'assignBy.Id')
+            ->leftjoin('user as assignTo', 'ticket_assignee.AssignToId', 'assignTo.Id')
+//            ->join('user_access', 'user_access.UserId', 'user.Id')
+//            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('ticket_assignee.*', 'assignBy.FirstName', 'assignBy.LastName',
+                'assignTo.FirstName', 'assignTo.LastName')
+//                'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('ticket_assignee.IsActive', '=', true)
+            ->where('ticket_assignee.TicketId', '=', $ticketId)
+            ->orderBy('ticket_assignee.Id', 'DESC')
+            ->get();
+
+        return $query;
+    }
+
+    public static function GetTicketReplySingle($ticketReplyId)
+    {
+        error_log('in model, fetching ticket reply single');
+
+        $query = DB::table('ticket_reply')
+            ->leftjoin('user as repliedBy', 'ticket_reply.ReplyById', 'repliedBy.Id')
+            ->join('user_access', 'user_access.UserId', 'repliedBy.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('ticket_reply.*', 'repliedBy.FirstName', 'repliedBy.LastName',
+                'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('ticket_reply.IsActive', '=', true)
+            ->where('ticket_reply.Id', '=', $ticketReplyId)
+            ->first();
+
+        return $query;
     }
 
 }

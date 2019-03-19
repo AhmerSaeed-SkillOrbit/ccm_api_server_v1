@@ -88,6 +88,7 @@ class ForumModel
             ->select('forum_topic.*', 'user.Id as CreatedById', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
             ->where('forum_topic.IsActive', '=', true)
             ->orderBy('forum_topic.Id', 'DESC')
+            ->groupBy('forum_topic.Id')
             ->offset($pageNo)->limit($limit)
             ->get();
 
