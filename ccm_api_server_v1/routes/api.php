@@ -148,7 +148,33 @@ Route::get('/forum/topic/comment/list/count', 'ForumController@GetForumTopicComm
 
 //Create ticket
 Route::post('/ticket/create', 'TicketController@CreateTicket');
+//Update ticket
+Route::post('/ticket/update', 'TicketController@UpdateTicket');
 
+//get ticket single
+Route::get('/ticket/single', 'TicketController@TicketSingle');
+
+//get ticket list via pagination
+Route::get('/ticket/list', 'TicketController@TicketListViaPagination');
+
+//get ticket list count
+Route::get('/ticket/list/count', 'TicketController@TicketListCount');
+
+//get ticket list count
+Route::get('/ticket/priority/list', 'TicketController@GetTicketPriorities');
+Route::get('/ticket/type/list', 'TicketController@GetTicketTypes');
+
+//Create ticket reply
+Route::post('/ticket/reply/add', 'TicketController@AddTicketReply');
+
+//get ticket single
+Route::get('/ticket/reply/single', 'TicketController@TicketReplySingle');
+
+//Update ticket reply
+Route::post('/ticket/reply/update', 'TicketController@UpdateTicketReply');
+
+//ticket assign
+Route::post('/ticket/assign', 'TicketController@AssignTicket');
 
 
 Route::get('/', function () {
