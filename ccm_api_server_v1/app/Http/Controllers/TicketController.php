@@ -291,4 +291,94 @@ class TicketController extends Controller
         }
     }
 
+    function AddTicketReply(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketId = $request->get('ticketId');
+
+        $date = HelperModel::getDate();
+        DB::beginTransaction();
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            //Now check if this ticket is already assigned to someone or not
+            error_log('User record found');
+
+            //Now check if given ticket exists or not
+
+            $ticketData = TicketModel::GetTicketViaId($ticketId);
+            if ($ticketData == null) {
+                error_log('ticket data not found');
+                return response()->json(['data' => $ticketData, 'message' => 'ticket data not found'], 200);
+
+            } else {
+
+                error_log('ticket data found');
+                //If assignee data will be fetched then it means this ticket has assigned to support staff
+                //then insert data only in ticket reply
+                //else insert data in ticket reply and assignee table too
+
+                $getAssigneeData = TicketModel::GetAssigneeViaTicketId($ticketId);
+                if (count($getAssigneeData) > 0) {
+                    error_log('ticket has assigned to someone');
+
+                    $ticketReplyData = array(
+                        "TicketId" => $ticketId,
+                        "ReplyById" => $userId,
+                        "Reply" => $request->input('Reply'),
+                        "CreatedBy" => $userId,
+                        "CreatedOn" => $date["timestamp"],
+                        "IsActive" => true
+                    );
+
+                    $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
+                    if ($insertedDataId == 0) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                    } else {
+                        DB::commit();
+                        return response()->json(['data' => $insertedDataId, 'message' => 'ticket replied given'], 200);
+                    }
+                } else {
+                    error_log('ticket has not  assigned to anyone');
+
+                    $ticketReplyData = array(
+                        "TicketId" => $ticketId,
+                        "ReplyById" => $userId,
+                        "Reply" => $request->input('Reply'),
+                        "CreatedBy" => $userId,
+                        "CreatedOn" => $date["timestamp"],
+                        "IsActive" => true
+                    );
+
+                    $ticketAssigneeData = array(
+                        "TicketId" => $ticketId,
+                        "AssignToId" => $userId,
+                        "AssignById" => $userId,
+                        "CreatedBy" => $userId,
+                        "CreatedOn" => $date["timestamp"],
+                        "AssignByDescription" => $request->input('AssignByDescription'),
+                        "IsActive" => true
+                    );
+
+
+                    $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
+                    $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
+
+                    if ($insertedDataId == false || $ticketReplyInsertedId == 0) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                    } else {
+                        DB::commit();
+                        return response()->json(['data' => $ticketReplyInsertedId, 'message' => 'ticket replied given and assigned to you'], 200);
+                    }
+                }
+            }
+        }
+    }
+
 }

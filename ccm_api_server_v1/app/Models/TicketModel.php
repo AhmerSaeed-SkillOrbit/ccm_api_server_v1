@@ -101,4 +101,24 @@ class TicketModel
         return $enum;
     }
 
+    public static function GetAssigneeViaTicketId($ticketId)
+    {
+        error_log('in model, fetching ticket assignee data');
+
+        $query = DB::table('ticket_assignee')
+            ->leftjoin('user as assignBy', 'ticket_assignee.AssignById', 'assignBy.Id')
+            ->leftjoin('user as assignTo', 'ticket_assignee.AssignToId', 'assignTo.Id')
+//            ->join('user_access', 'user_access.UserId', 'user.Id')
+//            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('ticket_assignee.*', 'assignBy.FirstName', 'assignBy.LastName',
+                'assignTo.FirstName', 'assignTo.LastName')
+//                'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('ticket_assignee.IsActive', '=', true)
+            ->where('ticket_assignee.TicketId', '=', $ticketId)
+            ->orderBy('ticket_assignee.Id', 'DESC')
+            ->get();
+
+        return $query;
+    }
+
 }

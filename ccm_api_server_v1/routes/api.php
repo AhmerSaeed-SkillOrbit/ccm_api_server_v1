@@ -162,6 +162,9 @@ Route::get('/ticket/list/count', 'TicketController@TicketListCount');
 Route::get('/ticket/priority/list', 'TicketController@GetTicketPriorities');
 Route::get('/ticket/type/list', 'TicketController@GetTicketTypes');
 
+//Create ticket reply
+Route::post('/ticket/reply/add', 'TicketController@AddTicketReply');
+
 //Update ticket
 Route::post('/ticket/update', 'TicketController@UpdateTicket');
 
