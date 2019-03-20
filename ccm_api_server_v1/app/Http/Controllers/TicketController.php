@@ -439,12 +439,18 @@ class TicketController extends Controller
                         "AssignByDescription" => $request->input('AssignByDescription'),
                         "IsActive" => true
                     );
+                    //Now we will make data and will insert it
+                    $ticketData = array(
+                        "UpdatedBy" => $userId,
+                        "UpdatedOn" => $date["timestamp"],
+                        "IsAssigned" => true
+                    );
 
-
+                    $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
                     $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
                     $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
 
-                    if ($insertedDataId == false || $ticketReplyInsertedId == 0) {
+                    if ($insertedDataId == false || $ticketReplyInsertedId == 0 || $ticketDataUpdate == false) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                     } else {
