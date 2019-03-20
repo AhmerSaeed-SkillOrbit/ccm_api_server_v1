@@ -48,6 +48,9 @@ Route::post('/user/block', 'UserController@UserBlock');
 //User unblock route
 Route::post('/user/unblock', 'UserController@UserUnblock');
 
+//get support staff list
+Route::get('/user/via/role', 'UserController@GetUserViaRoleCode');
+
 //Associate doctor to facilitator route
 Route::post('/associate/doctor/facilitator', 'UserController@AssociateFacilitatorsWithDoctor');
 
