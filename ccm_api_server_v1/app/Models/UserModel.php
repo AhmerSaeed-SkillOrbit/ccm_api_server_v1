@@ -302,6 +302,7 @@ class UserModel
                 ->groupBy('user.Id')
 //                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
+                ->groupBy('user.Id')
                 ->get();
 
             error_log($query);
@@ -325,6 +326,7 @@ class UserModel
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
 //                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
+                ->groupBy('user.Id')
                 ->get();
 
             error_log($query);
@@ -406,6 +408,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
 
                 error_log($query);
@@ -428,6 +431,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
 
                 error_log($query);
@@ -457,6 +461,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
 
             } else {
@@ -475,6 +480,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
             }
         }
@@ -529,6 +535,7 @@ class UserModel
 //                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                ->groupBy('user.Id')
                 ->get();
 
             error_log($query);

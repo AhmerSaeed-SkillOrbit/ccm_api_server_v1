@@ -373,6 +373,7 @@ class TicketController extends Controller
 
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
+        $patientRole = env('ROLE_PATIENT');
 
         $date = HelperModel::getDate();
         DB::beginTransaction();
@@ -384,6 +385,10 @@ class TicketController extends Controller
             //Now check if this ticket is already assigned to someone or not
             error_log('User record found');
 
+            //We will put check if logged in user is patient then
+            //this ticket cannot be assigned to him
+
+
             //Now check if given ticket exists or not
 
             $ticketData = TicketModel::GetTicketViaId($ticketId);
@@ -394,8 +399,7 @@ class TicketController extends Controller
             } else {
 
                 error_log('ticket data found');
-                //If assignee data will be fetched then it means this ticket has assigned to support staff
-                //then insert data only in ticket reply
+
                 //else insert data in ticket reply and assignee table too
 
                 $getAssigneeData = TicketModel::GetAssigneeViaTicketId($ticketId);
@@ -440,18 +444,30 @@ class TicketController extends Controller
                         "AssignByDescription" => $request->input('AssignByDescription'),
                         "IsActive" => true
                     );
-                    //Now we will make data and will insert it
-                    $ticketData = array(
-                        "UpdatedBy" => $userId,
-                        "UpdatedOn" => $date["timestamp"],
-                        "IsAssigned" => true
-                    );
+                    //If assignee data will be fetched then it means this ticket has assigned to support staff
+                    //then insert data only in ticket reply
 
-                    $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
+
+                    if ($checkUserData->RoleCodeName != $patientRole) {
+                        error_log('user role is not patient');
+                        //Now we will make data and will insert it
+                        $ticketData = array(
+                            "UpdatedBy" => $userId,
+                            "UpdatedOn" => $date["timestamp"],
+                            "IsAssigned" => true
+                        );
+
+                        $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
+                        if ($ticketDataUpdate == false) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
+                        }
+                    }
+
                     $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
                     $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
 
-                    if ($insertedDataId == false || $ticketReplyInsertedId == 0 || $ticketDataUpdate == false) {
+                    if ($insertedDataId == false || $ticketReplyInsertedId == 0) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                     } else {
