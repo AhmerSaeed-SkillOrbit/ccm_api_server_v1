@@ -851,4 +851,20 @@ class UserModel
             ->first();
         return $result;
     }
+
+    static public function GetUserViaRoleCode($roleCode)
+    {
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('user.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('role.CodeName', '=', $roleCode)
+            ->where('user.IsActive', '=', true)
+            ->orderBy('user.Id', 'DESC')
+            ->get();
+
+        error_log($query);
+
+        return $query;
+    }
 }
