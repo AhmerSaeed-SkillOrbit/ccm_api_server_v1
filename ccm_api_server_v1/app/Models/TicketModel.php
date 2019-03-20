@@ -114,7 +114,6 @@ class TicketModel
             ->leftjoin('user as assignTo', 'ticket_assignee.AssignToId', 'assignTo.Id')
             ->leftjoin('user_access as assignToUserAccess', 'assignToUserAccess.UserId', 'assignTo.Id')
             ->leftjoin('role as assignToRole', 'assignToUserAccess.RoleId', 'assignToRole.Id')
-
             ->select('ticket_assignee.*',
 
                 'assignBy.FirstName as AssignByFirstName', 'assignBy.LastName as AssignByLastName',
@@ -136,11 +135,9 @@ class TicketModel
         error_log('in model, fetching ticket reply data');
 
         $query = DB::table('ticket_reply')
-
             ->leftjoin('user as replyBy', 'ticket_reply.ReplyById', 'replyBy.Id')
             ->leftjoin('user_access', 'user_access.UserId', 'replyBy.Id')
             ->leftjoin('role', 'user_access.RoleId', 'role.Id')
-
             ->select('ticket_reply.*',
 
                 'replyBy.FirstName as ReplyByFirstName', 'replyBy.LastName as ReplyByLastName',
@@ -150,6 +147,18 @@ class TicketModel
             ->where('ticket_reply.TicketId', '=', $ticketId)
             ->orderBy('ticket_reply.Id', 'DESC')
             ->get();
+
+        return $query;
+    }
+
+    public static function GetRepliesCountViaTicketId($ticketId)
+    {
+        error_log('in model, fetching ticket reply count');
+
+        $query = DB::table('ticket_reply')
+            ->where('ticket_reply.IsActive', '=', true)
+            ->where('ticket_reply.TicketId', '=', $ticketId)
+            ->count();
 
         return $query;
     }

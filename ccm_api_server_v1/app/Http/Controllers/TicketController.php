@@ -177,6 +177,7 @@ class TicketController extends Controller
                 $data['OtherType'] = $ticketData->OtherType;
                 $data['Type'] = $ticketData->Type;
                 $data['RaisedFrom'] = $ticketData->RaisedFrom;
+                $data['TicketReplyCount'] = TicketModel::GetRepliesCountViaTicketId($ticketId);
                 $data['CreatedOn'] = ForumModel::calculateTopicAnCommentTime($ticketData->CreatedOn);
                 $data['Role'] = array();
                 $data['CreatedBy'] = array();
