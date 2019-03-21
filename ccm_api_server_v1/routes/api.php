@@ -179,6 +179,9 @@ Route::post('/ticket/reply/update', 'TicketController@UpdateTicketReply');
 //ticket assign
 Route::post('/ticket/assign', 'TicketController@AssignTicket');
 
+//ticket status update
+Route::post('/ticket/track/status/update', 'TicketController@TicketTrackStatusUpdate');
+
 
 Route::get('/', function () {
     return 'Hello';
