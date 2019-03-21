@@ -504,7 +504,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dsf")
             ->select("dsf.StartTime", 'dsf.EndTime')
-            ->where("dsf.Id", "=", 3548)
+            ->where("dsf.Id", "=", 3659)
             ->first();
 
         return $query;
@@ -594,6 +594,7 @@ class DoctorScheduleModel
                 array_push($timeSlots, $range);
             } else {
                 error_log("slot is exceed");
+                error_log($endSlot2);
                 $indexItem = $endSlot2;
             }
         }
