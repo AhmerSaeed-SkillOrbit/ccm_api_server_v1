@@ -43,6 +43,7 @@ class DoctorScheduleModel
             ->select('Id', 'StartDate', 'EndDate', 'MonthName', 'YearName')
             ->where('DoctorId', '=', $doctorId)
             ->where('IsActive', '=', true)
+            ->orderBy('MonthName', 'ASC')
 //            ->offset($offset)->limit($limit)
             ->skip($offset * $limit)->take($limit)
             ->get();
@@ -111,6 +112,7 @@ class DoctorScheduleModel
                 "IsOffDay")
             ->where("DoctorScheduleId", "=", $doctorScheduleId)
             ->where("IsActive", "=", true)
+            ->orderBy('ScheduleDate', 'ASC')
             ->get();
 
         return $query;
@@ -135,8 +137,8 @@ class DoctorScheduleModel
         error_log('in model');
 
         $query = DB::table("doctor_schedule_shift")
-            ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
+            ->select("Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i") as StartTime'),
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i") as EndTime'), 'NoOfPatientAllowed')
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -150,7 +152,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift")
             ->select("Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(StartTime, "%H:%i %p") as StartTime'),
-                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime', 'NoOfPatientAllowed'))
+                DB::raw('TIME_FORMAT(EndTime, "%H:%i %p") as EndTime'), 'NoOfPatientAllowed')
             ->whereIn("DoctorScheduleDetailId", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
             ->get();
@@ -246,6 +248,172 @@ class DoctorScheduleModel
         return $query;
     }
 
+    static public function getAppointmentViaPatientId($patientId, $searchKeyword, $reqStatus, $pageNo, $limit)
+    {
+        error_log('in model');
+
+        if ($searchKeyword == "null" || $searchKeyword == null) {
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
+                    'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
+                    'patient.MobileNumber AS PatientMobileNumber',
+                    'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+                    'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
+                    'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.PatientId", '=', $patientId)
+                ->orderBy('appointment.Id', 'desc')
+                ->groupBy('appointment.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+        } else {
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
+                    'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
+                    'patient.MobileNumber AS PatientMobileNumber',
+                    'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+                    'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
+                    'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.PatientId", '=', $patientId)
+                ->Where('doctor.FirstName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orWhere('doctor.LastName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orderBy('appointment.Id', 'desc')
+                ->groupBy('appointment.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+        }
+
+        return $query;
+    }
+
+    static public function getAppointmentViaDoctorId($doctorId, $searchKeyword, $reqStatus, $pageNo, $limit)
+    {
+        error_log('in model');
+
+        if ($searchKeyword == "null" || $searchKeyword == null) {
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
+                    'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
+                    'patient.MobileNumber AS PatientMobileNumber',
+                    'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+                    'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
+                    'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.DoctorId", '=', $doctorId)
+                ->orderBy('appointment.Id', 'desc')
+                ->groupBy('appointment.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+        } else {
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
+                    'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
+                    'patient.MobileNumber AS PatientMobileNumber',
+                    'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
+                    'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
+                    'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.DoctorId", '=', $doctorId)
+                ->Where('patient.FirstName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orWhere('patient.LastName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orderBy('appointment.Id', 'desc')
+                ->groupBy('appointment.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+        }
+
+        return $query;
+    }
+
+    static public function getAppointmentCountViaPatientId($patientId, $searchKeyword, $reqStatus)
+    {
+        error_log('in model');
+
+        if ($searchKeyword == "null" || $searchKeyword == null) {
+
+            $query = DB::table("appointment")
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.PatientId", '=', $patientId)
+                ->count();
+        } else {
+
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.PatientId", '=', $patientId)
+                ->Where('doctor.FirstName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orWhere('doctor.LastName', 'LIKE', '%' . $searchKeyword . '%')
+                ->count();
+        }
+
+        return $query;
+    }
+
+    static public function getAppointmentCountViaDoctorId($doctorId, $searchKeyword, $reqStatus)
+    {
+        error_log('in model');
+
+        if ($searchKeyword == "null" || $searchKeyword == null) {
+
+            $query = DB::table("appointment")
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.DoctorId", '=', $doctorId)
+                ->count();
+        } else {
+
+            $query = DB::table("appointment")
+                ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
+                ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
+                ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+                ->where("appointment.IsActive", "=", true)
+                ->where("appointment.RequestStatus", "=", $reqStatus)
+                ->where("appointment.DoctorId", '=', $doctorId)
+                ->Where('patient.FirstName', 'LIKE', '%' . $searchKeyword . '%')
+                ->orWhere('patient.LastName', 'LIKE', '%' . $searchKeyword . '%')
+                ->count();
+        }
+
+        return $query;
+    }
+
     static public function getSingleAppointmentViaId($appointmentId)
     {
         error_log('in model');
@@ -302,7 +470,8 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dcf")
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
-            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+//            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "YYYY-MM-DD") as ScheduleDate'))
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', 'dcdc.ScheduleDate as ScheduleDate')
             ->where("dcf.Id", "=", $doctorScheduleShiftId)
             ->where("dcf.IsActive", "=", true)
             ->first();
@@ -319,12 +488,128 @@ class DoctorScheduleModel
         $query = DB::table("appointment as app")
             ->leftjoin('doctor_schedule_shift as dcf', 'app.DoctorScheduleShiftId', 'dcf.Id')
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
-            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "%H:%i %p") as ScheduleDate'))
+//            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "YYYY-MM-DD") as ScheduleDate'))
+            ->select('dcdc.Id', 'DoctorScheduleDetailId', 'dcdc.ScheduleDate as ScheduleDate')
             ->where("app.PatientId", "=", $patientId)
             ->where("app.RequestStatus", "!=", "rejected")
             ->where("app.IsActive", "=", true)
             ->get();
 
         return $query;
+    }
+
+    static public function getTimeSlotTemp()
+    {
+        error_log('in model');
+
+        $query = DB::table("doctor_schedule_shift as dsf")
+            ->select("dsf.StartTime", 'dsf.EndTime')
+            ->where("dsf.Id", "=", 3548)
+            ->first();
+
+        return $query;
+    }
+
+    static public function CalculateTimeSlotDynamically($startTime, $endTime, $patientAllowed)
+    {
+        $indexItem = null;
+        $endLastTime = array();
+        $timeSlots = array();
+        $diff = 0;
+        $min = 0;
+        $endSlot1 = 0;
+        $endSlot2 = 0;
+
+        error_log($startTime);
+        error_log($endTime);
+        error_log($patientAllowed);
+
+        if ($indexItem == null) {
+            error_log("$indexItem is start");
+
+            $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+
+            if ($diff == 0) {
+                $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%i'));
+                error_log('time difference in mints');
+                error_log($diff);
+                $avg = $diff / $patientAllowed;
+                error_log('avg time in mints');
+                error_log($avg);
+                $min = $avg;//no need to convert in mints
+            } else {
+                error_log('time difference in hours');
+                error_log($diff);
+                $avg = $diff / $patientAllowed;
+                error_log('avg time in hours');
+                error_log($avg);
+                //convert to mints
+                $min = $avg * 60;
+                error_log('convert in mints');
+                error_log($min);
+            }
+
+            $endSlot1 = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+            $indexItem = $endSlot1;
+
+            error_log("end slot");
+            error_log($endSlot1);
+
+            error_log("index Item");
+            error_log($indexItem);
+
+            $range = $startTime . '-' . $endSlot1;
+
+            error_log("range");
+            error_log($range);
+
+            array_push($timeSlots, $range);
+        }
+        while ($indexItem < $endTime) {
+
+            $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
+
+            error_log("end slot2 n endTime");
+
+            error_log($endSlot2);
+            error_log($endTime);
+
+            if ($endSlot2 <= $endTime) {
+                error_log("in while loop");
+
+                $range = $endSlot1 . '-' . $endSlot2;
+
+                $indexItem = $endSlot2;
+                $endSlot1 = $endSlot2;
+
+                error_log("end slot");
+                error_log($endSlot1);
+
+                error_log("index Item");
+                error_log($indexItem);
+
+                error_log("range");
+                error_log($range);
+
+                array_push($timeSlots, $range);
+            } else {
+                $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
+                error_log("slot is exceed");
+                $range = $endSlot1 . '-' . $endSlot2-1;
+                array_push($timeSlots, $range);
+                $indexItem = $endSlot2;
+            }
+        }
+
+//        foreach ($timeSlots as $i) {
+//            $timeSlotsData = array(
+//                "DoctorScheduleShiftId" => 1,
+//                "TimeSlot" => $i,
+//            );
+//            $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+//        }
+
+//        return $timeSlots;
+        print_r($timeSlots);
     }
 }

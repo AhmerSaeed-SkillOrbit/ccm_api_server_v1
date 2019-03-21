@@ -302,6 +302,7 @@ class UserModel
                 ->groupBy('user.Id')
 //                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
+                ->groupBy('user.Id')
                 ->get();
 
             error_log($query);
@@ -325,6 +326,7 @@ class UserModel
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
 //                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
+                ->groupBy('user.Id')
                 ->get();
 
             error_log($query);
@@ -406,6 +408,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
 
                 error_log($query);
@@ -428,6 +431,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
 
                 error_log($query);
@@ -457,6 +461,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
 
             } else {
@@ -475,6 +480,7 @@ class UserModel
 //                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
+                    ->groupBy('user.Id')
                     ->get();
             }
         }
@@ -529,6 +535,7 @@ class UserModel
 //                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
+                ->groupBy('user.Id')
                 ->get();
 
             error_log($query);
@@ -850,5 +857,21 @@ class UserModel
             ->where('AssociationType', '=', $associationType)
             ->first();
         return $result;
+    }
+
+    static public function GetUserViaRoleCode($roleCode)
+    {
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('user.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('role.CodeName', '=', $roleCode)
+            ->where('user.IsActive', '=', true)
+            ->orderBy('user.Id', 'DESC')
+            ->get();
+
+        error_log($query);
+
+        return $query;
     }
 }

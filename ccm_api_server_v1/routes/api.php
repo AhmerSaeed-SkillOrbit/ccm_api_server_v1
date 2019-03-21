@@ -48,6 +48,9 @@ Route::post('/user/block', 'UserController@UserBlock');
 //User unblock route
 Route::post('/user/unblock', 'UserController@UserUnblock');
 
+//get support staff list
+Route::get('/user/via/role', 'UserController@GetUserViaRoleCode');
+
 //Associate doctor to facilitator route
 Route::post('/associate/doctor/facilitator', 'UserController@AssociateFacilitatorsWithDoctor');
 
@@ -105,6 +108,81 @@ Route::post('/appointment/request/status/update', 'DoctorScheduleController@upda
 
 Route::post('/appointment/cancel/', 'DoctorScheduleController@MarkAppointmentCancel');
 
+//Add tag
+Route::post('/tag/add', 'ForumController@AddTag');
+
+//get tag list
+Route::get('/tag/list', 'ForumController@getTagList');
+
+//Add forum topic
+Route::post('/forum/topic/add', 'ForumController@AddForumTopic');
+
+//Update forum topic
+Route::post('/forum/topic/update', 'ForumController@UpdateForumTopic');
+
+//Delete forum topic
+Route::post('/forum/topic/delete', 'ForumController@DeleteForumTopic');
+
+//Get single forum topic
+Route::get('/forum/topic/single', 'ForumController@GetSingleForumTopic');
+
+//Get forum topic list
+Route::get('/forum/topic/list', 'ForumController@GetForumTopicListViaPagination');
+
+Route::get('/forum/topic/list/count', 'ForumController@GetForumTopicListCount');
+
+//Add forum comment
+Route::post('/forum/topic/comment/add', 'ForumController@AddForumTopicComment');
+
+//Update forum comment
+Route::post('/forum/topic/comment/update', 'ForumController@UpdateForumTopicComment');
+
+//Delete forum comment
+Route::post('/forum/topic/comment/delete', 'ForumController@DeleteForumTopicComment');
+
+//get single forum comment
+Route::get('/forum/topic/comment/single', 'ForumController@GetSingleForumTopicComment');
+
+//get forum comment list
+Route::get('/forum/topic/comment/list', 'ForumController@GetForumTopicCommentsViaPagination');
+
+//get forum comment list count
+Route::get('/forum/topic/comment/list/count', 'ForumController@GetForumTopicCommentsCount');
+
+//Create ticket
+Route::post('/ticket/create', 'TicketController@CreateTicket');
+//Update ticket
+Route::post('/ticket/update', 'TicketController@UpdateTicket');
+
+//get ticket single
+Route::get('/ticket/single', 'TicketController@TicketSingle');
+
+//get ticket list via pagination
+Route::get('/ticket/list', 'TicketController@TicketListViaPagination');
+
+//get ticket list count
+Route::get('/ticket/list/count', 'TicketController@TicketListCount');
+
+//get ticket list count
+Route::get('/ticket/priority/list', 'TicketController@GetTicketPriorities');
+Route::get('/ticket/type/list', 'TicketController@GetTicketTypes');
+
+//Create ticket reply
+Route::post('/ticket/reply/add', 'TicketController@AddTicketReply');
+
+//get ticket single
+Route::get('/ticket/reply/single', 'TicketController@TicketReplySingle');
+
+//Update ticket reply
+Route::post('/ticket/reply/update', 'TicketController@UpdateTicketReply');
+
+//ticket assign
+Route::post('/ticket/assign', 'TicketController@AssignTicket');
+
+//ticket status update
+Route::post('/ticket/track/status/update', 'TicketController@TicketTrackStatusUpdate');
+
+
 Route::get('/', function () {
     return 'Hello';
 });
@@ -129,6 +207,13 @@ Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@U
 
 //temp api
 Route::get('/patient/associated/doctor', 'DoctorScheduleController@GetPatientAssociatedDoctor');
+
+Route::get('/add/time/slot', 'DoctorScheduleController@AddTimeSlotDynamically');
+
+Route::get('/format/time/', 'DoctorScheduleController@FormatTime');
+
+//$time = strtotime($dateInUTC.' UTC');
+//$dateInLocal = date("Y-m-d H:i:s", $time);
 
 
 

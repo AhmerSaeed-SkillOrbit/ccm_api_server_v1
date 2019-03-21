@@ -37,25 +37,27 @@ class LoginModel
             // ('ID', 'FirstName', 'LastName','EmailAddress','MobileNumber','TelephoneNumber','Gender','FunctionalTitle','FunctionalTitle')
             $login = DB::table('user')
                 ->select('Id')
-                ->where('EmailAddress', '=', $email)->where('Password', '=', $hashedPassword)
+                ->where('EmailAddress', '=', $email)
+                ->where('Password', '=', $hashedPassword)
+                ->where('IsActive', '=', 1)
                 ->get();
 
             $checkLogin = json_decode(json_encode($login), true);
 
             //Checking user if it is blocked or not
-            $checkUser = UserModel::GetSingleUserViaIdNewFunction($checkLogin[0]['Id']);
-
-            if ($checkUser != null || $checkUser != false) {
-                error_log('user data fetched');
-                error_log('$checkUser->IsBlock ' . $checkUser->IsBlock);
-                if ($checkUser->IsBlock == true) {
-                    return array("status" => "failed", "data" => null, "message" => "User is blocked");
-                }
-                error_log('$checkUser->IsActive ' . $checkUser->IsActive);
-                if ($checkUser->IsActive == false) {
-                    return array("status" => "failed", "data" => null, "message" => "User is not active");
-                }
-            }
+//            $checkUser = UserModel::GetSingleUserViaIdNewFunction($checkLogin[0]['Id']);
+//
+//            if ($checkUser != null || $checkUser != false) {
+//                error_log('user data fetched');
+//                error_log('$checkUser->IsBlock ' . $checkUser->IsBlock);
+//                if ($checkUser->IsBlock == true) {
+//                    return array("status" => "failed", "data" => null, "message" => "User is blocked");
+//                }
+//                error_log('$checkUser->IsActive ' . $checkUser->IsActive);
+//                if ($checkUser->IsActive == false) {
+//                    return array("status" => "failed", "data" => null, "message" => "User is not active");
+//                }
+//            }
 
             if (count($checkLogin) > 0) {
                 //Checking user if it is blocked or not

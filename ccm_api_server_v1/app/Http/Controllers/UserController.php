@@ -487,7 +487,6 @@ class UserController extends Controller
                     }
                 }
             }
-
         }
     }
 
@@ -502,6 +501,39 @@ class UserController extends Controller
         $data = $resultArray;
         if (count($data) > 0) {
             return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Users not found'], 200);
+        }
+    }
+
+    function GetUserViaRoleCode(Request $request)
+    {
+        $roleCode = $request->get('roleCode');
+
+        $val = UserModel::GetUserViaRoleCode($roleCode);
+        $userData = array();
+        foreach ($val as $item) {
+            $data = array(
+                'Id' => $item->Id,
+                'FirstName' => $item->FirstName,
+                'LastName' => $item->LastName,
+                'EmailAddress' => $item->EmailAddress,
+                'MobileNumber' => $item->MobileNumber,
+                'TelephoneNumber' => $item->TelephoneNumber,
+                'Gender' => $item->Gender,
+                'FunctionalTitle' => $item->FunctionalTitle,
+                'Role' => array()
+            );
+
+            $data['Role']['Id'] = $item->RoleId;
+            $data['Role']['Name'] = $item->RoleName;
+            $data['Role']['CodeName'] = $item->RoleCodeName;
+
+            array_push($userData, $data);
+        }
+
+        if (count($val) > 0) {
+            return response()->json(['data' => $userData, 'message' => 'Users fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Users not found'], 200);
         }
@@ -991,7 +1023,7 @@ class UserController extends Controller
         //now delete the account_invitation
         //of this email
 
-        $update = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser[0]->EmailAddress, $dataToUpdate);
+        $updateAccountInvitation = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser[0]->EmailAddress, $dataToUpdate);
 
         if ($update == true) {
             return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
@@ -1218,39 +1250,43 @@ class UserController extends Controller
             return response()->json(['data' => null, 'message' => 'Facilitator(s) not found'], 400);
         }
 
-        $emailMessage = "You have been associated with Dr. " . $doctorsData[0]->FirstName . ".";
-
-        error_log($emailMessage);
-
-        error_log(count($getFacilitatorEmails));
-
-        $toNumber = array();
-        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-
-        foreach ($getFacilitatorEmails as $item) {
-
-            //pushing mobile number
-            //in array for use in sending sms
-            array_push($toNumber, $phoneCode . $item->MobileNumber);
-
-            error_log('$item' . $item->EmailAddress);
-            error_log('$item' . $item->MobileNumber);
-
-            UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
-        }
-
-        ## Preparing Data for SMS  - START ##
-        if (count($toNumber) > 0) {
-            HelperModel::sendSms($toNumber, $emailMessage, null);
-        }
-        ## Preparing Data for SMS  - END ##
 
         //Now inserting data
         $checkInsertedData = GenericModel::insertGeneric('user_association', $data);
         error_log('$checkInsertedData ' . $checkInsertedData);
+        
         if ($checkInsertedData == true) {
             DB::commit();
+
+            $emailMessage = "You have been associated with Dr. " . $doctorsData[0]->FirstName . ".";
+
+            error_log($emailMessage);
+
+            error_log(count($getFacilitatorEmails));
+
+            $toNumber = array();
+            $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+            foreach ($getFacilitatorEmails as $item) {
+
+                //pushing mobile number
+                //in array for use in sending sms
+                array_push($toNumber, $phoneCode . $item->MobileNumber);
+
+                error_log('$item' . $item->EmailAddress);
+                error_log('$item' . $item->MobileNumber);
+
+                UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
+            }
+
+            ## Preparing Data for SMS  - START ##
+            if (count($toNumber) > 0) {
+                HelperModel::sendSms($toNumber, $emailMessage, null);
+            }
+            ## Preparing Data for SMS  - END ##
+
             return response()->json(['data' => $doctorId, 'message' => 'Facilitator(s) successfully associated'], 200);
+
         } else {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in associating facilitator(s)'], 400);

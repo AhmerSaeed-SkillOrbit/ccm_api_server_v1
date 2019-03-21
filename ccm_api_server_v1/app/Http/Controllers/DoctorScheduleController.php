@@ -20,6 +20,7 @@ use App\Models\GenericModel;
 use App\Models\DoctorScheduleModel;
 use App\Models\HelperModel;
 use Carbon\Carbon;
+use phpDocumentor\Reflection\Types\Array_;
 
 
 class DoctorScheduleController extends Controller
@@ -266,6 +267,7 @@ class DoctorScheduleController extends Controller
     function AddDoctorScheduleUpdatedCode(Request $request)
     {
         $doctorRole = env('ROLE_DOCTOR');
+        $timeSlot = Array();
 
         $doctorId = $request->get('doctorId');
         $scheduleDetail = $request->ScheduleDetail;
@@ -331,6 +333,7 @@ class DoctorScheduleController extends Controller
 
         foreach ($scheduleDetail as $item) {
             error_log('$outerCounter = ' . $outerCounter = $outerCounter + 1);
+
             if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
 
                 $doctorScheduleDetailData = array(
@@ -346,7 +349,7 @@ class DoctorScheduleController extends Controller
                 return response()->json(['data' => null, 'message' => 'Invalid date of schedule detail'], 400);
             }
             $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_detail_copy1', $doctorScheduleDetailData);
-            error_log('$checkInsertedData of doctor schedule detail' . $getInsertedDataId);
+            error_log('$checkInsertedData of doctor schedule detail = ' . $getInsertedDataId);
             if ($getInsertedDataId == 0) {
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
@@ -357,26 +360,38 @@ class DoctorScheduleController extends Controller
 
                 foreach ($item['ScheduleShift'] as $scheduleShift) {
 
-                    error_log('$InnerCounter = ' . $InnerCounter = $InnerCounter + 1);
+                    error_log('$InnerCounter for schedule shift = ' . $InnerCounter = $InnerCounter + 1);
                     error_log('======================');
 
-                    $doctorScheduleShiftData =
-                        array(
-                            "DoctorScheduleDetailId" => $getInsertedDataId,
-                            "StartTime" => $scheduleShift['StartTime'],
-                            "EndTime" => $scheduleShift['EndTime'],
-                            "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
-                            "IsActive" => true
-                        );
+                    $doctorScheduleShiftData = array(
+                        "DoctorScheduleDetailId" => $getInsertedDataId,
+                        "StartTime" => $scheduleShift['StartTime'],
+                        "EndTime" => $scheduleShift['EndTime'],
+                        "NoOfPatientAllowed" => $scheduleShift['NoOfPatientAllowed'],
+                        "IsActive" => true
+                    );
 
-                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+                    $getInsertedDataOfShiftId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
+//                    $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
 
-                    error_log('$checkInsertedData  = ' . $checkInsertedData);
+                    error_log('$checkInsertedData of schedule shift  = ' . $getInsertedDataOfShiftId);
                     error_log('=========================');
 
-                    if ($checkInsertedData == false) {
+                    if ($getInsertedDataOfShiftId == false) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in inserting doctor schedule detail'], 400);
+                    } else {
+                        //now insert dynamic time slots
+                        $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
+                        if (count($timeSlots) > 0) {
+                            foreach ($timeSlots as $i) {
+                                $timeSlotsData = array(
+                                    "DoctorScheduleShiftId" => $getInsertedDataOfShiftId,
+                                    "TimeSlot" => $i,
+                                );
+                                $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                            }
+                        }
                     }
                 }
             }
@@ -467,6 +482,7 @@ class DoctorScheduleController extends Controller
                                     $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
                                     if ($result == false) {
                                         DB::rollBack();
+                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
                                     }
                                 }
                             } else {
@@ -481,10 +497,23 @@ class DoctorScheduleController extends Controller
                                         "NoOfPatientAllowed" => $item['NoOfPatientAllowed'],
                                         "IsActive" => true
                                     );
-
-                                $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
-                                if ($checkInsertedData == false) {
+                                $getInsertedDataId = GenericModel::insertGenericAndReturnID('doctor_schedule_shift', $doctorScheduleShiftData);
+//                                $checkInsertedData = GenericModel::insertGeneric('doctor_schedule_shift', $doctorScheduleShiftData);
+                                if ($getInsertedDataId == false) {
                                     DB::rollBack();
+                                    return response()->json(['data' => null, 'message' => 'Error in inserting schedule shift'], 400);
+                                }
+
+                                //now insert dynamic time slots
+                                $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($doctorScheduleShiftData['StartTime'], $doctorScheduleShiftData['EndTime'], $doctorScheduleShiftData['NoOfPatientAllowed']);
+                                if (count($timeSlots) > 0) {
+                                    foreach ($timeSlots as $i) {
+                                        $timeSlotsData = array(
+                                            "DoctorScheduleShiftId" => $getInsertedDataId,
+                                            "TimeSlot" => $i,
+                                        );
+                                        $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                                    }
                                 }
                             }
                         } else {
@@ -505,6 +534,7 @@ class DoctorScheduleController extends Controller
                                     $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
                                     if ($result == false) {
                                         DB::rollBack();
+                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
                                     }
                                 }
                             } else {
@@ -520,26 +550,31 @@ class DoctorScheduleController extends Controller
                                 $update = GenericModel::updateGeneric('doctor_schedule_shift', 'Id', $item['Id'], $dataToUpdate);
                                 if ($update == false) {
                                     DB::rollBack();
+                                    return response()->json(['data' => null, 'message' => 'Error in updating schedule shift'], 400);
                                 }
                             }
-                        }
-                        error_log('Now updating doctor schedule details');
-
-                        $updateData = array(
-                            "NoOfShift" => $noOfShift,
-                            "IsOffDay" => $isOffDay,
-                            "UpdatedOn" => $date['timestamp'],
-                            "UpdatedBy" => $doctorId //fetch from doctor_schedule table
-                        );
-
-                        $update = GenericModel::updateGeneric('doctor_schedule_detail_copy1', 'Id', $doctorScheduleDetailId, $updateData);
-                        if ($update == false) {
-                            DB::rollBack();
                         }
                     }
                 }
             }
+
+            error_log('Now updating doctor schedule details');
+
+            $updateData = array(
+                "NoOfShift" => $noOfShift,
+                "IsOffDay" => $isOffDay,
+                "UpdatedOn" => $date['timestamp'],
+                "UpdatedBy" => $doctorId //fetch from doctor_schedule table
+            );
+
+            $update = GenericModel::updateGeneric('doctor_schedule_detail_copy1', 'Id', $doctorScheduleDetailId, $updateData);
+            if ($update == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in updating schedule detail'], 400);
+            }
+
         }
+
         DB::commit();
         return response()->json(['data' => null, 'message' => 'Doctor schedule shift updated successfully'], 200);
     }
@@ -910,6 +945,10 @@ class DoctorScheduleController extends Controller
             } else {
                 //Now get the shceudle date with respect to schedule shift id
                 $getScheduleDate = DoctorScheduleModel::getDoctorScheduleShiftDataViaId($request->post('DoctorScheduleShiftId'));
+
+                error_log('$getScheduleDate');
+                error_log($getScheduleDate->ScheduleDate);
+
                 if ($getScheduleDate == null) {
                     error_log('schedule date not found');
                     return response()->json(['data' => null, 'message' => 'Schedule date not found'], 400);
@@ -923,6 +962,10 @@ class DoctorScheduleController extends Controller
                         //We have now got the patient schedule date
                         //Now compare that schedule with the date which we got earlier via schedule shift id
                         foreach ($getPatientsScheduleDate as $item) {
+
+                            error_log('$item');
+                            error_log($item->ScheduleDate);
+
                             if ($item->ScheduleDate == $getScheduleDate->ScheduleDate) {
                                 error_log('One of the date is equal to the appointment date which patient has already taken');
                                 return response()->json(['data' => null, 'message' => 'You have already taken an appointment on this date'], 400);
@@ -990,7 +1033,7 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
                 }
                 UserModel::sendEmail($DoctorData[0]->EmailAddress, $emailMessageForDoctor, null);
 
@@ -1001,7 +1044,7 @@ class DoctorScheduleController extends Controller
                     $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                     $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
+                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
                 }
                 return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment request successfully created'], 200);
             }
@@ -1011,7 +1054,7 @@ class DoctorScheduleController extends Controller
         }
     }
 
-    function getDoctorAppointmentListViaPagination(Request $request)
+    function getDoctorAppointmentListViaPagination_OLD(Request $request)
     {
         error_log('in controller');
 
@@ -1063,7 +1106,52 @@ class DoctorScheduleController extends Controller
         }
     }
 
-    function getDoctorAppointmentListCount(Request $request)
+    function getDoctorAppointmentListViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $patientRole = env('ROLE_PATIENT');
+
+        $loggedInUserId = $request->get('userId');
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+        $searchKeyword = $request->get('search');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+
+
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) > 0) {
+            error_log('user data fetched');
+            if ($loggedInUserData[0]->RoleCodeName == $doctorRole) {
+                error_log('login user is doctor');
+                //Now check if logged in user is doctor or not
+                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentViaDoctorId($loggedInUserId, $searchKeyword, $reqStatus, $pageNo, $limit);
+                if (count($getAppointmentListForDoctor) > 0) {
+                    return response()->json(['data' => $getAppointmentListForDoctor, 'message' => 'Appointments found'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'appointment not found'], 200);
+                }
+            } else if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
+                error_log('login user is patient');
+                //Now check if logged in user is patient or not
+                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentViaPatientId($loggedInUserId, $searchKeyword, $reqStatus, $pageNo, $limit);
+                if (count($getAppointmentListForPatient) > 0) {
+                    return response()->json(['data' => $getAppointmentListForPatient, 'message' => 'Appointments found'], 200);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'appointment not found'], 200);
+                }
+            } else {
+                error_log('login user is neither doctor or patient');
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor or patient'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
+
+    function getDoctorAppointmentListCount_OLD(Request $request)
     {
         error_log('in controller');
 
@@ -1108,6 +1196,41 @@ class DoctorScheduleController extends Controller
         }
     }
 
+    function getDoctorAppointmentListCount(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $patientRole = env('ROLE_PATIENT');
+
+        $loggedInUserId = $request->get('userId');
+        $searchKeyword = $request->get('search');
+        $reqStatus = $request->get('rStatus'); //means 'accepted || pending || rejected'
+
+
+        $loggedInUserData = UserModel::GetSingleUserViaId($loggedInUserId);
+
+        if (count($loggedInUserData) > 0) {
+            error_log('user data fetched');
+            if ($loggedInUserData[0]->RoleCodeName == $doctorRole) {
+                error_log('login user is doctor');
+                //Now check if logged in user is doctor or not
+                $getAppointmentListForDoctor = DoctorScheduleModel::getAppointmentCountViaDoctorId($loggedInUserId, $searchKeyword, $reqStatus);
+                return response()->json(['data' => $getAppointmentListForDoctor, 'message' => 'Total count'], 200);
+            } else if ($loggedInUserData[0]->RoleCodeName == $patientRole) {
+                error_log('login user is patient');
+                //Now check if logged in user is patient or not
+                $getAppointmentListForPatient = DoctorScheduleModel::getAppointmentCountViaPatientId($loggedInUserId, $searchKeyword, $reqStatus);
+                return response()->json(['data' => $getAppointmentListForPatient, 'message' => 'Total count'], 200);
+            } else {
+                error_log('login user is neither doctor or patient');
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor or patient'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user data not found'], 400);
+        }
+    }
+
     function getDoctorAppointmentSingleViaId(Request $request)
     {
         error_log('in controller');
@@ -1139,63 +1262,121 @@ class DoctorScheduleController extends Controller
         $reqStatus = $request->post('rStatus'); //means 'accepted || rejected'
         $reason = $request->post('reason'); //refers to reject reason
 
-        //first apply following check
-        //appointment id should belong to logged in user
+        $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
+        $appointmentRequestPending = env('APPOINTMENT_PENDING_REQUEST_STATUS');
+        $appointmentRequestAccepted = env('APPOINTMENT_REJECTED_ACCEPTED_STATUS');
 
-        //if rStatus = accepted
-        //if already rejected or pending do not update to accepted
+        $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
 
-        //if rStatus = rejected
-        //if already accepted or pending do not update to rejected
+        $userData = UserModel::GetSingleUserViaId($doctorId);
 
-        //if rStatus = pending not allow to update status as pending
-        //status is a default status
+        if (count($userData) > 0) {
+            if ($userData[0]->RoleCodeName != $doctorRole) {
+                error_log('Role is NOT doctor');
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor'], 400);
+            } else {
+
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'User record not found'], 400);
+        }
 
 //        First checking if appointment exists or not
 
         $emailMessageForPatient = "Dear Patient, Your appointment request has been " . $reqStatus . '.';
         $emailMessageForDoctor = "Dear Doctor, You have " . $reqStatus . " your patient appointment request. View details from the following link";
 
-        $checkAppointment = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
-        if ($checkAppointment == null) {
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($getAppointmentData == null) {
             return response()->json(['data' => null, 'message' => 'Appointment not found'], 400);
         } else {
-            //after checks update the status
-            $dataToUpdate = array(
-                "RequestStatus" => $reqStatus,
-                "RequestStatusReason" => $reason
-            );
-            DB::beginTransaction();
-            $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
-            if ($update <= 0) {
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
-            } else {
-                DB::commit();
 
-                UserModel::sendEmail($checkAppointment->PatientEmailAddress, $emailMessageForPatient, null);
-                //Now sending sms to patient
-                if ($checkAppointment->PatientMobileNumber != null) {
-                    $url = env('WEB_URL') . '/#/';
-                    $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $checkAppointment->PatientMobileNumber;
-                    array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
-                }
-                UserModel::sendEmail($checkAppointment->DoctorEmailAddress, $emailMessageForDoctor, null);
+            //Check if this appointment belongs to logged in doctor or not
 
-                //Now sending sms to doctor
-                if ($checkAppointment->DoctorMobileNumber != null) {
-                    $url = env('WEB_URL') . '/#/';
-                    $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $checkAppointment->DoctorMobileNumber;
-                    array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
-                }
-                return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
+            if ($getAppointmentData->DoctorId != $doctorId) {
+                return response()->json(['data' => null, 'message' => 'This appointment does not belong to logged in doctor'], 400);
             }
+
+            //if rStatus = accepted
+            //if already rejected or pending do not update to accepted
+
+            if ($reqStatus == 'accepted') {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
+                    error_log('Doctor has already reject your request so it cannot be accept');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is ' . $getAppointmentData->RequestStatus . '.'], 400);
+                } else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
+                    error_log('Doctor has already accept your request');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
+                }
+            }
+
+            //if rStatus = rejected
+            //if already accepted or pending do not update to rejected
+
+            else if ($reqStatus == 'rejected') {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted) {
+                    error_log('patient has already accepted');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it has already accepted'], 400);
+                } else if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
+                    error_log('patient has already rejected');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+                } else {
+
+                    //update book status to 0 bcz appointment is rejected
+                    $dataToUpdate = array(
+                        "IsBooked" => 0
+                    );
+                    $update = GenericModel::updateGeneric('shift_time_slot', 'Id', $getAppointmentData->ShiftTimeSlotId, $dataToUpdate);
+                }
+            }
+
+            //if rStatus = pending not allow to update status as pending
+            //status is a default status
+
+            else if ($reqStatus == 'pending') {
+                if ($getAppointmentData->RequestStatus == $appointmentRequestPending) {
+                    error_log('patient has already rejected');
+                    return response()->json(['data' => null, 'message' => 'Appointment status cannot be updated because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+                }
+            }
+
+        }
+        error_log('all checks clear');
+        //after checks update the status
+        $dataToUpdate = array(
+            "RequestStatus" => $reqStatus,
+            "RequestStatusReason" => $reason
+        );
+        DB::beginTransaction();
+        $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
+        if ($update <= 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Appointment request failed to update'], 500);
+        } else {
+            DB::commit();
+
+            UserModel::sendEmail($getAppointmentData->PatientEmailAddress, $emailMessageForPatient, null);
+            //Now sending sms to patient
+            if ($getAppointmentData->PatientMobileNumber != null) {
+                $url = env('WEB_URL') . '/#/';
+                $toNumber = array();
+                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                $mobileNumber = $phoneCode . $getAppointmentData->PatientMobileNumber;
+                array_push($toNumber, $mobileNumber);
+                HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
+            }
+            UserModel::sendEmail($getAppointmentData->DoctorEmailAddress, $emailMessageForDoctor, null);
+
+            //Now sending sms to doctor
+            if ($getAppointmentData->DoctorMobileNumber != null) {
+                $url = env('WEB_URL') . '/#/';
+                $toNumber = array();
+                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                $mobileNumber = $phoneCode . $getAppointmentData->DoctorMobileNumber;
+                array_push($toNumber, $mobileNumber);
+                HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
+            }
+            return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
         }
     }
 
@@ -1213,6 +1394,11 @@ class DoctorScheduleController extends Controller
         $appointmentCancelledByPatientStatus = env('APPOINTMENT_CANCELLED_BY_PATIENT');
         $appointmentCancelledByDoctorStatus = env('APPOINTMENT_CANCELLED_BY_DOCTOR');
 
+        $appointmentRequestRejected = env('APPOINTMENT_REJECTED_REQUEST_STATUS');
+        $appointmentRequestAccepted = env('APPOINTMENT_REJECTED_ACCEPTED_STATUS');
+
+        $appointmentStatusPatientVisited = env('APPOINTMENT_PATIENT_VISIT_STATUS');
+
         $appointmentId = $request->get('aId');//refers to appointmentId
         $userId = $request->get('userId');//refers to logged in userId can be patient or doctor
         $reason = $request->post('reason'); //refers to cancellation reason
@@ -1220,12 +1406,28 @@ class DoctorScheduleController extends Controller
         //first apply following check
         //appointment id should belong to logged in user
 
-        //if appointment is already completed
-        //it cannot be cancelled
 
-        //if appointment request is already rejected
-        //it cannot be cancelled
+        $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
+        if ($getAppointmentData == null) {
+            return response()->json(['data' => null, 'message' => 'Appointment not found'], 400);
+        } else {
 
+            //if appointment request is already rejected
+            //it cannot be cancelled
+
+            if ($getAppointmentData->RequestStatus == $appointmentRequestRejected) {
+                error_log('patient has already rejected');
+                return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it is already ' . $getAppointmentData->RequestStatus . '.'], 400);
+            }
+
+            //if appointment is already completed
+            //it cannot be cancelled
+
+            else if ($getAppointmentData->RequestStatus == $appointmentRequestAccepted && $getAppointmentData->AppointmentStatus == $appointmentStatusPatientVisited) {
+                error_log('patient has already accepted');
+                return response()->json(['data' => null, 'message' => 'Appointment cannot be cancelled because it has already accepted'], 400);
+            }
+        }
         //for patient appointment can only be
         //cancel before 48 hours of scheduled appointment
         //fetch this from .env
@@ -1234,12 +1436,30 @@ class DoctorScheduleController extends Controller
         //cancel before 24 hours of scheduled appointment
         //fetch this from .env
 
-        //after checks update the status
-        $dataToUpdate = array(
-            "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
-            //   "AppointmentStatus" => $appointmentCancelledByPatientStatus,
-            "AppointmentStatusReason" => $reason
-        );
+        $userData = UserModel::GetSingleUserViaId($userId);
+
+        if (count($userData) > 0) {
+            if ($userData[0]->RoleCodeName == $patientRoleCode) {
+                error_log('Role is patient');
+
+                //after checks update the status
+                $dataToUpdate = array(
+                    "AppointmentStatus" => $appointmentCancelledByPatientStatus,
+                    "AppointmentStatusReason" => $reason
+                );
+            } else if ($userData[0]->RoleCodeName == $doctorRoleCode) {
+                error_log('Role is doctor');
+                $dataToUpdate = array(
+                    "AppointmentStatus" => $appointmentCancelledByDoctorStatus,
+                    "AppointmentStatusReason" => $reason
+                );
+            } else {
+                return response()->json(['data' => null, 'message' => 'logged in user must be doctor or patient'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'User record not found'], 400);
+        }
+
 
         DB::beginTransaction();
         $update = GenericModel::updateGeneric('appointment', 'Id', $appointmentId, $dataToUpdate);
@@ -1271,6 +1491,99 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => $associatedDoctor, 'message' => 'Associated Doctor fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'No Associated Doctor for this Patient'], 200);
+        }
+    }
+
+    function AddTimeSlotDynamically(Request $request)
+    {
+
+        $query = DoctorScheduleModel::getTimeSlotTemp();
+        $patientAllowed = $request->get('allowed');
+
+        $startTime = $query->StartTime;
+        $endTime = $query->EndTime;
+
+        DoctorScheduleModel::CalculateTimeSlotDynamically($startTime, $endTime, $patientAllowed);
+
+//        $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
+//
+//        error_log($startTime);
+//        error_log($endTime);
+//        error_log('time difference in min');
+//        error_log($diff);
+//
+//        $avg = round($diff / $patientAllowed);
+//
+//        error_log('avg time in hours');
+//        error_log($avg);
+//
+//        //convert to mints
+//        $min = round($avg * 60);
+//
+//        error_log('convert in mints');
+//        error_log($min);
+//
+////        $endTime = date("H:i", strtotime('+30 minutes', $time));
+////        $endTime = date("H:I", strtotime('+30 minutes', $startTime));
+//
+//        $endTime = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
+//        error_log("added time");
+//        error_log($endTime);
+    }
+
+    function FormatTime(Request $request)
+    {
+        $formatMessage = null;
+
+        $timestamp = $request->get('t');
+        error_log($timestamp);
+
+        $topicCreatedTime = Carbon::createFromTimestamp($timestamp);
+        $currentTime = Carbon::now("UTC");
+
+        $diffInYears = $currentTime->diffInYears($topicCreatedTime);
+        $diffInMonths = $currentTime->diffInMonths($topicCreatedTime);
+        $diffInWeeks = $currentTime->diffInWeeks($topicCreatedTime);
+        $diffInDays = $currentTime->diffInDays($topicCreatedTime);
+        $diffInHours = $currentTime->diffInHours($topicCreatedTime);
+        $diffInMints = $currentTime->diffInMinutes($topicCreatedTime);
+        $diffInSec = $currentTime->diffInSeconds($topicCreatedTime);
+
+        error_log($topicCreatedTime);
+        error_log($currentTime);
+        error_log($diffInYears);
+        error_log($diffInMonths);
+        error_log($diffInWeeks);
+        error_log($diffInDays);
+        error_log($diffInHours);
+        error_log($diffInMints);
+        error_log($diffInSec);
+
+        if ($diffInYears > 0) {
+            $formatMessage = $diffInYears . 'Y ago';
+            return $formatMessage;
+        } else if ($diffInMonths > 0) {
+            $formatMessage = $diffInMonths . 'Mon ago';
+            return $formatMessage;
+        } else if ($diffInWeeks > 0) {
+            $formatMessage = $diffInWeeks . 'W ago';
+            return $formatMessage;
+        } else if ($diffInDays > 0) {
+            $formatMessage = $diffInDays . 'D ago';
+            return $formatMessage;
+        } else if ($diffInHours > 0) {
+            $formatMessage = $diffInHours . 'H ago';
+            return $formatMessage;
+        } else if ($diffInMints > 0) {
+            $formatMessage = $diffInMints . 'Min ago';
+            return $formatMessage;
+        } else if ($diffInSec >= 30) {
+            $formatMessage = $diffInMints . 'Sec ago';
+            return $formatMessage;
+        } else {
+            //seconds
+            $formatMessage = 'Now';
+            return $formatMessage;
         }
     }
 }
