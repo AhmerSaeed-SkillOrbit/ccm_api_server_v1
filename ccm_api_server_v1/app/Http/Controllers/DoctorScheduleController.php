@@ -289,7 +289,7 @@ class DoctorScheduleController extends Controller
         $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $request->post('MonthName'), $request->post('YearName'));
 
         if ($getRange != null) {
-            return response()->json(['data' => null, 'message' => 'Schedule of this dr with same time already exists'], 400);
+            return response()->json(['data' => null, 'message' => 'Your Schedule already exist for these dates'], 400);
         }
 
         $date = HelperModel::getDate();
