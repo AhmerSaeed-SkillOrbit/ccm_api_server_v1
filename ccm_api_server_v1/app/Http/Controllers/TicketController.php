@@ -626,4 +626,53 @@ class TicketController extends Controller
             }
         }
     }
+
+    function TicketTrackStatusUpdate(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketId = $request->get('ticketId');
+        $ticketTrackStatus = $request->get('trackStatus');
+
+        $date = HelperModel::getDate();
+
+        // First check if user data found or not via user ID
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            //Now fetch the ticket and check if it exists
+            $ticketData = TicketModel::GetTicketViaId($ticketId);
+            if ($ticketData == null) {
+                error_log('ticket data not found');
+                return response()->json(['data' => $ticketData, 'message' => 'ticket not found'], 200);
+
+            } else {
+                error_log('ticket data found');
+
+                //Now we will make data and will insert it
+
+                //Checking if ticket status is same as got from front end or not
+
+                if ($ticketData->TrackStatus == $ticketTrackStatus) {
+                    return response()->json(['data' => null, 'message' => 'Ticket status is already ' . $ticketTrackStatus], 400);
+                } else {
+
+                    $ticketDataUpdate = array(
+                        "TrackStatus" => $ticketTrackStatus,
+                        "UpdatedBy" => $userId,
+                        "UpdatedOn" => $date["timestamp"]
+                    );
+
+                    $insertedDataId = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketDataUpdate);
+                    if ($insertedDataId == false) {
+                        return response()->json(['data' => null, 'message' => 'Error in updating ticket status'], 400);
+                    } else {
+                        return response()->json(['data' => $ticketId, 'message' => 'Ticket track status successfully updated'], 200);
+                    }
+                }
+            }
+        }
+    }
 }
