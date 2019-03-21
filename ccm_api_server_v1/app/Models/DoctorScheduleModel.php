@@ -504,7 +504,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dsf")
             ->select("dsf.StartTime", 'dsf.EndTime')
-            ->where("dsf.Id", "=", 2760)
+            ->where("dsf.Id", "=", 3548)
             ->first();
 
         return $query;
@@ -520,30 +520,34 @@ class DoctorScheduleModel
         $endSlot1 = 0;
         $endSlot2 = 0;
 
+        error_log($startTime);
+        error_log($endTime);
+        error_log($patientAllowed);
+
         if ($indexItem == null) {
             error_log("$indexItem is start");
 
             $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%h'));
 
-            error_log($startTime);
-            error_log($endTime);
-            error_log($patientAllowed);
-
-            error_log('time difference in hours');
-            error_log($diff);
-
-//            $avg = round($diff / $patientAllowed);
-            $avg = $diff / $patientAllowed;
-
-            error_log('avg time in hours');
-            error_log($avg);
-
-            //convert to mints
-//            $min = round($avg * 60);
-            $min = $avg * 60;
-
-            error_log('convert in mints');
-            error_log($min);
+            if ($diff == 0) {
+                $diff = number_format((new Carbon($startTime))->diff(new Carbon($endTime))->format('%i'));
+                error_log('time difference in mints');
+                error_log($diff);
+                $avg = $diff / $patientAllowed;
+                error_log('avg time in mints');
+                error_log($avg);
+                $min = $avg;//no need to convert in mints
+            } else {
+                error_log('time difference in hours');
+                error_log($diff);
+                $avg = $diff / $patientAllowed;
+                error_log('avg time in hours');
+                error_log($avg);
+                //convert to mints
+                $min = $avg * 60;
+                error_log('convert in mints');
+                error_log($min);
+            }
 
             $endSlot1 = (new Carbon($startTime))->addMinute($min)->format('H:i:s');
             $indexItem = $endSlot1;
@@ -563,24 +567,38 @@ class DoctorScheduleModel
         }
         while ($indexItem < $endTime) {
 
-            error_log("in while loop");
-
             $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
-            $range = $endSlot1 . '-' . $endSlot2;
 
-            $indexItem = $endSlot2;
-            $endSlot1 = $endSlot2;
+            error_log("end slot2 n endTime");
 
-            error_log("end slot");
-            error_log($endSlot1);
+            error_log($endSlot2);
+            error_log($endTime);
 
-            error_log("index Item");
-            error_log($indexItem);
+            if ($endSlot2 <= $endTime) {
+                error_log("in while loop");
 
-            error_log("range");
-            error_log($range);
+                $range = $endSlot1 . '-' . $endSlot2;
 
-            array_push($timeSlots, $range);
+                $indexItem = $endSlot2;
+                $endSlot1 = $endSlot2;
+
+                error_log("end slot");
+                error_log($endSlot1);
+
+                error_log("index Item");
+                error_log($indexItem);
+
+                error_log("range");
+                error_log($range);
+
+                array_push($timeSlots, $range);
+            } else {
+                $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
+                error_log("slot is exceed");
+                $range = $endSlot1 . '-' . $endSlot2-1;
+                array_push($timeSlots, $range);
+                $indexItem = $endSlot2;
+            }
         }
 
 //        foreach ($timeSlots as $i) {
@@ -591,7 +609,7 @@ class DoctorScheduleModel
 //            $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
 //        }
 
-        return $timeSlots;
+//        return $timeSlots;
         print_r($timeSlots);
     }
 }
