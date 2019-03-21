@@ -447,6 +447,8 @@ class TicketController extends Controller
                     //If assignee data will be fetched then it means this ticket has assigned to support staff
                     //then insert data only in ticket reply
 
+                    $message = "Ticket replied given successfully";
+
 
                     if ($checkUserData->RoleCodeName != $patientRole) {
                         error_log('user role is not patient');
@@ -462,6 +464,8 @@ class TicketController extends Controller
                             DB::rollBack();
                             return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
                         }
+
+                        $message = "Ticket replied given and assigned to you";
                     }
 
                     $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
@@ -472,7 +476,7 @@ class TicketController extends Controller
                         return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                     } else {
                         DB::commit();
-                        return response()->json(['data' => $ticketReplyInsertedId, 'message' => 'ticket replied given and assigned to you'], 200);
+                        return response()->json(['data' => $ticketReplyInsertedId, 'message' => $message], 200);
                     }
                 }
             }
