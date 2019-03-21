@@ -113,6 +113,7 @@ class TicketController extends Controller
                 foreach ($ticketListData as $item) {
                     //Now making data
                     $data = array(
+                        'Id' => $item->Id,
                         'TicketNumber' => $item->TicketNumber,
                         'Title' => $item->Title,
                         'Description' => $item->Description,
