@@ -321,8 +321,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $facilitatorRole) {
+            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
@@ -393,8 +392,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $patientRole) {
+            } else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -466,8 +464,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
@@ -504,6 +501,39 @@ class UserController extends Controller
         $data = $resultArray;
         if (count($data) > 0) {
             return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Users not found'], 200);
+        }
+    }
+
+    function GetUserViaRoleCode(Request $request)
+    {
+        $roleCode = $request->get('roleCode');
+
+        $val = UserModel::GetUserViaRoleCode($roleCode);
+        $userData = array();
+        foreach ($val as $item) {
+            $data = array(
+                'Id' => $item->Id,
+                'FirstName' => $item->FirstName,
+                'LastName' => $item->LastName,
+                'EmailAddress' => $item->EmailAddress,
+                'MobileNumber' => $item->MobileNumber,
+                'TelephoneNumber' => $item->TelephoneNumber,
+                'Gender' => $item->Gender,
+                'FunctionalTitle' => $item->FunctionalTitle,
+                'Role' => array()
+            );
+
+            $data['Role']['Id'] = $item->RoleId;
+            $data['Role']['Name'] = $item->RoleName;
+            $data['Role']['CodeName'] = $item->RoleCodeName;
+
+            array_push($userData, $data);
+        }
+
+        if (count($val) > 0) {
+            return response()->json(['data' => $userData, 'message' => 'Users fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Users not found'], 200);
         }

@@ -106,17 +106,59 @@ class TicketModel
         error_log('in model, fetching ticket assignee data');
 
         $query = DB::table('ticket_assignee')
+            //Assign by data
             ->leftjoin('user as assignBy', 'ticket_assignee.AssignById', 'assignBy.Id')
+            ->leftjoin('user_access as assignByUserAccess', 'assignByUserAccess.UserId', 'assignBy.Id')
+            ->leftjoin('role as assignByRole', 'assignByUserAccess.RoleId', 'assignByRole.Id')
+            //Assign to data
             ->leftjoin('user as assignTo', 'ticket_assignee.AssignToId', 'assignTo.Id')
-//            ->join('user_access', 'user_access.UserId', 'user.Id')
-//            ->join('role', 'user_access.RoleId', 'role.Id')
-            ->select('ticket_assignee.*', 'assignBy.FirstName', 'assignBy.LastName',
-                'assignTo.FirstName', 'assignTo.LastName')
-//                'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->leftjoin('user_access as assignToUserAccess', 'assignToUserAccess.UserId', 'assignTo.Id')
+            ->leftjoin('role as assignToRole', 'assignToUserAccess.RoleId', 'assignToRole.Id')
+            ->select('ticket_assignee.*',
+
+                'assignBy.FirstName as AssignByFirstName', 'assignBy.LastName as AssignByLastName',
+                'assignByRole.Id as AssignByRoleId', 'assignByRole.Name as AssignByRoleName', 'assignByRole.CodeName as AssignByRoleCodeName',
+
+                'assignTo.FirstName as AssignToFirstName', 'assignTo.LastName as AssignToLastName',
+                'assignToRole.Id as AssignToRoleId', 'assignToRole.Name as AssignToRoleName', 'assignToRole.CodeName as AssignToRoleCodeName'
+            )
             ->where('ticket_assignee.IsActive', '=', true)
             ->where('ticket_assignee.TicketId', '=', $ticketId)
             ->orderBy('ticket_assignee.Id', 'DESC')
             ->get();
+
+        return $query;
+    }
+
+    public static function GetRepliesViaTicketId($ticketId)
+    {
+        error_log('in model, fetching ticket reply data');
+
+        $query = DB::table('ticket_reply')
+            ->leftjoin('user as replyBy', 'ticket_reply.ReplyById', 'replyBy.Id')
+            ->leftjoin('user_access', 'user_access.UserId', 'replyBy.Id')
+            ->leftjoin('role', 'user_access.RoleId', 'role.Id')
+            ->select('ticket_reply.*',
+
+                'replyBy.FirstName as ReplyByFirstName', 'replyBy.LastName as ReplyByLastName',
+                'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName'
+            )
+            ->where('ticket_reply.IsActive', '=', true)
+            ->where('ticket_reply.TicketId', '=', $ticketId)
+            ->orderBy('ticket_reply.Id', 'DESC')
+            ->get();
+
+        return $query;
+    }
+
+    public static function GetRepliesCountViaTicketId($ticketId)
+    {
+        error_log('in model, fetching ticket reply count');
+
+        $query = DB::table('ticket_reply')
+            ->where('ticket_reply.IsActive', '=', true)
+            ->where('ticket_reply.TicketId', '=', $ticketId)
+            ->count();
 
         return $query;
     }

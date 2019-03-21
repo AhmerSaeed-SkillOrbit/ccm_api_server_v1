@@ -113,6 +113,7 @@ class TicketController extends Controller
                 foreach ($ticketListData as $item) {
                     //Now making data
                     $data = array(
+                        'Id' => $item->Id,
                         'TicketNumber' => $item->TicketNumber,
                         'Title' => $item->Title,
                         'Description' => $item->Description,
@@ -177,9 +178,12 @@ class TicketController extends Controller
                 $data['OtherType'] = $ticketData->OtherType;
                 $data['Type'] = $ticketData->Type;
                 $data['RaisedFrom'] = $ticketData->RaisedFrom;
+                $data['TicketReplyCount'] = TicketModel::GetRepliesCountViaTicketId($ticketId);
                 $data['CreatedOn'] = ForumModel::calculateTopicAnCommentTime($ticketData->CreatedOn);
                 $data['Role'] = array();
                 $data['CreatedBy'] = array();
+                $data['TicketReply'] = array();
+                $data['TicketAssignee'] = array();
 
 
                 $data['CreatedBy']['Id'] = $ticketData->CreatedBy;
@@ -189,6 +193,79 @@ class TicketController extends Controller
                 $data['Role']['Id'] = $ticketData->RoleId;
                 $data['Role']['Name'] = $ticketData->RoleName;
                 $data['Role']['CodeName'] = $ticketData->RoleCodeName;
+
+                //Now fetching replies to ticket
+
+                $ticketRepliedData = array();
+
+                $getTicketReplies = TicketModel::GetRepliesViaTicketId($ticketId);
+                if (count($getTicketReplies) > 0) {
+                    error_log('ticket replies found');
+                    foreach ($getTicketReplies as $item) {
+                        $replyData = array(
+                            'Id' => $item->Id,
+                            'Reply' => $item->Reply,
+                            'CreatedOn' => ForumModel::calculateTopicAnCommentTime($item->CreatedOn),
+                            'ReplyBy' => array(
+                                'Role' => array()
+                            ),
+                        );
+
+                        $replyData['ReplyBy']['Id'] = $item->ReplyById;
+                        $replyData['ReplyBy']['FirstName'] = $item->ReplyByFirstName;
+                        $replyData['ReplyBy']['LastName'] = $item->ReplyByLastName;
+
+                        $replyData['ReplyBy']['Role']['Id'] = $item->RoleId;
+                        $replyData['ReplyBy']['Role']['Name'] = $item->RoleName;
+                        $replyData['ReplyBy']['Role']['CodeName'] = $item->RoleCodeName;
+
+                        array_push($ticketRepliedData, $replyData);
+                    }
+
+                    $data['TicketReply'] = $ticketRepliedData;
+                }
+
+                //Now fetching ticket assignee data
+
+                $ticketAssignedData = array();
+
+                $getTicketAssignee = TicketModel::GetAssigneeViaTicketId($ticketId);
+                if (count($getTicketAssignee) > 0) {
+                    error_log('ticket assignee found');
+                    foreach ($getTicketAssignee as $item) {
+                        $assignedData = array(
+                            'Id' => $item->Id,
+                            'AssignByDescription' => $item->AssignByDescription,
+                            'CreatedOn' => ForumModel::calculateTopicAnCommentTime($item->CreatedOn),
+                            'AssignBy' => array(
+                                'Role' => array()
+                            ),
+                            'AssignTo' => array(
+                                'Role' => array()
+                            )
+                        );
+
+                        $assignedData['AssignBy']['Id'] = $item->AssignById;
+                        $assignedData['AssignBy']['FirstName'] = $item->AssignByFirstName;
+                        $assignedData['AssignBy']['LastName'] = $item->AssignByLastName;
+
+                        $assignedData['AssignBy']['Role']['Id'] = $item->AssignByRoleId;
+                        $assignedData['AssignBy']['Role']['Name'] = $item->AssignByRoleName;
+                        $assignedData['AssignBy']['Role']['CodeName'] = $item->AssignByRoleCodeName;
+
+                        $assignedData['AssignTo']['Id'] = $item->AssignToId;
+                        $assignedData['AssignTo']['FirstName'] = $item->AssignToFirstName;
+                        $assignedData['AssignTo']['LastName'] = $item->AssignToLastName;
+
+                        $assignedData['AssignTo']['Role']['Id'] = $item->AssignToRoleId;
+                        $assignedData['AssignTo']['Role']['Name'] = $item->AssignToRoleName;
+                        $assignedData['AssignTo']['Role']['CodeName'] = $item->AssignToRoleCodeName;
+
+                        array_push($ticketAssignedData, $assignedData);
+                    }
+
+                    $data['TicketAssignee'] = $ticketAssignedData;
+                }
 
 
                 return response()->json(['data' => $data, 'message' => 'ticket data found'], 200);
@@ -297,6 +374,7 @@ class TicketController extends Controller
 
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
+        $patientRole = env('ROLE_PATIENT');
 
         $date = HelperModel::getDate();
         DB::beginTransaction();
@@ -308,6 +386,10 @@ class TicketController extends Controller
             //Now check if this ticket is already assigned to someone or not
             error_log('User record found');
 
+            //We will put check if logged in user is patient then
+            //this ticket cannot be assigned to him
+
+
             //Now check if given ticket exists or not
 
             $ticketData = TicketModel::GetTicketViaId($ticketId);
@@ -318,8 +400,7 @@ class TicketController extends Controller
             } else {
 
                 error_log('ticket data found');
-                //If assignee data will be fetched then it means this ticket has assigned to support staff
-                //then insert data only in ticket reply
+
                 //else insert data in ticket reply and assignee table too
 
                 $getAssigneeData = TicketModel::GetAssigneeViaTicketId($ticketId);
@@ -364,7 +445,29 @@ class TicketController extends Controller
                         "AssignByDescription" => $request->input('AssignByDescription'),
                         "IsActive" => true
                     );
+                    //If assignee data will be fetched then it means this ticket has assigned to support staff
+                    //then insert data only in ticket reply
 
+                    $message = "Ticket replied given successfully";
+
+
+                    if ($checkUserData->RoleCodeName != $patientRole) {
+                        error_log('user role is not patient');
+                        //Now we will make data and will insert it
+                        $ticketData = array(
+                            "UpdatedBy" => $userId,
+                            "UpdatedOn" => $date["timestamp"],
+                            "IsAssigned" => true
+                        );
+
+                        $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
+                        if ($ticketDataUpdate == false) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
+                        }
+
+                        $message = "Ticket replied given and assigned to you";
+                    }
 
                     $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
                     $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
@@ -374,7 +477,7 @@ class TicketController extends Controller
                         return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                     } else {
                         DB::commit();
-                        return response()->json(['data' => $ticketReplyInsertedId, 'message' => 'ticket replied given and assigned to you'], 200);
+                        return response()->json(['data' => $ticketReplyInsertedId, 'message' => $message], 200);
                     }
                 }
             }
@@ -523,6 +626,55 @@ class TicketController extends Controller
                     } else {
                         DB::commit();
                         return response()->json(['data' => $insertedDataId, 'message' => 'ticket assigned successfully given'], 200);
+                    }
+                }
+            }
+        }
+    }
+
+    function TicketTrackStatusUpdate(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $ticketId = $request->get('ticketId');
+        $ticketTrackStatus = $request->get('trackStatus');
+
+        $date = HelperModel::getDate();
+
+        // First check if user data found or not via user ID
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
+        } else {
+            //Now fetch the ticket and check if it exists
+            $ticketData = TicketModel::GetTicketViaId($ticketId);
+            if ($ticketData == null) {
+                error_log('ticket data not found');
+                return response()->json(['data' => $ticketData, 'message' => 'ticket not found'], 200);
+
+            } else {
+                error_log('ticket data found');
+
+                //Now we will make data and will insert it
+
+                //Checking if ticket status is same as got from front end or not
+
+                if ($ticketData->TrackStatus == $ticketTrackStatus) {
+                    return response()->json(['data' => null, 'message' => 'Ticket status is already ' . $ticketTrackStatus], 400);
+                } else {
+
+                    $ticketDataUpdate = array(
+                        "TrackStatus" => $ticketTrackStatus,
+                        "UpdatedBy" => $userId,
+                        "UpdatedOn" => $date["timestamp"]
+                    );
+
+                    $insertedDataId = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketDataUpdate);
+                    if ($insertedDataId == false) {
+                        return response()->json(['data' => null, 'message' => 'Error in updating ticket status'], 400);
+                    } else {
+                        return response()->json(['data' => $ticketId, 'message' => 'Ticket track status successfully updated'], 200);
                     }
                 }
             }
