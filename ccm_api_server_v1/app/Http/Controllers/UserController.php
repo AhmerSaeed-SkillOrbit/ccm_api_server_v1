@@ -1250,39 +1250,43 @@ class UserController extends Controller
             return response()->json(['data' => null, 'message' => 'Facilitator(s) not found'], 400);
         }
 
-        $emailMessage = "You have been associated with Dr. " . $doctorsData[0]->FirstName . ".";
-
-        error_log($emailMessage);
-
-        error_log(count($getFacilitatorEmails));
-
-        $toNumber = array();
-        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-
-        foreach ($getFacilitatorEmails as $item) {
-
-            //pushing mobile number
-            //in array for use in sending sms
-            array_push($toNumber, $phoneCode . $item->MobileNumber);
-
-            error_log('$item' . $item->EmailAddress);
-            error_log('$item' . $item->MobileNumber);
-
-            UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
-        }
-
-        ## Preparing Data for SMS  - START ##
-        if (count($toNumber) > 0) {
-            HelperModel::sendSms($toNumber, $emailMessage, null);
-        }
-        ## Preparing Data for SMS  - END ##
 
         //Now inserting data
         $checkInsertedData = GenericModel::insertGeneric('user_association', $data);
         error_log('$checkInsertedData ' . $checkInsertedData);
+        
         if ($checkInsertedData == true) {
             DB::commit();
+
+            $emailMessage = "You have been associated with Dr. " . $doctorsData[0]->FirstName . ".";
+
+            error_log($emailMessage);
+
+            error_log(count($getFacilitatorEmails));
+
+            $toNumber = array();
+            $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+            foreach ($getFacilitatorEmails as $item) {
+
+                //pushing mobile number
+                //in array for use in sending sms
+                array_push($toNumber, $phoneCode . $item->MobileNumber);
+
+                error_log('$item' . $item->EmailAddress);
+                error_log('$item' . $item->MobileNumber);
+
+                UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
+            }
+
+            ## Preparing Data for SMS  - START ##
+            if (count($toNumber) > 0) {
+                HelperModel::sendSms($toNumber, $emailMessage, null);
+            }
+            ## Preparing Data for SMS  - END ##
+
             return response()->json(['data' => $doctorId, 'message' => 'Facilitator(s) successfully associated'], 200);
+
         } else {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in associating facilitator(s)'], 400);
