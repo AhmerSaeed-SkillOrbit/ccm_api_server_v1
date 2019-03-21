@@ -532,10 +532,11 @@ class DoctorScheduleController extends Controller
                                 if (count($checkScheduleShiftRecord) > 0) {
                                     error_log('Deleting all shift entries');
                                     $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
-                                    if ($result == false) {
-                                        DB::rollBack();
-                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
-                                    }
+//                                    not required
+//                                    if ($result == false) {
+//                                        DB::rollBack();
+//                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
+//                                    }
                                 }
                             } else {
 
@@ -548,10 +549,33 @@ class DoctorScheduleController extends Controller
                                     "IsActive" => true
                                 );
                                 $update = GenericModel::updateGeneric('doctor_schedule_shift', 'Id', $item['Id'], $dataToUpdate);
-                                if ($update == false) {
-                                    DB::rollBack();
-                                    return response()->json(['data' => null, 'message' => 'Error in updating schedule shift'], 400);
+
+                                //now update the time slots as well
+                                //first delete the existing time slots
+                                //and insert new ones
+
+                                error_log('shift_time_slot are deleted');
+
+                                GenericModel::deleteGeneric('shift_time_slot', 'DoctorScheduleShiftId', $item['Id']);
+
+                                //now insert dynamic time slots
+                                $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($item['StartTime'], $item['EndTime'], $item['NoOfPatientAllowed']);
+                                if (count($timeSlots) > 0) {
+                                    foreach ($timeSlots as $i) {
+                                        $timeSlotsData = array(
+                                            "DoctorScheduleShiftId" => $item['Id'],
+                                            "TimeSlot" => $i,
+                                        );
+                                        error_log('new shift_time_slot are inserted');
+                                        $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                                    }
                                 }
+
+                                //not required
+//                                if ($update == false) {
+//                                    DB::rollBack();
+//                                    return response()->json(['data' => null, 'message' => 'Error in updating schedule shift'], 400);
+//                                }
                             }
                         }
                     }

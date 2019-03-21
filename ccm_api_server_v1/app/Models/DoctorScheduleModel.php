@@ -593,23 +593,12 @@ class DoctorScheduleModel
 
                 array_push($timeSlots, $range);
             } else {
-                $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
                 error_log("slot is exceed");
-                $range = $endSlot1 . '-' . $endSlot2-1;
-                array_push($timeSlots, $range);
                 $indexItem = $endSlot2;
             }
         }
 
-//        foreach ($timeSlots as $i) {
-//            $timeSlotsData = array(
-//                "DoctorScheduleShiftId" => 1,
-//                "TimeSlot" => $i,
-//            );
-//            $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
-//        }
-
-//        return $timeSlots;
-        print_r($timeSlots);
+        return $timeSlots;
+//        print_r($timeSlots);
     }
 }
