@@ -76,52 +76,292 @@ class TicketModel
                 error_log('search keyword is not null');
                 if ($ticketType != "null" && $trackStatus != "null" && $priority != "null") {
                     error_log('All parameters are given');
+
+//                    DB::enableQueryLog();
+
+                    $query = DB::table('ticket')
+                        ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                        ->join('user_access', 'user_access.UserId', 'user.Id')
+                        ->join('role', 'user_access.RoleId', 'role.Id')
+                        ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('ticket.Priority', '=', $priority)
+                        ->where('ticket.TrackStatus', '=', $trackStatus)
+                        ->where('ticket.Type', '=', $ticketType)
+                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->orderBy('ticket.Id', 'DESC')
+                        ->skip($pageNo * $limit)
+                        ->take($limit)
+                        ->get();
+
+//                    dd(DB::getQueryLog());
+
                 } else if ($ticketType != "null" || $trackStatus != "null" || $priority != "null") {
                     //Checks for only 1 drop down given
                     if ($ticketType != "null" && $priority == "null" && $trackStatus == "null") {
                         error_log('Search keyword and TICKET type is not null');
+
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
                         error_log('Search keyword and priority is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword and track status is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } //Now checks if any of the two parameters are given
                     else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
                         error_log('Search keyword and ticket type and priority is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
                         error_log('Search keyword and priority and track status is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword and ticket type and track status is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else {
-                        error_log('no parameters given');
+                        error_log('Searching on the basis of all parameters');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     }
                 } else {
                     error_log('Search only on the basis of search keyword');
+
+                    $query = DB::table('ticket')
+                        ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                        ->join('user_access', 'user_access.UserId', 'user.Id')
+                        ->join('role', 'user_access.RoleId', 'role.Id')
+                        ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->orderBy('ticket.Id', 'DESC')
+                        ->skip($pageNo * $limit)
+                        ->take($limit)
+                        ->get();
                 }
             } else {
                 error_log('Search keyword is null, now checking drop down parameters');
                 if ($ticketType != "null" && $trackStatus != "null" && $priority != "null") {
-
-                }
-                else if ($ticketType != "null" || $trackStatus != "null" || $priority != "null") {
+                    $query = DB::table('ticket')
+                        ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                        ->join('user_access', 'user_access.UserId', 'user.Id')
+                        ->join('role', 'user_access.RoleId', 'role.Id')
+                        ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('ticket.Priority', '=', $priority)
+                        ->where('ticket.TrackStatus', '=', $trackStatus)
+                        ->where('ticket.Type', '=', $ticketType)
+                        ->orderBy('ticket.Id', 'DESC')
+                        ->skip($pageNo * $limit)
+                        ->take($limit)
+                        ->get();
+                } else if ($ticketType != "null" || $trackStatus != "null" || $priority != "null") {
                     //Checks for only 1 drop down given
                     if ($ticketType != "null" && $priority == "null" && $trackStatus == "null") {
                         error_log('Search keyword IS NULL and TICKET type is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
                         error_log('Search keyword IS NULL and priority is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword IS NULL and track status is not null');
+
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } //Now checks if any of the two parameters are given
                     else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
                         error_log('Search keyword IS NULL and ticket type and priority is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
                         error_log('Search keyword IS NULL and priority and track status is not null');
+
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword IS NULL and ticket type and track status is not null');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     } else {
-                        error_log('give data on the basis of all the paramters');
+                        error_log('give data on the basis of drop down values');
+                        $query = DB::table('ticket')
+                            ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                            ->join('user_access', 'user_access.UserId', 'user.Id')
+                            ->join('role', 'user_access.RoleId', 'role.Id')
+                            ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->orderBy('ticket.Id', 'DESC')
+                            ->skip($pageNo * $limit)
+                            ->take($limit)
+                            ->get();
                     }
                 } else {
-                    error_log('No parameters given');
+                    error_log('In search else');
+
+                    $query = DB::table('ticket')
+                        ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
+                        ->join('user_access', 'user_access.UserId', 'user.Id')
+                        ->join('role', 'user_access.RoleId', 'role.Id')
+                        ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('ticket.Priority', '=', $priority)
+                        ->where('ticket.TrackStatus', '=', $trackStatus)
+                        ->where('ticket.Type', '=', $ticketType)
+                        ->orderBy('ticket.Id', 'DESC')
+                        ->skip($pageNo * $limit)
+                        ->take($limit)
+                        ->get();
                 }
             }
         }
@@ -153,6 +393,194 @@ class TicketModel
         $query = DB::table('ticket')
             ->where('ticket.IsActive', '=', true)
             ->count();
+
+        return $query;
+    }
+
+    static public function GetTicketListCountViaSearch($searchKeyword, $ticketType, $trackStatus, $priority)
+    {
+        error_log('in model, fetching tickets generated');
+
+        if ($ticketType == "null"
+            && $trackStatus == "null"
+            && $priority == "null"
+            && $searchKeyword == "null"
+        ) {
+            error_log('All search parameters are null');
+
+            $query = DB::table('ticket')
+                ->where('ticket.IsActive', '=', true)
+                ->count();
+        } else {
+            error_log('some of the parameters are given');
+            if ($searchKeyword != "null") {
+                error_log('search keyword is not null');
+                if ($ticketType != "null" && $trackStatus != "null" && $priority != "null") {
+                    error_log('All parameters are given');
+
+//                    DB::enableQueryLog();
+
+                    $query = DB::table('ticket')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('ticket.Priority', '=', $priority)
+                        ->where('ticket.TrackStatus', '=', $trackStatus)
+                        ->where('ticket.Type', '=', $ticketType)
+                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->count();
+
+//                    dd(DB::getQueryLog());
+
+                } else if ($ticketType != "null" || $trackStatus != "null" || $priority != "null") {
+                    //Checks for only 1 drop down given
+                    if ($ticketType != "null" && $priority == "null" && $trackStatus == "null") {
+                        error_log('Search keyword and TICKET type is not null');
+
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->count();
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword and priority is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->count();
+                    } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword and track status is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->count();
+                    } //Now checks if any of the two parameters are given
+                    else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword and ticket type and priority is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->count();
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
+                        error_log('Search keyword and priority and track status is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->count();
+                    } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword and ticket type and track status is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->count();
+                    } else {
+                        error_log('Searching on the basis of all parameters');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->count();
+                    }
+                } else {
+                    error_log('Search only on the basis of search keyword');
+
+                    $query = DB::table('ticket')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->count();
+                }
+            } else {
+                error_log('Search keyword is null, now checking drop down parameters');
+                if ($ticketType != "null" && $trackStatus != "null" && $priority != "null") {
+                    $query = DB::table('ticket')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('ticket.Priority', '=', $priority)
+                        ->where('ticket.TrackStatus', '=', $trackStatus)
+                        ->where('ticket.Type', '=', $ticketType)
+                        ->orderBy('ticket.Id', 'DESC')
+                        ->count();
+                } else if ($ticketType != "null" || $trackStatus != "null" || $priority != "null") {
+                    //Checks for only 1 drop down given
+                    if ($ticketType != "null" && $priority == "null" && $trackStatus == "null") {
+                        error_log('Search keyword IS NULL and TICKET type is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->count();
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword IS NULL and priority is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->count();
+                    } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword IS NULL and track status is not null');
+
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->count();
+                    } //Now checks if any of the two parameters are given
+                    else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword IS NULL and ticket type and priority is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->count();
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
+                        error_log('Search keyword IS NULL and priority and track status is not null');
+
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->count();
+                    } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword IS NULL and ticket type and track status is not null');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->count();
+                    } else {
+                        error_log('give data on the basis of drop down values');
+                        $query = DB::table('ticket')
+                            ->where('ticket.IsActive', '=', true)
+                            ->where('ticket.Priority', '=', $priority)
+                            ->where('ticket.TrackStatus', '=', $trackStatus)
+                            ->where('ticket.Type', '=', $ticketType)
+                            ->count();
+                    }
+                } else {
+                    error_log('In search else');
+
+                    $query = DB::table('ticket')
+                        ->where('ticket.IsActive', '=', true)
+                        ->where('ticket.Priority', '=', $priority)
+                        ->where('ticket.TrackStatus', '=', $trackStatus)
+                        ->where('ticket.Type', '=', $ticketType)
+                        ->count();
+                }
+            }
+        }
 
         return $query;
     }

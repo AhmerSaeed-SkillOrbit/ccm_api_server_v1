@@ -339,6 +339,10 @@ class TicketController extends Controller
         error_log('in controller');
 
         $userId = $request->get('userId');
+        $searchKeyword = $request->get('searchKeyword');
+        $ticketType = $request->get('type');
+        $trackStatus = $request->get('trackStatus');
+        $priority = $request->get('priority');
 
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
         if ($checkUserData == null) {
@@ -348,7 +352,9 @@ class TicketController extends Controller
             //Now fetch all the tickets with respect to pagination
             $ticketData = array();
 
-            $ticketListCount = TicketModel::GetTicketListCount();
+            //Old function
+//            $ticketListCount = TicketModel::GetTicketListCount();
+            $ticketListCount = TicketModel::GetTicketListCountViaSearch($searchKeyword, $ticketType, $trackStatus, $priority);
 
             return response()->json(['data' => $ticketListCount, 'message' => 'Total count'], 200);
         }
