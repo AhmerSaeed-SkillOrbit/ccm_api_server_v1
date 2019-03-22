@@ -155,8 +155,7 @@ class TicketController extends Controller
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
         $searchKeyword = $request->get('searchKeyword');
-        $ticketNumber = $request->get('ticketNumber');
-        $title = $request->get('title');
+        $ticketType = $request->get('type');
         $trackStatus = $request->get('trackStatus');
         $priority = $request->get('priority');
 
@@ -168,7 +167,7 @@ class TicketController extends Controller
             //Now fetch all the tickets with respect to pagination
             $ticketData = array();
 
-            $ticketListData = TicketModel::GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword);
+            $ticketListData = TicketModel::GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority);
             if (count($ticketListData) > 0) {
                 error_log('ticket data found');
 

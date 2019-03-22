@@ -49,16 +49,16 @@ class TicketModel
         return $query;
     }
 
-    static public function GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword)
+    static public function GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority)
     {
         error_log('in model, fetching tickets generated');
 
-        if ($ticketNumber == "null"
-            && $title == "null"
+        if ($ticketType == "null"
             && $trackStatus == "null"
             && $priority == "null"
+            && $searchKeyword == "null"
         ) {
-            error_log('All search paramtre are null');
+            error_log('All search parameters are null');
 
             $query = DB::table('ticket')
                 ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
@@ -71,7 +71,59 @@ class TicketModel
                 ->take($limit)
                 ->get();
         } else {
-            error_log('some paramtre are give');
+            error_log('some of the parameters are given');
+            if ($searchKeyword != "null") {
+                error_log('search keyword is not null');
+                if ($ticketType != "null" && $trackStatus != "null" && $priority != "null") {
+                    error_log('All parameters are given');
+                } else if ($ticketType != "null" || $trackStatus != "null" || $priority != "null") {
+                    //Checks for only 1 drop down given
+                    if ($ticketType != "null" && $priority == "null" && $trackStatus == "null") {
+                        error_log('Search keyword and TICKET type is not null');
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword and priority is not null');
+                    } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword and track status is not null');
+                    } //Now checks if any of the two parameters are given
+                    else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword and ticket type and priority is not null');
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
+                        error_log('Search keyword and priority and track status is not null');
+                    } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword and ticket type and track status is not null');
+                    } else {
+                        error_log('no parameters given');
+                    }
+                } else {
+                    error_log('Search only on the basis of search keyword');
+                }
+            } else {
+                error_log('Search keyword is null, now checking drop down parameters');
+                if ($ticketType != "null" && $trackStatus != "null" && $priority != "null") {
+
+                }
+                else if ($ticketType != "null" || $trackStatus != "null" || $priority != "null") {
+                    //Checks for only 1 drop down given
+                    if ($ticketType != "null" && $priority == "null" && $trackStatus == "null") {
+                        error_log('Search keyword IS NULL and TICKET type is not null');
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword IS NULL and priority is not null');
+                    } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword IS NULL and track status is not null');
+                    } //Now checks if any of the two parameters are given
+                    else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
+                        error_log('Search keyword IS NULL and ticket type and priority is not null');
+                    } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
+                        error_log('Search keyword IS NULL and priority and track status is not null');
+                    } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
+                        error_log('Search keyword IS NULL and ticket type and track status is not null');
+                    } else {
+                        error_log('give data on the basis of all the paramters');
+                    }
+                } else {
+                    error_log('No parameters given');
+                }
+            }
         }
 
         return $query;
