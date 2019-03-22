@@ -159,6 +159,8 @@ class TicketController extends Controller
         $trackStatus = $request->get('trackStatus');
         $priority = $request->get('priority');
 
+        $patientRole = env('ROLE_PATIENT');
+
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
         if ($checkUserData == null) {
             return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
@@ -167,7 +169,15 @@ class TicketController extends Controller
             //Now fetch all the tickets with respect to pagination
             $ticketData = array();
 
-            $ticketListData = TicketModel::GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority);
+            $ticketListData = array();
+
+            if ($checkUserData->RoleCodeName == $patientRole) {
+                error_log('logged in user role is patient');
+                $ticketListData = TicketModel::GetTicketListViaPaginationAndSearchForPatient($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority, $userId);
+            } else {
+                error_log('logged in user is not from Patient');
+                $ticketListData = TicketModel::GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority);
+            }
             if (count($ticketListData) > 0) {
                 error_log('ticket data found');
 
