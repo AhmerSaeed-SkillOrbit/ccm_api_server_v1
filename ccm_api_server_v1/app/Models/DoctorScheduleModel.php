@@ -504,7 +504,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dsf")
             ->select("dsf.StartTime", 'dsf.EndTime')
-            ->where("dsf.Id", "=", 3659)
+            ->where("dsf.Id", "=", 3736)
             ->first();
 
         return $query;
@@ -598,7 +598,8 @@ class DoctorScheduleModel
                 $indexItem = $endSlot2;
             }
         }
-
+        error_log("end now");
+        print_r($timeSlots);
         return $timeSlots;
 //        print_r($timeSlots);
     }

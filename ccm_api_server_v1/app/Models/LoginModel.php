@@ -60,6 +60,8 @@ class LoginModel
 //            }
 
             if (count($checkLogin) > 0) {
+
+                error_log("correct");
                 //Checking user if it is blocked or not
                 $checkUser = UserModel::GetSingleUserViaIdNewFunction($checkLogin[0]['Id']);
 
@@ -138,7 +140,9 @@ class LoginModel
                     error_log("Token Generation failed");
                     return array("status" => "failed", "data" => null, 'message' => "Something went wrong");
                 }
-            } else {
+            }
+            else {
+                error_log("in-correct");
                 // return redirect($loginRedirect)->withErrors(['email or password is incorrect']);
                 DB::rollBack();
                 return array("status" => "failed", "data" => null, 'message' => "Email or password is incorrect");
@@ -150,7 +154,6 @@ class LoginModel
 
             error_log('in exception');
 
-            echo "error";
             DB::rollBack();
             return array("status" => "error", "data" => null, 'message' => "Something went wrong");
             //   return $e;

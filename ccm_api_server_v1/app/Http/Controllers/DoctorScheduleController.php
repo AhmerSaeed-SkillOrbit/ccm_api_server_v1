@@ -383,6 +383,10 @@ class DoctorScheduleController extends Controller
                     } else {
                         //now insert dynamic time slots
                         $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
+
+                        error_log('$timeSlots');
+                        print_r($timeSlots);
+
                         if (count($timeSlots) > 0) {
                             foreach ($timeSlots as $i) {
                                 $timeSlotsData = array(
@@ -506,6 +510,10 @@ class DoctorScheduleController extends Controller
 
                                 //now insert dynamic time slots
                                 $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($doctorScheduleShiftData['StartTime'], $doctorScheduleShiftData['EndTime'], $doctorScheduleShiftData['NoOfPatientAllowed']);
+
+                                error_log('$timeSlots');
+                                print_r($timeSlots);
+
                                 if (count($timeSlots) > 0) {
                                     foreach ($timeSlots as $i) {
                                         $timeSlotsData = array(
@@ -560,6 +568,10 @@ class DoctorScheduleController extends Controller
 
                                 //now insert dynamic time slots
                                 $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($item['StartTime'], $item['EndTime'], $item['NoOfPatientAllowed']);
+
+                                error_log('$timeSlots');
+                                print_r($timeSlots);
+
                                 if (count($timeSlots) > 0) {
                                     foreach ($timeSlots as $i) {
                                         $timeSlotsData = array(
