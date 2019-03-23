@@ -463,6 +463,8 @@ class TicketController extends Controller
         $patientRole = env('ROLE_PATIENT');
         $supportStaffRole = env('ROLE_SUPPORT_STAFF');
 
+        $ticketClose = env('TICKET_TRACK_STATUS_CLOSE');
+
         $date = HelperModel::getDate();
         DB::beginTransaction();
 
@@ -490,88 +492,93 @@ class TicketController extends Controller
 
                     error_log('ticket data found');
 
-                    //else insert data in ticket reply and assignee table too
-
-                    $getAssigneeData = TicketModel::GetAssigneeViaTicketId($ticketId);
-                    if (count($getAssigneeData) > 0) {
-                        error_log('ticket has assigned to someone');
-
-                        $ticketReplyData = array(
-                            "TicketId" => $ticketId,
-                            "ReplyById" => $userId,
-                            "Reply" => $request->input('Reply'),
-                            "CreatedBy" => $userId,
-                            "CreatedOn" => $date["timestamp"],
-                            "IsActive" => true
-                        );
-
-                        $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
-                        if ($insertedDataId == 0) {
-                            DB::rollBack();
-                            return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
-                        } else {
-                            DB::commit();
-                            return response()->json(['data' => $insertedDataId, 'message' => 'ticket replied given'], 200);
-                        }
+                    //Now checking if ticket is closed or not
+                    if ($ticketData->TrackStatus == $ticketClose) {
+                        return response()->json(['data' => null, 'message' => 'Ticket is already closed'], 400);
                     } else {
-                        error_log('ticket has not  assigned to anyone');
+                        //else insert data in ticket reply and assignee table too
 
-                        $ticketReplyData = array(
-                            "TicketId" => $ticketId,
-                            "ReplyById" => $userId,
-                            "Reply" => $request->input('Reply'),
-                            "CreatedBy" => $userId,
-                            "CreatedOn" => $date["timestamp"],
-                            "IsActive" => true
-                        );
+                        $getAssigneeData = TicketModel::GetAssigneeViaTicketId($ticketId);
+                        if (count($getAssigneeData) > 0) {
+                            error_log('ticket has assigned to someone');
 
-                        //If assignee data will be fetched then it means this ticket has assigned to support staff
-                        //then insert data only in ticket reply
-
-                        $message = "Ticket replied given successfully";
-
-                        error_log('$checkUserData->RoleCodeName : ' . $checkUserData->RoleCodeName);
-
-
-                        if ($checkUserData->RoleCodeName != $patientRole) {
-                            error_log('user role is not patient');
-                            //Now we will make data and will insert it
-                            $ticketData = array(
-                                "UpdatedBy" => $userId,
-                                "UpdatedOn" => $date["timestamp"],
-                                "IsAssigned" => true
-                            );
-
-                            $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
-                            if ($ticketDataUpdate == false) {
-                                DB::rollBack();
-                                return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
-                            }
-
-
-                            $ticketAssigneeData = array(
+                            $ticketReplyData = array(
                                 "TicketId" => $ticketId,
-                                "AssignToId" => $userId,
-                                "AssignById" => $userId,
+                                "ReplyById" => $userId,
+                                "Reply" => $request->input('Reply'),
                                 "CreatedBy" => $userId,
                                 "CreatedOn" => $date["timestamp"],
-                                "AssignByDescription" => $request->input('AssignByDescription'),
                                 "IsActive" => true
                             );
 
-                            $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
-
-                            $message = "Ticket replied given and assigned to you";
-                        }
-
-                        $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
-
-                        if ($ticketReplyInsertedId == 0) {
-                            DB::rollBack();
-                            return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                            $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
+                            if ($insertedDataId == 0) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                            } else {
+                                DB::commit();
+                                return response()->json(['data' => $insertedDataId, 'message' => 'ticket replied given'], 200);
+                            }
                         } else {
-                            DB::commit();
-                            return response()->json(['data' => $ticketReplyInsertedId, 'message' => $message], 200);
+                            error_log('ticket has not  assigned to anyone');
+
+                            $ticketReplyData = array(
+                                "TicketId" => $ticketId,
+                                "ReplyById" => $userId,
+                                "Reply" => $request->input('Reply'),
+                                "CreatedBy" => $userId,
+                                "CreatedOn" => $date["timestamp"],
+                                "IsActive" => true
+                            );
+
+                            //If assignee data will be fetched then it means this ticket has assigned to support staff
+                            //then insert data only in ticket reply
+
+                            $message = "Ticket replied given successfully";
+
+                            error_log('$checkUserData->RoleCodeName : ' . $checkUserData->RoleCodeName);
+
+
+                            if ($checkUserData->RoleCodeName != $patientRole) {
+                                error_log('user role is not patient');
+                                //Now we will make data and will insert it
+                                $ticketData = array(
+                                    "UpdatedBy" => $userId,
+                                    "UpdatedOn" => $date["timestamp"],
+                                    "IsAssigned" => true
+                                );
+
+                                $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
+                                if ($ticketDataUpdate == false) {
+                                    DB::rollBack();
+                                    return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
+                                }
+
+
+                                $ticketAssigneeData = array(
+                                    "TicketId" => $ticketId,
+                                    "AssignToId" => $userId,
+                                    "AssignById" => $userId,
+                                    "CreatedBy" => $userId,
+                                    "CreatedOn" => $date["timestamp"],
+                                    "AssignByDescription" => $request->input('AssignByDescription'),
+                                    "IsActive" => true
+                                );
+
+                                $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
+
+                                $message = "Ticket replied given and assigned to you";
+                            }
+
+                            $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
+
+                            if ($ticketReplyInsertedId == 0) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                            } else {
+                                DB::commit();
+                                return response()->json(['data' => $ticketReplyInsertedId, 'message' => $message], 200);
+                            }
                         }
                     }
                 }
