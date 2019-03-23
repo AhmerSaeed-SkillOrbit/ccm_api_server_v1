@@ -789,6 +789,30 @@ class TicketController extends Controller
                         return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
                     } else {
                         DB::commit();
+                        $assignedToData = UserModel::GetSingleUserViaIdNewFunction($request->input('AssignToId'));
+                        if ($assignedToData == null) {
+                            return response()->json(['data' => null, 'message' => 'Ticket assigned to data not found, email not sent'], 400);
+                        } else {
+                            error_log('assigned to data found, now sending email');
+
+                            $emailMessage = "Dear Support Team, " . $ticketData->TicketNumber . " ticket is assigned to you.
+                             please check the details in the following";
+
+                            $toNumber = array();
+                            $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+                            //pushing mobile number
+                            //in array for use in sending sms
+                            array_push($toNumber, $phoneCode . $assignedToData->MobileNumber);
+
+                            UserModel::sendEmail($assignedToData->EmailAddress, $emailMessage, null);
+
+                            ## Preparing Data for SMS  - START ##
+                            if (count($toNumber) > 0) {
+                                HelperModel::sendSms($toNumber, $emailMessage, null);
+                            }
+                            ## Preparing Data for SMS  - END ##
+                        }
                         return response()->json(['data' => $insertedDataId, 'message' => 'ticket assigned successfully given'], 200);
                     }
                 }
