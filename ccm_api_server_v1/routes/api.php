@@ -158,7 +158,7 @@ Route::post('/ticket/update', 'TicketController@UpdateTicket');
 Route::get('/ticket/single', 'TicketController@TicketSingle');
 
 //get ticket list via pagination
-Route::get('/ticket/list', 'TicketController@TicketListViaPagination');
+Route::get('/ticket/list', 'TicketController@TicketListViaPaginationAndSearch');
 
 //get ticket list count
 Route::get('/ticket/list/count', 'TicketController@TicketListCount');
