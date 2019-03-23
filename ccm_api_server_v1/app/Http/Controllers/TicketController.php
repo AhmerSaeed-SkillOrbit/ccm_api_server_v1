@@ -517,6 +517,36 @@ class TicketController extends Controller
                                 return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                             } else {
                                 DB::commit();
+                                if ($checkUserData->RoleCodeName == $supportStaffRole) {
+                                    //emailing to patient who created ticket
+                                    //Now fetch patient number and email so that email can be sent to that respective patient
+
+                                    $patientUserData = UserModel::GetSingleUserViaIdNewFunction($ticketData->RaiseById);
+                                    if ($patientUserData == null) {
+                                        return response()->json(['data' => null, 'message' => 'Patient data not found, email not sent'], 400);
+                                    } else {
+                                        error_log('Patient data found, now sending email');
+
+                                        $emailMessage = "Dear Patient, Support Team has given the reply on this " . $ticketData->TicketNumber . " 
+                                         please check the details in the following";
+
+                                        $toNumber = array();
+                                        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+                                        //pushing mobile number
+                                        //in array for use in sending sms
+                                        array_push($toNumber, $phoneCode . $patientUserData->MobileNumber);
+
+                                        UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
+
+                                        ## Preparing Data for SMS  - START ##
+                                        if (count($toNumber) > 0) {
+                                            HelperModel::sendSms($toNumber, $emailMessage, null);
+                                        }
+                                        ## Preparing Data for SMS  - END ##
+                                    }
+                                }
+
                                 return response()->json(['data' => $insertedDataId, 'message' => 'ticket replied given'], 200);
                             }
                         } else {
@@ -554,7 +584,6 @@ class TicketController extends Controller
                                     return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
                                 }
 
-
                                 $ticketAssigneeData = array(
                                     "TicketId" => $ticketId,
                                     "AssignToId" => $userId,
@@ -577,6 +606,37 @@ class TicketController extends Controller
                                 return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                             } else {
                                 DB::commit();
+
+                                if ($checkUserData->RoleCodeName == $supportStaffRole) {
+                                    //emailing to patient who created ticket
+                                    //Now fetch patient number and email so that email can be sent to that respective patient
+
+                                    $patientUserData = UserModel::GetSingleUserViaIdNewFunction($ticketData->RaiseById);
+                                    if ($patientUserData == null) {
+                                        return response()->json(['data' => null, 'message' => 'Patient data not found, email not sent'], 400);
+                                    } else {
+                                        error_log('Patient data found, now sending email');
+
+                                        $emailMessage = "Dear Patient,  Support Team has given the reply on this " . $ticketData->TicketNumber . " 
+                                         please check the details in the following";
+
+                                        $toNumber = array();
+                                        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+                                        //pushing mobile number
+                                        //in array for use in sending sms
+                                        array_push($toNumber, $phoneCode . $patientUserData->MobileNumber);
+
+                                        UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
+
+                                        ## Preparing Data for SMS  - START ##
+                                        if (count($toNumber) > 0) {
+                                            HelperModel::sendSms($toNumber, $emailMessage, null);
+                                        }
+                                        ## Preparing Data for SMS  - END ##
+                                    }
+                                }
+
                                 return response()->json(['data' => $ticketReplyInsertedId, 'message' => $message], 200);
                             }
                         }
