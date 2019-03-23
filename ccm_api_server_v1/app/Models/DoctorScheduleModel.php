@@ -504,7 +504,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dsf")
             ->select("dsf.StartTime", 'dsf.EndTime')
-            ->where("dsf.Id", "=", 3736)
+            ->where("dsf.Id", "=", 2899)
             ->first();
 
         return $query;

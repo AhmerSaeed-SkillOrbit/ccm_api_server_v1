@@ -23,6 +23,7 @@ use Carbon\Carbon;
 use phpDocumentor\Reflection\Types\Array_;
 
 
+
 class DoctorScheduleController extends Controller
 {
     function AddDoctorSchedule(Request $request)
@@ -1532,6 +1533,9 @@ class DoctorScheduleController extends Controller
 
     function AddTimeSlotDynamically(Request $request)
     {
+//        $response = new Twiml;
+//        $response->message("The Robots are coming! Head for the hills!");
+//        return $response;
 
         $query = DoctorScheduleModel::getTimeSlotTemp();
         $patientAllowed = $request->get('allowed');

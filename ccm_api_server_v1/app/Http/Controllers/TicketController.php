@@ -21,46 +21,91 @@ use App\Models\DoctorScheduleModel;
 use App\Models\HelperModel;
 use App\Models\ForumModel;
 use App\Models\TicketModel;
+use Twilio\Twiml;
 
 
 class TicketController extends Controller
 {
     function CreateTicket(Request $request)
     {
+        $body = $_REQUEST['FROM'];
+
+        print_r($body);
+
         error_log('in controller');
 
+//        if ($userId == null) {
+//            //means Ticket raised from SMS by patient
+//        } else {
+//
+//        }
         $userId = $request->get('userId');
         $requestType = $request->get('requestType');
-
         $date = HelperModel::getDate();
         $defaultTicketNumber = env('DEFAULT_TICKET_NUMBER');
-
         $smsRequestType = env('REQUEST_TYPE_SMS');
         $portalRequestType = env('REQUEST_TYPE_PORTAL');
 
         $getTicketNumber = 0;
 
-        //fetching last generated ticket number
-        $getLastTicketNumber = TicketModel::getLastTicket();
-        if ($getLastTicketNumber != null) {
-            error_log('ticket number found');
-            $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
-        } else {
-            error_log('ticket number not found');
-            $getTicketNumber = $defaultTicketNumber;
-        }
-
         //check request status type
         if ($requestType == $smsRequestType) {
             error_log('Request type is of SMS');
-            return response()->json(['data' => null, 'message' => 'WIP'], 400);
-        } else if ($requestType == $portalRequestType) {
+
+            $ticketPriorityHigh = env('TICKET_PRIORITY_1');
+            //fetching last generated ticket number
+            $getLastTicketNumber = TicketModel::getLastTicket();
+            if ($getLastTicketNumber != null) {
+                error_log('ticket number found');
+                $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
+            } else {
+                error_log('ticket number not found');
+                $getTicketNumber = $defaultTicketNumber;
+            }
+
+            $response = new Twiml;
+            $response->message("Dear Patient, your Ticket is received. We are responding shortly !!!");
+            return $response;
+
+            //Now we will make data and will insert it
+            $ticketData = array(
+                "TicketNumber" => $getTicketNumber,
+                "RaiseById" => $userId,
+                "Title" => "Ticket via SMS",
+                "Description" => $request->input('Description'),
+                "Priority" => $portalRequestType,
+                "TrackStatus" => "open",
+                "OtherType" => null,
+                "Type" => null,
+                "RaisedFrom" => $requestType,
+                "CreatedBy" => $userId,
+                "CreatedOn" => $date["timestamp"],
+                "IsActive" => true
+            );
+
+            $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
+            return $response;
+
+        }
+        else if ($requestType == $portalRequestType) {
+
+            //fetching last generated ticket number
+            $getLastTicketNumber = TicketModel::getLastTicket();
+            if ($getLastTicketNumber != null) {
+                error_log('ticket number found');
+                $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
+            } else {
+                error_log('ticket number not found');
+                $getTicketNumber = $defaultTicketNumber;
+            }
+
             error_log('Request type is of PORTAL');
             // First check if user data found or not via user ID
             $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
             if ($checkUserData == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
-            } else {
+            }
+            else {
                 error_log('User record found');
                 //Now we will make data and will insert it
                 $ticketData = array(
