@@ -731,6 +731,10 @@ class TicketController extends Controller
         $ticketId = $request->get('ticketId');
         $ticketTrackStatus = $request->get('trackStatus');
 
+        $ticketClose = env('TICKET_TRACK_STATUS_CLOSE');
+        $ticketInProgress = env('TICKET_TRACK_STATUS_IN_PROGRESS');
+        $patientRole = env('ROLE_PATIENT');
+
         $date = HelperModel::getDate();
 
         // First check if user data found or not via user ID
@@ -754,6 +758,24 @@ class TicketController extends Controller
                 if ($ticketData->TrackStatus == $ticketTrackStatus) {
                     return response()->json(['data' => null, 'message' => 'Ticket status is already ' . $ticketTrackStatus], 400);
                 } else {
+                    if ($ticketData->TrackStatus == $ticketClose) {
+                        return response()->json(['data' => null, 'message' => 'Ticket is already closed'], 400);
+                    } else {
+                        error_log('ticket is not close');
+                        //Now checking if logged in user is patient or not.
+                        //Because only patient can close the ticket
+
+                        if ($ticketTrackStatus == $ticketClose) {
+                            if ($checkUserData->RoleCodeName != $patientRole) {
+                                error_log('logged in user role is NOT patient');
+                                return response()->json(['data' => null, 'message' => 'Only patient can close this ticket'], 400);
+                            }
+                            if($ticketData->RaiseById != $userId){
+                                error_log('This ticket does not belong to you');
+                                return response()->json(['data' => null, 'message' => 'This ticket does not belong to you'], 400);
+                            }
+                        }
+                    }
 
                     $ticketDataUpdate = array(
                         "TrackStatus" => $ticketTrackStatus,
