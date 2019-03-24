@@ -63,8 +63,8 @@ class TicketModel
 
             $query = DB::table('ticket')
                 ->leftjoin('user as user', 'ticket.CreatedBy', 'user.Id')
-                ->join('user_access', 'user_access.UserId', 'user.Id')
-                ->join('role', 'user_access.RoleId', 'role.Id')
+                ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+                ->leftjoin('role', 'user_access.RoleId', 'role.Id')
                 ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                 ->where('ticket.IsActive', '=', true)
                 ->orderBy('ticket.Id', 'DESC')
