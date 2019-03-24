@@ -28,11 +28,11 @@ class TicketController extends Controller
 {
     function CreateTicket(Request $request)
     {
-        $body = $_REQUEST['FROM'];
-
-        print_r($body);
-
-        error_log('in controller');
+//        $body = $_REQUEST['FROM'];
+//
+//        print_r($body);
+//
+//        error_log('in controller');
 
 //        if ($userId == null) {
 //            //means Ticket raised from SMS by patient
