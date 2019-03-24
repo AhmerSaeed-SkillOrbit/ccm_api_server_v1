@@ -550,7 +550,7 @@ class TicketController extends Controller
     {
         error_log('in controller');
 
-        $ticketTrackStatus= TicketModel::getEnumValues('TrackStatus');
+        $ticketTrackStatus = TicketModel::getEnumValues('TrackStatus');
         if ($ticketTrackStatus == null) {
             return response()->json(['data' => null, 'message' => 'Track Status not found'], 200);
         } else {
@@ -903,6 +903,8 @@ class TicketController extends Controller
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
 
+        $ticketClose = env('TICKET_TRACK_STATUS_CLOSE');
+
         $date = HelperModel::getDate();
         DB::beginTransaction();
 
@@ -924,51 +926,55 @@ class TicketController extends Controller
 
                 error_log('ticket data found');
                 //Now checking if logged in user is assigning ticket to himself or not
-
-                if ($userId == $request->input('AssignToId')) {
-                    return response()->json(['data' => null, 'message' => 'You cannot assign this ticket to yourself'], 400);
+                //Now checking if ticket is closed or not
+                if ($ticketData->TrackStatus == $ticketClose) {
+                    return response()->json(['data' => null, 'message' => 'Ticket is already closed'], 400);
                 } else {
-                    $ticketAssigneeData = array(
-                        "TicketId" => $ticketId,
-                        "AssignToId" => $request->input('AssignToId'),
-                        "AssignById" => $userId,
-                        "CreatedBy" => $userId,
-                        "CreatedOn" => $date["timestamp"],
-                        "IsActive" => true,
-                        "AssignByDescription" => $request->input('AssignByDescription')
-                    );
-
-                    $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_assignee', $ticketAssigneeData);
-                    if ($insertedDataId == 0) {
-                        DB::rollBack();
-                        return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
+                    if ($userId == $request->input('AssignToId')) {
+                        return response()->json(['data' => null, 'message' => 'You cannot assign this ticket to yourself'], 400);
                     } else {
-                        DB::commit();
-                        $assignedToData = UserModel::GetSingleUserViaIdNewFunction($request->input('AssignToId'));
-                        if ($assignedToData == null) {
-                            return response()->json(['data' => null, 'message' => 'Ticket assigned to data not found, email not sent'], 400);
-                        } else {
-                            error_log('assigned to data found, now sending email');
+                        $ticketAssigneeData = array(
+                            "TicketId" => $ticketId,
+                            "AssignToId" => $request->input('AssignToId'),
+                            "AssignById" => $userId,
+                            "CreatedBy" => $userId,
+                            "CreatedOn" => $date["timestamp"],
+                            "IsActive" => true,
+                            "AssignByDescription" => $request->input('AssignByDescription')
+                        );
 
-                            $emailMessage = "Dear Support Staff, Ticket Number - " . $ticketData->TicketNumber . " is assigned to you. 
+                        $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_assignee', $ticketAssigneeData);
+                        if ($insertedDataId == 0) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
+                        } else {
+                            DB::commit();
+                            $assignedToData = UserModel::GetSingleUserViaIdNewFunction($request->input('AssignToId'));
+                            if ($assignedToData == null) {
+                                return response()->json(['data' => null, 'message' => 'Ticket assigned to data not found, email not sent'], 400);
+                            } else {
+                                error_log('assigned to data found, now sending email');
+
+                                $emailMessage = "Dear Support Staff, Ticket Number - " . $ticketData->TicketNumber . " is assigned to you. 
                             Please check the details in the following";
 
-                            $toNumber = array();
-                            $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                                $toNumber = array();
+                                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
-                            //pushing mobile number
-                            //in array for use in sending sms
-                            array_push($toNumber, $phoneCode . $assignedToData->MobileNumber);
+                                //pushing mobile number
+                                //in array for use in sending sms
+                                array_push($toNumber, $phoneCode . $assignedToData->MobileNumber);
 
-                            UserModel::sendEmail($assignedToData->EmailAddress, $emailMessage, null);
+                                UserModel::sendEmail($assignedToData->EmailAddress, $emailMessage, null);
 
-                            ## Preparing Data for SMS  - START ##
-                            if (count($toNumber) > 0) {
-                                HelperModel::sendSms($toNumber, $emailMessage, null);
+                                ## Preparing Data for SMS  - START ##
+                                if (count($toNumber) > 0) {
+                                    HelperModel::sendSms($toNumber, $emailMessage, null);
+                                }
+                                ## Preparing Data for SMS  - END ##
                             }
-                            ## Preparing Data for SMS  - END ##
+                            return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully Assigned'], 200);
                         }
-                        return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully Assigned'], 200);
                     }
                 }
             }
