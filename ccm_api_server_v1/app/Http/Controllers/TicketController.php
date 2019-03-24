@@ -141,7 +141,7 @@ class TicketController extends Controller
 
             if ($checkUserData == null) {
                 error_log('Patient record not found');
-                $response->message("Dear User, please get registered with this Mobile Number on CCM platform to avail this facility. Thanks !!!");
+                $response->message("Dear User, This facility is only available to Patient, please get registered with this Mobile Number as a Patient. Thanks !!!");
                 return $response;
             } else {
                 error_log('Patient record found with this Mobile number');
