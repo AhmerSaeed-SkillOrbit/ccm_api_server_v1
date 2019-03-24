@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\DB;
+use mysql_xdevapi\Exception;
 use View;
 use App\Models\UserModel;
 use App\Models\GenericModel;
@@ -939,6 +940,7 @@ class UserController extends Controller
             return response()->json(['data' => null, 'message' => 'Role not found'], 400);
         }
         $roleId = $roleCode[0]->Id;
+        $roleName = $roleCode[0]->Name;
 
         error_log('$roleId' . $roleId);
 
@@ -977,8 +979,7 @@ class UserController extends Controller
 
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
-        $emailMessage = "You have been invited to Chronic Management System. 
-        Your email has been created. You may login by using :" . $defaultPassword . " as your password.";
+        $emailMessage = "Welcome, You are successfully registered to CCM as ' .$roleName. ', use this password to login ' . $defaultPassword";
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
@@ -995,9 +996,12 @@ class UserController extends Controller
                 $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                 $mobileNumber = $phoneCode . $mobileNumber;
                 array_push($toNumber, $mobileNumber);
-                HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM use this password to login ' . $defaultPassword, $url);
+                try {
+                    HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM as ' . $roleName . ', use this password to login ' . $defaultPassword, $url);
+                } catch (Exception $ex) {
+                    return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
+                }
             }
-
             return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
         }
     }
@@ -1254,7 +1258,7 @@ class UserController extends Controller
         //Now inserting data
         $checkInsertedData = GenericModel::insertGeneric('user_association', $data);
         error_log('$checkInsertedData ' . $checkInsertedData);
-        
+
         if ($checkInsertedData == true) {
             DB::commit();
 
@@ -1318,7 +1322,7 @@ class UserController extends Controller
             if (count($getAssociatedFacilitatorData) > 0) {
                 return response()->json(['data' => $getAssociatedFacilitatorData, 'message' => 'Associated facilitators fetched successfully'], 200);
             } else {
-                return response()->json(['data' => null, 'message' => 'Error in getting associated facilitator record'], 400);
+                return response()->json(['data' => null, 'message' => 'No Facilitator associated with the Doctor'], 200);
             }
         }
     }

@@ -628,7 +628,9 @@ class UserModel
 
     static public function GetSingleUserViaIdNewFunction($id)
     {
-        error_log('in model');
+        error_log('## in model ##');
+        error_log('## GetSingleUserViaIdNewFunction ##');
+        error_log($id);
 
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')
@@ -641,6 +643,24 @@ class UserModel
                 'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                 'destinationUser.EmailAddress as DestinationUserEmailAddress')
             ->where('user.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetPatientViaMobileNum($mobileNum,$patientRoleCode)
+    {
+        error_log('in GetUserViaMobileNum function - Model');
+        error_log($mobileNum);
+        error_log($patientRoleCode);
+
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('user.MobileNumber', '=', $mobileNum)
+            ->where('role.CodeName', '=', $patientRoleCode)
+            ->where('user.IsActive', '=', 1)
             ->first();
 
         return $query;
@@ -681,8 +701,8 @@ class UserModel
     static public function getUserList()
     {
         return DB::table('user')
-            ->join('user_access', 'user_access.UserId', 'user.Id')
-            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+            ->leftjoin('role', 'user_access.RoleId', 'role.Id')
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
             ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
