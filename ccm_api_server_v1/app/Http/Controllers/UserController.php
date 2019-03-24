@@ -977,8 +977,7 @@ class UserController extends Controller
 
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
-        $emailMessage = "You have been invited to Chronic Management System. 
-        Your email has been created. You may login by using :" . $defaultPassword . " as your password.";
+        $emailMessage = "Welcome, You are successfully registered to CCM as ' .$roleCode. ', use this password to login ' . $defaultPassword";
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
@@ -995,7 +994,7 @@ class UserController extends Controller
                 $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
                 $mobileNumber = $phoneCode . $mobileNumber;
                 array_push($toNumber, $mobileNumber);
-                HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM use this password to login ' . $defaultPassword, $url);
+                HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM as ' . $roleCode . ', use this password to login ' . $defaultPassword, $url);
             }
 
             return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered'], 200);
@@ -1254,7 +1253,7 @@ class UserController extends Controller
         //Now inserting data
         $checkInsertedData = GenericModel::insertGeneric('user_association', $data);
         error_log('$checkInsertedData ' . $checkInsertedData);
-        
+
         if ($checkInsertedData == true) {
             DB::commit();
 

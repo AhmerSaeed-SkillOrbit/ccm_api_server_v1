@@ -1025,9 +1025,9 @@ class TicketController extends Controller
 
                     $insertedDataId = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketDataUpdate);
                     if ($insertedDataId == false) {
-                        return response()->json(['data' => null, 'message' => 'Error in updating ticket status'], 400);
+                        return response()->json(['data' => null, 'message' => 'Error in closing the Ticket ticket'], 400);
                     } else {
-                        return response()->json(['data' => $ticketId, 'message' => 'Ticket track status successfully updated'], 200);
+                        return response()->json(['data' => $ticketId, 'message' => 'Ticket is successfully closed'], 200);
                     }
                 }
             }
