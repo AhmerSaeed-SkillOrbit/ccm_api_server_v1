@@ -385,6 +385,7 @@ class TicketController extends Controller
 
                 //Now making data
                 $data['Id'] = $ticketData->Id;
+                $data['TicketNumber'] = $ticketData->TicketNumber;
                 $data['Title'] = $ticketData->Title;
                 $data['Description'] = $ticketData->Description;
                 $data['Priority'] = $ticketData->Priority;
@@ -398,7 +399,6 @@ class TicketController extends Controller
                 $data['CreatedBy'] = array();
                 $data['TicketReply'] = array();
                 $data['TicketAssignee'] = array();
-
 
                 $data['CreatedBy']['Id'] = $ticketData->CreatedBy;
                 $data['CreatedBy']['FirstName'] = $ticketData->FirstName;
