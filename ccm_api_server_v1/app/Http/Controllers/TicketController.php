@@ -546,6 +546,18 @@ class TicketController extends Controller
         }
     }
 
+    function GetTicketTrackStauses()
+    {
+        error_log('in controller');
+
+        $ticketTrackStatus= TicketModel::getEnumValues('TrackStatus');
+        if ($ticketTrackStatus == null) {
+            return response()->json(['data' => null, 'message' => 'Track Status not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketTrackStatus, 'message' => 'Types found'], 200);
+        }
+    }
+
     function UpdateTicket(Request $request)
     {
         error_log('in controller');

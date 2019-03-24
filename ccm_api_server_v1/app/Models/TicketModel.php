@@ -57,7 +57,8 @@ class TicketModel
             && $trackStatus == "null"
             && $priority == "null"
             && $searchKeyword == "null"
-        ) {
+        )
+        {
             error_log('All search parameters are null');
 
             $query = DB::table('ticket')
@@ -70,7 +71,8 @@ class TicketModel
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
-        } else {
+        }
+        else {
             error_log('some of the parameters are given');
             if ($searchKeyword != "null") {
                 error_log('search keyword is not null');
