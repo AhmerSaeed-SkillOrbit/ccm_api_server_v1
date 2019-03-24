@@ -28,66 +28,165 @@ class TicketController extends Controller
 {
     function CreateTicket(Request $request)
     {
-//        $body = $_REQUEST['FROM'];
-//
-//        print_r($body);
-//
-//        error_log('in controller');
-
-//        if ($userId == null) {
-//            //means Ticket raised from SMS by patient
-//        } else {
-//
-//        }
+//        following array received once ticket is generate from SMS
+//        Array
+//        (
+//            [userId] => null
+//            [requestType] => sms
+//            [ToCountry] => US
+//            [ToState] => GA
+//            [SmsMessageSid] => SMa2f569007da647f8cef3df546c096552
+//            [NumMedia] => 0
+//            [ToCity] =>
+//            [FromZip] =>
+//            [SmsSid] => SMa2f569007da647f8cef3df546c096552
+//            [FromState] =>
+//            [SmsStatus] => received
+//            [FromCity] =>
+//            [Body] => abc
+//            [FromCountry] => PK
+//            [To] => +17622142131
+//            [ToZip] =>
+//            [NumSegments] => 1
+//            [MessageSid] => SMa2f569007da647f8cef3df546c096552
+//            [AccountSid] => AC33aa54ff3737112912bf80e398d3b742
+//            [From] => +923122410823
+//            [ApiVersion] => 2010 - 04 - 01
+//        )
+        $date = HelperModel::getDate();
         $userId = $request->get('userId');
         $requestType = $request->get('requestType');
-        $date = HelperModel::getDate();
+        $fromNum = $request->get('From');
+        $messageBody = $request->get('Body');
         $defaultTicketNumber = env('DEFAULT_TICKET_NUMBER');
         $smsRequestType = env('REQUEST_TYPE_SMS');
         $portalRequestType = env('REQUEST_TYPE_PORTAL');
 
-        $getTicketNumber = 0;
-
         //check request status type
         if ($requestType == $smsRequestType) {
             error_log('Request type is of SMS');
+            $response = new Twiml;
+            $patientRoleCode = env('ROLE_PATIENT');
 
-            $ticketPriorityHigh = env('TICKET_PRIORITY_1');
-            //fetching last generated ticket number
-            $getLastTicketNumber = TicketModel::getLastTicket();
-            if ($getLastTicketNumber != null) {
-                error_log('ticket number found');
-                $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
+            //first check the fromNumber is
+            //registered on our platform
+            //if yes the proceed as follow
+            //otherwise reply back with
+            //Not Allowed
+
+            //verifying the fromNumber
+            //eliminating the country code
+            //from the number
+
+            //this extraction of fromNumb
+            //will be remove once we
+            //complete the country code
+            //task on user add form
+
+            $eliminatedNumOne = substr($fromNum, 0, 2);
+            $eliminatedNumTwo = 0;
+
+            error_log("eliminatedNumberOne-1");
+            error_log($eliminatedNumOne);
+
+            if ($eliminatedNumOne == '+1') {
+                $eliminatedNumTwo = substr($fromNum, 1);
             } else {
-                error_log('ticket number not found');
-                $getTicketNumber = $defaultTicketNumber;
+                $eliminatedNumOne = substr($fromNum, 0, 3);
+                error_log("eliminatedNumberOne-2");
+                error_log($eliminatedNumOne);
+                if ($eliminatedNumOne == "+92") {
+                    error_log('yes +92');
+                    $eliminatedNumTwo = substr($fromNum, 3);
+                }
             }
 
-            $response = new Twiml;
-            $response->message("Dear Patient, your Ticket is received. We are responding shortly !!!");
-            return $response;
+            error_log("eliminatedNumberTwo");
+            error_log($eliminatedNumTwo);
 
-            //Now we will make data and will insert it
-            $ticketData = array(
-                "TicketNumber" => $getTicketNumber,
-                "RaiseById" => $userId,
-                "Title" => "Ticket via SMS",
-                "Description" => $request->input('Description'),
-                "Priority" => $portalRequestType,
-                "TrackStatus" => "open",
-                "OtherType" => null,
-                "Type" => null,
-                "RaisedFrom" => $requestType,
-                "CreatedBy" => $userId,
-                "CreatedOn" => $date["timestamp"],
-                "IsActive" => true
-            );
+            //as fromNum is extracted
+            //now verifying the fromNum
+            //is registered or not
+            $checkUserData = UserModel::GetPatientViaMobileNum($eliminatedNumTwo, $patientRoleCode);
+//            (
+//                [Id] => 3
+//                [FirstName] => Vohra VV
+//                [LastName] => Ahsan AV
+//                [EmailAddress] => ahsan . yakoob@hotmail . com
+//                [MobileNumber] => 3122410823
+//                [TelephoneNumber] => 1234333
+//                [OfficeAddress] => None
+//                [ResidentialAddress] => None
+//                [Password] => 1d564e43b739b7311c74c15236196b78
+//                [Gender] => Female
+//                [FunctionalTitle] => Nurse
+//                [Age] => 90
+//                [AgeGroup] => old
+//                [ProfilePictureId] =>
+//                [AccountVerified] => 1
+//                [NotificationToken] =>
+//                [CreatedBy] => 1
+//                [UpdatedBy] =>
+//                [CreatedOn] =>
+//                [UpdatedOn] =>
+//                [IsActive] => 1
+//                [IsBlock] =>
+//                [BlockReason] =>
+//                [InActiveReason] =>
+//                [CityId] =>
+//                [RoleId] => 5
+//                [RoleName] => Patient
+//                [RoleCodeName] => patient
+//            )
 
-            $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
-            return $response;
+            if ($checkUserData == null) {
+                error_log('Patient record not found');
+                $response->message("Dear User, please get registered with this Mobile Number on CCM platform to avail this facility. Thanks !!!");
+                return $response;
+            } else {
+                error_log('Patient record found with this Mobile number');
 
-        }
-        else if ($requestType == $portalRequestType) {
+                //fetching last generated ticket number
+                $getLastTicketNumber = TicketModel::getLastTicket();
+                $ticketPriorityHigh = env('TICKET_PRIORITY_1');
+                if ($getLastTicketNumber != null) {
+                    error_log('ticket number found');
+                    $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
+                } else {
+                    error_log('ticket number not found');
+                    $getTicketNumber = $defaultTicketNumber;
+                }
+
+                //Now we will make data and will insert it
+                $ticketData = array(
+                    "TicketNumber" => $getTicketNumber,
+                    "RaiseById" => $checkUserData->Id,
+                    "Title" => "Ticket via SMS",
+                    "Description" => $messageBody,
+                    "Priority" => $ticketPriorityHigh,
+                    "TrackStatus" => "open",
+                    "OtherType" => null,
+                    "Type" => null,
+                    "RaisedFrom" => $requestType,
+                    "CreatedBy" => $checkUserData->Id,
+                    "CreatedOn" => $date["timestamp"],
+                    "IsActive" => true
+                );
+
+                $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
+
+                if ($insertedDataId == 0) {
+                    error_log('Dear Patient, Problem in creating Ticket. Sorry for inconvenience, Please can you try again Thanks CCM - Support Staff !!!');
+                    $response->message('Dear Patient, Problem in creating Ticket. Sorry for inconvenience, Please can you try again Thanks CCM - Support Staff !!!');
+                    return $response;
+                } else {
+                    error_log('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is '. $getTicketNumber .'. Regards CCM - Support Staff Thanks');
+                    $response->message('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is '. $getTicketNumber .'. Regards CCM - Support Staff Thanks');
+                    return $response;
+                }
+            }
+
+        } else if ($requestType == $portalRequestType) {
 
             //fetching last generated ticket number
             $getLastTicketNumber = TicketModel::getLastTicket();
@@ -104,8 +203,7 @@ class TicketController extends Controller
             $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
             if ($checkUserData == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
-            }
-            else {
+            } else {
                 error_log('User record found');
                 //Now we will make data and will insert it
                 $ticketData = array(

@@ -646,6 +646,24 @@ class UserModel
         return $query;
     }
 
+    static public function GetPatientViaMobileNum($mobileNum,$patientRoleCode)
+    {
+        error_log('in GetUserViaMobileNum function - Model');
+        error_log($mobileNum);
+        error_log($patientRoleCode);
+
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('user.MobileNumber', '=', $mobileNum)
+            ->where('role.CodeName', '=', $patientRoleCode)
+            ->where('user.IsActive', '=', 1)
+            ->first();
+
+        return $query;
+    }
+
     static public function isDuplicateEmail($userEmail)
     {
         $isDuplicate = DB::table('user')
