@@ -554,7 +554,7 @@ class TicketController extends Controller
         if ($ticketTrackStatus == null) {
             return response()->json(['data' => null, 'message' => 'Track Status not found'], 200);
         } else {
-            return response()->json(['data' => $ticketTrackStatus, 'message' => 'Types found'], 200);
+            return response()->json(['data' => $ticketTrackStatus, 'message' => 'Track Status found'], 200);
         }
     }
 
