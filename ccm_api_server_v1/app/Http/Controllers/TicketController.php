@@ -225,7 +225,7 @@ class TicketController extends Controller
                 if ($insertedDataId == 0) {
                     return response()->json(['data' => null, 'message' => 'Error in inserting ticket'], 400);
                 } else {
-                    return response()->json(['data' => $insertedDataId, 'message' => 'ticket successfully created'], 200);
+                    return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully created'], 200);
                 }
             }
         } else {
@@ -950,8 +950,8 @@ class TicketController extends Controller
                         } else {
                             error_log('assigned to data found, now sending email');
 
-                            $emailMessage = "Dear Support Team, " . $ticketData->TicketNumber . " ticket is assigned to you.
-                             please check the details in the following";
+                            $emailMessage = "Dear Support Staff, Ticket Number - " . $ticketData->TicketNumber . " is assigned to you. 
+                            Please check the details in the following";
 
                             $toNumber = array();
                             $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
@@ -968,7 +968,7 @@ class TicketController extends Controller
                             }
                             ## Preparing Data for SMS  - END ##
                         }
-                        return response()->json(['data' => $insertedDataId, 'message' => 'ticket assigned successfully given'], 200);
+                        return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully Assigned'], 200);
                     }
                 }
             }
