@@ -258,7 +258,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
@@ -279,7 +279,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
@@ -305,15 +305,14 @@ class DoctorScheduleModel
     static public function getAppointmentViaDoctorId($doctorId, $searchKeyword, $reqStatus, $pageNo, $limit)
     {
         error_log('in model');
-
         if ($searchKeyword == "null" || $searchKeyword == null) {
             $query = DB::table("appointment")
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
-                ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
+                ->select('appointment.Id', 'appointment.ShiftTimeSlotId', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
                     'patient.MobileNumber AS PatientMobileNumber',
                     'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
@@ -332,7 +331,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
@@ -372,7 +371,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->where("appointment.IsActive", "=", true)
                 ->where("appointment.RequestStatus", "=", $reqStatus)
@@ -402,7 +401,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->where("appointment.IsActive", "=", true)
                 ->where("appointment.RequestStatus", "=", $reqStatus)
