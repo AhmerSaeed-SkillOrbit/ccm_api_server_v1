@@ -90,7 +90,7 @@ class TicketController extends Controller
             error_log($eliminatedNumOne);
 
             if ($eliminatedNumOne == '+1') {
-                $eliminatedNumTwo = substr($fromNum, 1);
+                $eliminatedNumTwo = substr($fromNum, 2);
             } else {
                 $eliminatedNumOne = substr($fromNum, 0, 3);
                 error_log("eliminatedNumberOne-2");
