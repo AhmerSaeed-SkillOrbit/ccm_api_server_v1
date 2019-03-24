@@ -504,7 +504,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dsf")
             ->select("dsf.StartTime", 'dsf.EndTime')
-            ->where("dsf.Id", "=", 3548)
+            ->where("dsf.Id", "=", 2899)
             ->first();
 
         return $query;
@@ -593,23 +593,14 @@ class DoctorScheduleModel
 
                 array_push($timeSlots, $range);
             } else {
-                $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
                 error_log("slot is exceed");
-                $range = $endSlot1 . '-' . $endSlot2-1;
-                array_push($timeSlots, $range);
+                error_log($endSlot2);
                 $indexItem = $endSlot2;
             }
         }
-
-//        foreach ($timeSlots as $i) {
-//            $timeSlotsData = array(
-//                "DoctorScheduleShiftId" => 1,
-//                "TimeSlot" => $i,
-//            );
-//            $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
-//        }
-
-//        return $timeSlots;
+        error_log("end now");
         print_r($timeSlots);
+        return $timeSlots;
+//        print_r($timeSlots);
     }
 }

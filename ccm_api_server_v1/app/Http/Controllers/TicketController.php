@@ -21,46 +21,91 @@ use App\Models\DoctorScheduleModel;
 use App\Models\HelperModel;
 use App\Models\ForumModel;
 use App\Models\TicketModel;
+use Twilio\Twiml;
 
 
 class TicketController extends Controller
 {
     function CreateTicket(Request $request)
     {
-        error_log('in controller');
+//        $body = $_REQUEST['FROM'];
+//
+//        print_r($body);
+//
+//        error_log('in controller');
 
+//        if ($userId == null) {
+//            //means Ticket raised from SMS by patient
+//        } else {
+//
+//        }
         $userId = $request->get('userId');
         $requestType = $request->get('requestType');
-
         $date = HelperModel::getDate();
         $defaultTicketNumber = env('DEFAULT_TICKET_NUMBER');
-
         $smsRequestType = env('REQUEST_TYPE_SMS');
         $portalRequestType = env('REQUEST_TYPE_PORTAL');
 
         $getTicketNumber = 0;
 
-        //fetching last generated ticket number
-        $getLastTicketNumber = TicketModel::getLastTicket();
-        if ($getLastTicketNumber != null) {
-            error_log('ticket number found');
-            $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
-        } else {
-            error_log('ticket number not found');
-            $getTicketNumber = $defaultTicketNumber;
-        }
-
         //check request status type
         if ($requestType == $smsRequestType) {
             error_log('Request type is of SMS');
-            return response()->json(['data' => null, 'message' => 'WIP'], 400);
-        } else if ($requestType == $portalRequestType) {
+
+            $ticketPriorityHigh = env('TICKET_PRIORITY_1');
+            //fetching last generated ticket number
+            $getLastTicketNumber = TicketModel::getLastTicket();
+            if ($getLastTicketNumber != null) {
+                error_log('ticket number found');
+                $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
+            } else {
+                error_log('ticket number not found');
+                $getTicketNumber = $defaultTicketNumber;
+            }
+
+            $response = new Twiml;
+            $response->message("Dear Patient, your Ticket is received. We are responding shortly !!!");
+            return $response;
+
+            //Now we will make data and will insert it
+            $ticketData = array(
+                "TicketNumber" => $getTicketNumber,
+                "RaiseById" => $userId,
+                "Title" => "Ticket via SMS",
+                "Description" => $request->input('Description'),
+                "Priority" => $portalRequestType,
+                "TrackStatus" => "open",
+                "OtherType" => null,
+                "Type" => null,
+                "RaisedFrom" => $requestType,
+                "CreatedBy" => $userId,
+                "CreatedOn" => $date["timestamp"],
+                "IsActive" => true
+            );
+
+            $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
+            return $response;
+
+        }
+        else if ($requestType == $portalRequestType) {
+
+            //fetching last generated ticket number
+            $getLastTicketNumber = TicketModel::getLastTicket();
+            if ($getLastTicketNumber != null) {
+                error_log('ticket number found');
+                $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
+            } else {
+                error_log('ticket number not found');
+                $getTicketNumber = $defaultTicketNumber;
+            }
+
             error_log('Request type is of PORTAL');
             // First check if user data found or not via user ID
             $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
             if ($checkUserData == null) {
                 return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
-            } else {
+            }
+            else {
                 error_log('User record found');
                 //Now we will make data and will insert it
                 $ticketData = array(
@@ -155,10 +200,11 @@ class TicketController extends Controller
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
         $searchKeyword = $request->get('searchKeyword');
-        $ticketNumber = $request->get('ticketNumber');
-        $title = $request->get('title');
+        $ticketType = $request->get('type');
         $trackStatus = $request->get('trackStatus');
         $priority = $request->get('priority');
+
+        $patientRole = env('ROLE_PATIENT');
 
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
         if ($checkUserData == null) {
@@ -168,7 +214,15 @@ class TicketController extends Controller
             //Now fetch all the tickets with respect to pagination
             $ticketData = array();
 
-            $ticketListData = TicketModel::GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword);
+            $ticketListData = array();
+
+            if ($checkUserData->RoleCodeName == $patientRole) {
+                error_log('logged in user role is patient');
+                $ticketListData = TicketModel::GetTicketListViaPaginationAndSearchForPatient($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority, $userId);
+            } else {
+                error_log('logged in user is not from Patient');
+                $ticketListData = TicketModel::GetTicketListViaPaginationAndSearch($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority);
+            }
             if (count($ticketListData) > 0) {
                 error_log('ticket data found');
 
@@ -340,6 +394,12 @@ class TicketController extends Controller
         error_log('in controller');
 
         $userId = $request->get('userId');
+        $searchKeyword = $request->get('searchKeyword');
+        $ticketType = $request->get('type');
+        $trackStatus = $request->get('trackStatus');
+        $priority = $request->get('priority');
+
+        $patientRole = env('ROLE_PATIENT');
 
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
         if ($checkUserData == null) {
@@ -347,9 +407,18 @@ class TicketController extends Controller
         } else {
             error_log('user record found');
             //Now fetch all the tickets with respect to pagination
-            $ticketData = array();
+            $ticketListCount = array();
 
-            $ticketListCount = TicketModel::GetTicketListCount();
+            //Old function
+//            $ticketListCount = TicketModel::GetTicketListCount();
+
+            if ($checkUserData->RoleCodeName == $patientRole) {
+                error_log('logged in user role is patient');
+                $ticketListCount = TicketModel::GetTicketListCountViaSearchForPatient($searchKeyword, $ticketType, $trackStatus, $priority, $userId);
+            } else {
+                error_log('logged in user is not from Patient');
+                $ticketListCount = TicketModel::GetTicketListCountViaSearch($searchKeyword, $ticketType, $trackStatus, $priority);
+            }
 
             return response()->json(['data' => $ticketListCount, 'message' => 'Total count'], 200);
         }
@@ -437,6 +506,9 @@ class TicketController extends Controller
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
         $patientRole = env('ROLE_PATIENT');
+        $supportStaffRole = env('ROLE_SUPPORT_STAFF');
+
+        $ticketClose = env('TICKET_TRACK_STATUS_CLOSE');
 
         $date = HelperModel::getDate();
         DB::beginTransaction();
@@ -447,101 +519,176 @@ class TicketController extends Controller
         } else {
             //Now check if this ticket is already assigned to someone or not
             error_log('User record found');
+            //Now checking if logged in user is patinet or from support staff
 
-            //We will put check if logged in user is patient then
-            //this ticket cannot be assigned to him
+            if ($checkUserData->RoleCodeName == $patientRole || $checkUserData->RoleCodeName == $supportStaffRole) {
+                //We will put check if logged in user is patient then
+                //this ticket cannot be assigned to him
 
 
-            //Now check if given ticket exists or not
+                //Now check if given ticket exists or not
 
-            $ticketData = TicketModel::GetTicketViaId($ticketId);
-            if ($ticketData == null) {
-                error_log('ticket data not found');
-                return response()->json(['data' => $ticketData, 'message' => 'ticket data not found'], 200);
+                $ticketData = TicketModel::GetTicketViaId($ticketId);
+                if ($ticketData == null) {
+                    error_log('ticket data not found');
+                    return response()->json(['data' => $ticketData, 'message' => 'ticket data not found'], 200);
 
-            } else {
-
-                error_log('ticket data found');
-
-                //else insert data in ticket reply and assignee table too
-
-                $getAssigneeData = TicketModel::GetAssigneeViaTicketId($ticketId);
-                if (count($getAssigneeData) > 0) {
-                    error_log('ticket has assigned to someone');
-
-                    $ticketReplyData = array(
-                        "TicketId" => $ticketId,
-                        "ReplyById" => $userId,
-                        "Reply" => $request->input('Reply'),
-                        "CreatedBy" => $userId,
-                        "CreatedOn" => $date["timestamp"],
-                        "IsActive" => true
-                    );
-
-                    $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
-                    if ($insertedDataId == 0) {
-                        DB::rollBack();
-                        return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
-                    } else {
-                        DB::commit();
-                        return response()->json(['data' => $insertedDataId, 'message' => 'ticket replied given'], 200);
-                    }
                 } else {
-                    error_log('ticket has not  assigned to anyone');
 
-                    $ticketReplyData = array(
-                        "TicketId" => $ticketId,
-                        "ReplyById" => $userId,
-                        "Reply" => $request->input('Reply'),
-                        "CreatedBy" => $userId,
-                        "CreatedOn" => $date["timestamp"],
-                        "IsActive" => true
-                    );
+                    error_log('ticket data found');
 
-                    $ticketAssigneeData = array(
-                        "TicketId" => $ticketId,
-                        "AssignToId" => $userId,
-                        "AssignById" => $userId,
-                        "CreatedBy" => $userId,
-                        "CreatedOn" => $date["timestamp"],
-                        "AssignByDescription" => $request->input('AssignByDescription'),
-                        "IsActive" => true
-                    );
-                    //If assignee data will be fetched then it means this ticket has assigned to support staff
-                    //then insert data only in ticket reply
-
-                    $message = "Ticket replied given successfully";
-
-
-                    if ($checkUserData->RoleCodeName != $patientRole) {
-                        error_log('user role is not patient');
-                        //Now we will make data and will insert it
-                        $ticketData = array(
-                            "UpdatedBy" => $userId,
-                            "UpdatedOn" => $date["timestamp"],
-                            "IsAssigned" => true
-                        );
-
-                        $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
-                        if ($ticketDataUpdate == false) {
-                            DB::rollBack();
-                            return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
-                        }
-
-                        $message = "Ticket replied given and assigned to you";
-                    }
-
-                    $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
-                    $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
-
-                    if ($insertedDataId == false || $ticketReplyInsertedId == 0) {
-                        DB::rollBack();
-                        return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                    //Now checking if ticket is closed or not
+                    if ($ticketData->TrackStatus == $ticketClose) {
+                        return response()->json(['data' => null, 'message' => 'Ticket is already closed'], 400);
                     } else {
-                        DB::commit();
-                        return response()->json(['data' => $ticketReplyInsertedId, 'message' => $message], 200);
+                        //else insert data in ticket reply and assignee table too
+
+                        $getAssigneeData = TicketModel::GetAssigneeViaTicketId($ticketId);
+                        if (count($getAssigneeData) > 0) {
+                            error_log('ticket has assigned to someone');
+
+                            $ticketReplyData = array(
+                                "TicketId" => $ticketId,
+                                "ReplyById" => $userId,
+                                "Reply" => $request->input('Reply'),
+                                "CreatedBy" => $userId,
+                                "CreatedOn" => $date["timestamp"],
+                                "IsActive" => true
+                            );
+
+                            $insertedDataId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
+                            if ($insertedDataId == 0) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                            } else {
+                                DB::commit();
+                                if ($checkUserData->RoleCodeName == $supportStaffRole) {
+                                    //emailing to patient who created ticket
+                                    //Now fetch patient number and email so that email can be sent to that respective patient
+
+                                    $patientUserData = UserModel::GetSingleUserViaIdNewFunction($ticketData->RaiseById);
+                                    if ($patientUserData == null) {
+                                        return response()->json(['data' => null, 'message' => 'Patient data not found, email not sent'], 400);
+                                    } else {
+                                        error_log('Patient data found, now sending email');
+
+                                        $emailMessage = "Dear Patient, Support Team has given the reply on this " . $ticketData->TicketNumber . " 
+                                         please check the details in the following";
+
+                                        $toNumber = array();
+                                        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+                                        //pushing mobile number
+                                        //in array for use in sending sms
+                                        array_push($toNumber, $phoneCode . $patientUserData->MobileNumber);
+
+                                        UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
+
+                                        ## Preparing Data for SMS  - START ##
+                                        if (count($toNumber) > 0) {
+                                            HelperModel::sendSms($toNumber, $emailMessage, null);
+                                        }
+                                        ## Preparing Data for SMS  - END ##
+                                    }
+                                }
+
+                                return response()->json(['data' => $insertedDataId, 'message' => 'ticket replied given'], 200);
+                            }
+                        } else {
+                            error_log('ticket has not  assigned to anyone');
+
+                            $ticketReplyData = array(
+                                "TicketId" => $ticketId,
+                                "ReplyById" => $userId,
+                                "Reply" => $request->input('Reply'),
+                                "CreatedBy" => $userId,
+                                "CreatedOn" => $date["timestamp"],
+                                "IsActive" => true
+                            );
+
+                            //If assignee data will be fetched then it means this ticket has assigned to support staff
+                            //then insert data only in ticket reply
+
+                            $message = "Ticket replied given successfully";
+
+                            error_log('$checkUserData->RoleCodeName : ' . $checkUserData->RoleCodeName);
+
+
+                            if ($checkUserData->RoleCodeName != $patientRole) {
+                                error_log('user role is not patient');
+                                //Now we will make data and will insert it
+                                $ticketData = array(
+                                    "UpdatedBy" => $userId,
+                                    "UpdatedOn" => $date["timestamp"],
+                                    "IsAssigned" => true
+                                );
+
+                                $ticketDataUpdate = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
+                                if ($ticketDataUpdate == false) {
+                                    DB::rollBack();
+                                    return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
+                                }
+
+                                $ticketAssigneeData = array(
+                                    "TicketId" => $ticketId,
+                                    "AssignToId" => $userId,
+                                    "AssignById" => $userId,
+                                    "CreatedBy" => $userId,
+                                    "CreatedOn" => $date["timestamp"],
+                                    "AssignByDescription" => $request->input('AssignByDescription'),
+                                    "IsActive" => true
+                                );
+
+                                $insertedDataId = GenericModel::insertGeneric('ticket_assignee', $ticketAssigneeData);
+
+                                $message = "Ticket replied given and assigned to you";
+                            }
+
+                            $ticketReplyInsertedId = GenericModel::insertGenericAndReturnID('ticket_reply', $ticketReplyData);
+
+                            if ($ticketReplyInsertedId == 0) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
+                            } else {
+                                DB::commit();
+
+                                if ($checkUserData->RoleCodeName == $supportStaffRole) {
+                                    //emailing to patient who created ticket
+                                    //Now fetch patient number and email so that email can be sent to that respective patient
+
+                                    $patientUserData = UserModel::GetSingleUserViaIdNewFunction($ticketData->RaiseById);
+                                    if ($patientUserData == null) {
+                                        return response()->json(['data' => null, 'message' => 'Patient data not found, email not sent'], 400);
+                                    } else {
+                                        error_log('Patient data found, now sending email');
+
+                                        $emailMessage = "Dear Patient,  Support Team has given the reply on this " . $ticketData->TicketNumber . " 
+                                         please check the details in the following";
+
+                                        $toNumber = array();
+                                        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+                                        //pushing mobile number
+                                        //in array for use in sending sms
+                                        array_push($toNumber, $phoneCode . $patientUserData->MobileNumber);
+
+                                        UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
+
+                                        ## Preparing Data for SMS  - START ##
+                                        if (count($toNumber) > 0) {
+                                            HelperModel::sendSms($toNumber, $emailMessage, null);
+                                        }
+                                        ## Preparing Data for SMS  - END ##
+                                    }
+                                }
+
+                                return response()->json(['data' => $ticketReplyInsertedId, 'message' => $message], 200);
+                            }
+                        }
                     }
                 }
+            } else {
+                return response()->json(['data' => null, 'message' => 'Only patient and support staff can reply to this ticket'], 400);
             }
         }
     }
@@ -687,6 +834,30 @@ class TicketController extends Controller
                         return response()->json(['data' => null, 'message' => 'Error in assigning ticket'], 400);
                     } else {
                         DB::commit();
+                        $assignedToData = UserModel::GetSingleUserViaIdNewFunction($request->input('AssignToId'));
+                        if ($assignedToData == null) {
+                            return response()->json(['data' => null, 'message' => 'Ticket assigned to data not found, email not sent'], 400);
+                        } else {
+                            error_log('assigned to data found, now sending email');
+
+                            $emailMessage = "Dear Support Team, " . $ticketData->TicketNumber . " ticket is assigned to you.
+                             please check the details in the following";
+
+                            $toNumber = array();
+                            $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+
+                            //pushing mobile number
+                            //in array for use in sending sms
+                            array_push($toNumber, $phoneCode . $assignedToData->MobileNumber);
+
+                            UserModel::sendEmail($assignedToData->EmailAddress, $emailMessage, null);
+
+                            ## Preparing Data for SMS  - START ##
+                            if (count($toNumber) > 0) {
+                                HelperModel::sendSms($toNumber, $emailMessage, null);
+                            }
+                            ## Preparing Data for SMS  - END ##
+                        }
                         return response()->json(['data' => $insertedDataId, 'message' => 'ticket assigned successfully given'], 200);
                     }
                 }
@@ -701,6 +872,10 @@ class TicketController extends Controller
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
         $ticketTrackStatus = $request->get('trackStatus');
+
+        $ticketClose = env('TICKET_TRACK_STATUS_CLOSE');
+        $ticketInProgress = env('TICKET_TRACK_STATUS_IN_PROGRESS');
+        $patientRole = env('ROLE_PATIENT');
 
         $date = HelperModel::getDate();
 
@@ -725,6 +900,24 @@ class TicketController extends Controller
                 if ($ticketData->TrackStatus == $ticketTrackStatus) {
                     return response()->json(['data' => null, 'message' => 'Ticket status is already ' . $ticketTrackStatus], 400);
                 } else {
+                    if ($ticketData->TrackStatus == $ticketClose) {
+                        return response()->json(['data' => null, 'message' => 'Ticket is already closed'], 400);
+                    } else {
+                        error_log('ticket is not close');
+                        //Now checking if logged in user is patient or not.
+                        //Because only patient can close the ticket
+
+                        if ($ticketTrackStatus == $ticketClose) {
+                            if ($checkUserData->RoleCodeName != $patientRole) {
+                                error_log('logged in user role is NOT patient');
+                                return response()->json(['data' => null, 'message' => 'Only patient can close this ticket'], 400);
+                            }
+                            if ($ticketData->RaiseById != $userId) {
+                                error_log('This ticket does not belong to you');
+                                return response()->json(['data' => null, 'message' => 'This ticket does not belong to you'], 400);
+                            }
+                        }
+                    }
 
                     $ticketDataUpdate = array(
                         "TrackStatus" => $ticketTrackStatus,
