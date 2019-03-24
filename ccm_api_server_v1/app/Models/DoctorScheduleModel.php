@@ -232,8 +232,8 @@ class DoctorScheduleModel
         $query = DB::table("appointment")
             ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
             ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->select('appointment.Id', 'appointment.AppointmentNumber', 'patient.FirstName AS PatientFirstName',
                 'patient.LastName AS PatientLastName', 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
             ->where("appointment.IsActive", "=", true)

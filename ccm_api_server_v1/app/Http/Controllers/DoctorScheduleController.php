@@ -1116,7 +1116,8 @@ class DoctorScheduleController extends Controller
                 error_log('login user is not doctor');
                 //Now check if logged in user is doctor or not
                 return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
-            } else {
+            }
+            else {
                 error_log('login user is doctor');
                 //Now get his associated patient ids
 
