@@ -63,6 +63,13 @@ return [
             'bucket' => env('AWS_BUCKET'),
             'url' => env('AWS_URL'),
         ],
+        'ftp' => [
+            'driver' => 'ftp',
+            'host' => env('ftp://13.229.102.246:21'),
+            'username' => env('ftpuser'),
+            'password' => env('skillorbit1'),
+            'root' => 'test_dir' // for example: /var/www/html/dev/images
+        ],
 
     ],
 
