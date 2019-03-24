@@ -386,7 +386,6 @@ class DoctorScheduleController extends Controller
                         $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
 
                         error_log('$timeSlots');
-                        print_r($timeSlots);
 
                         if (count($timeSlots) > 0) {
                             foreach ($timeSlots as $i) {
@@ -396,12 +395,14 @@ class DoctorScheduleController extends Controller
                                 );
                                 $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
                             }
+                            error_log('yahan');
                         }
                     }
                 }
             }
         }
 
+        error_log('## nahi aya  ##');
         DB::commit();
         return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
 
@@ -513,7 +514,6 @@ class DoctorScheduleController extends Controller
                                 $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($doctorScheduleShiftData['StartTime'], $doctorScheduleShiftData['EndTime'], $doctorScheduleShiftData['NoOfPatientAllowed']);
 
                                 error_log('$timeSlots');
-                                print_r($timeSlots);
 
                                 if (count($timeSlots) > 0) {
                                     foreach ($timeSlots as $i) {
@@ -571,7 +571,6 @@ class DoctorScheduleController extends Controller
                                 $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($item['StartTime'], $item['EndTime'], $item['NoOfPatientAllowed']);
 
                                 error_log('$timeSlots');
-                                print_r($timeSlots);
 
                                 if (count($timeSlots) > 0) {
                                     foreach ($timeSlots as $i) {

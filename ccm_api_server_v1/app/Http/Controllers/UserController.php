@@ -1322,7 +1322,7 @@ class UserController extends Controller
             if (count($getAssociatedFacilitatorData) > 0) {
                 return response()->json(['data' => $getAssociatedFacilitatorData, 'message' => 'Associated facilitators fetched successfully'], 200);
             } else {
-                return response()->json(['data' => null, 'message' => 'Error in getting associated facilitator record'], 400);
+                return response()->json(['data' => null, 'message' => 'No Facilitator associated with the Doctor'], 200);
             }
         }
     }

@@ -701,8 +701,8 @@ class UserModel
     static public function getUserList()
     {
         return DB::table('user')
-            ->join('user_access', 'user_access.UserId', 'user.Id')
-            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+            ->leftjoin('role', 'user_access.RoleId', 'role.Id')
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
             ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
