@@ -194,6 +194,7 @@ class DoctorScheduleModel
         $query = DB::table("shift_time_slot")
             ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
             ->where("DoctorScheduleShiftId", "=", $doctorScheduleShiftId)
+            ->orderBy('Id', 'asc')
             ->get();
 
         return $query;
