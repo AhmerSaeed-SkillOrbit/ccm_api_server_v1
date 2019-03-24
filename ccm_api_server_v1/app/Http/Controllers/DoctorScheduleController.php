@@ -395,12 +395,14 @@ class DoctorScheduleController extends Controller
                                 );
                                 $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
                             }
+                            error_log('yahan');
                         }
                     }
                 }
             }
         }
 
+        error_log('## nahi aya  ##');
         DB::commit();
         return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
 

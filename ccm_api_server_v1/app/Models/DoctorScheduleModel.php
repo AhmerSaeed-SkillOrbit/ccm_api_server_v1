@@ -600,8 +600,6 @@ class DoctorScheduleModel
             }
         }
         error_log("end now");
-        print_r($timeSlots);
         return $timeSlots;
-//        print_r($timeSlots);
     }
 }
