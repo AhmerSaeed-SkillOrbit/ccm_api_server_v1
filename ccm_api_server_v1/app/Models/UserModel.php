@@ -628,7 +628,9 @@ class UserModel
 
     static public function GetSingleUserViaIdNewFunction($id)
     {
-        error_log('in model');
+        error_log('## in model ##');
+        error_log('## GetSingleUserViaIdNewFunction ##');
+        error_log($id);
 
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')

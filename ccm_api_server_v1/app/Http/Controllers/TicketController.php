@@ -180,8 +180,8 @@ class TicketController extends Controller
                     $response->message('Dear Patient, Problem in creating Ticket. Sorry for inconvenience, Please can you try again Thanks CCM - Support Staff !!!');
                     return $response;
                 } else {
-                    error_log('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is '. $getTicketNumber .'. Regards CCM - Support Staff Thanks');
-                    $response->message('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is '. $getTicketNumber .'. Regards CCM - Support Staff Thanks');
+                    error_log('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
+                    $response->message('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
                     return $response;
                 }
             }
@@ -622,11 +622,12 @@ class TicketController extends Controller
             if ($checkUserData->RoleCodeName == $patientRole || $checkUserData->RoleCodeName == $supportStaffRole) {
                 //We will put check if logged in user is patient then
                 //this ticket cannot be assigned to him
-
-
                 //Now check if given ticket exists or not
 
                 $ticketData = TicketModel::GetTicketViaId($ticketId);
+                $ticketRaiseById = $ticketData->RaiseById;
+                $ticketNumber = $ticketData->TicketNumber;
+
                 if ($ticketData == null) {
                     error_log('ticket data not found');
                     return response()->json(['data' => $ticketData, 'message' => 'ticket data not found'], 200);
@@ -664,14 +665,14 @@ class TicketController extends Controller
                                     //emailing to patient who created ticket
                                     //Now fetch patient number and email so that email can be sent to that respective patient
 
+                                    error_log('$patientUserData');
                                     $patientUserData = UserModel::GetSingleUserViaIdNewFunction($ticketData->RaiseById);
                                     if ($patientUserData == null) {
                                         return response()->json(['data' => null, 'message' => 'Patient data not found, email not sent'], 400);
                                     } else {
                                         error_log('Patient data found, now sending email');
 
-                                        $emailMessage = "Dear Patient, Support Team has given the reply on this " . $ticketData->TicketNumber . " 
-                                         please check the details in the following";
+                                        $emailMessage = "Dear Patient, please check the response from Support Staff on your Ticket. Remember Your Ticket Number is " . $ticketNumber . "";
 
                                         $toNumber = array();
                                         $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
@@ -693,7 +694,7 @@ class TicketController extends Controller
                                 return response()->json(['data' => $insertedDataId, 'message' => 'ticket replied given'], 200);
                             }
                         } else {
-                            error_log('ticket has not  assigned to anyone');
+                            error_log('ticket has not assigned to anyone yet');
 
                             $ticketReplyData = array(
                                 "TicketId" => $ticketId,
@@ -754,14 +755,13 @@ class TicketController extends Controller
                                     //emailing to patient who created ticket
                                     //Now fetch patient number and email so that email can be sent to that respective patient
 
-                                    $patientUserData = UserModel::GetSingleUserViaIdNewFunction($ticketData->RaiseById);
+                                    $patientUserData = UserModel::GetSingleUserViaIdNewFunction($ticketRaiseById);
                                     if ($patientUserData == null) {
                                         return response()->json(['data' => null, 'message' => 'Patient data not found, email not sent'], 400);
                                     } else {
                                         error_log('Patient data found, now sending email');
 
-                                        $emailMessage = "Dear Patient,  Support Team has given the reply on this " . $ticketData->TicketNumber . " 
-                                         please check the details in the following";
+                                        $emailMessage = "Dear Patient, please check the response from Support Staff on your Ticket. Remember Your Ticket Number is " . $ticketNumber . "";
 
                                         $toNumber = array();
                                         $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
