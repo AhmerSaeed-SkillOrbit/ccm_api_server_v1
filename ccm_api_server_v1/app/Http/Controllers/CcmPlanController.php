@@ -130,4 +130,63 @@ class CcmPlanController extends Controller
         }
     }
 
+    static public function GetAllQuestionAnswers(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        //First get all question list
+        $questionLIst = CcmModel::getQuestionList();
+        if (count($questionLIst) > 0) {
+            error_log('questions found');
+
+            $finalData = array();
+            $answerData = array();
+
+            foreach ($questionLIst as $item) {
+                $questionData = array(
+                    'Id' => $item->Id,
+                    'Question' => $item->Question,
+                    'Type' => $item->Type,
+                    'Answers' => array()
+                );
+
+                error_log('1st question id is : ' . $item->Id);
+
+                //Now one by one we will fetch answers and will bind it in Answers array
+                $answerList = CcmModel::getAnswersViaQuestionIdAndPatientId($item->Id, $patientId);
+                if (count($answerList) > 0) {
+                    error_log('answer found for question id : ' . $item->Id);
+
+                    foreach ($answerList as $item2) {
+                        error_log('in for each loop');
+
+                        $data = array(
+                            'Id' => $item2->Id,
+                            'IsAnswered' => $item2->IsAnswered,
+                            'Answer' => $item2->Answer,
+                        );
+
+                        array_push($questionData['Answers'], $data);
+                    }
+                }
+
+                array_push($finalData, $questionData);
+            }
+
+            if (count($finalData) > 0) {
+
+                return response()->json(['data' => $finalData, 'message' => 'Question and Answer found'], 200);
+            } else {
+
+                return response()->json(['data' => $finalData, 'message' => 'Question and Answer not found'], 400);
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Question not found'], 400);
+        }
+    }
+
 }
