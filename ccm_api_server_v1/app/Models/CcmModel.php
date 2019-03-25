@@ -31,6 +31,19 @@ class CcmModel
         return $query;
     }
 
+    static public function getQuestionViaId($questionId)
+    {
+        error_log('in model, fetching question list');
+
+        $query = DB::table('ccm_question')
+            ->select('Id', 'Question', 'Type')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $questionId)
+            ->first();
+
+        return $query;
+    }
+
     static public function getAnswersViaQuestionIdAndPatientId($questionId, $patientId)
     {
 
@@ -41,31 +54,6 @@ class CcmModel
             ->where('ccm_answer.IsActive', '=', true)
             ->where('ccm_answer.PatientId', '=', $patientId)
             ->where('ccm_answer.CcmQuestionId', '=', $questionId)
-            ->get();
-
-        return $query;
-    }
-
-    static public function getSingleAnswer($id)
-    {
-        error_log('in model, fetching single answer');
-
-        $query = DB::table('ccm_answer')
-            ->where('IsActive', '=', true)
-            ->where('Id', '=', $id)
-            ->first();
-
-        return $query;
-    }
-
-    static public function getSingleQuestionAnswers($id)
-    {
-        error_log('in model, fetching single answer');
-
-        $query = DB::table('ccm_question')
-            ->leftjoin('ccm_answer as answer', 'ccm_question.CcmQuestionId', 'answer.Id')
-            ->where('IsActive', '=', true)
-            ->where('Id', '=', $id)
             ->get();
 
         return $query;

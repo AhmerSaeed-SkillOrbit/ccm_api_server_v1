@@ -199,7 +199,10 @@ Route::post('/give/answer', 'CcmPlanController@GiveAnswerToQuestion');
 Route::post('/update/answer', 'CcmPlanController@UpdateAnswer');
 
 //Get all question and answers
-Route::get('/question/answers/all', 'CcmPlanController@GetAllQuestionAnswers');
+Route::get('/question/answer/all', 'CcmPlanController@GetAllQuestionAnswers');
+
+//Get all question and answers
+Route::get('/question/answer/single', 'CcmPlanController@GetQuestionAnswerSingle');
 
 
 Route::get('/', function () {

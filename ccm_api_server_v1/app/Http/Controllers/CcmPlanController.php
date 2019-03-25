@@ -189,4 +189,55 @@ class CcmPlanController extends Controller
         }
     }
 
+    static public function GetQuestionAnswerSingle(Request $request)
+    {
+        error_log('in controller');
+
+        $questionId = $request->get('questionId');
+        $patientId = $request->get('patientId');
+
+        $questionData = array();
+
+        //First get single question
+
+        $question = CcmModel::getQuestionViaId($questionId);
+        if ($question != null) {
+            error_log('questions found');
+
+            $questionData['Id'] = $question->Id;
+            $questionData['Question'] = $question->Question;
+            $questionData['Type'] = $question->Type;
+            $questionData['Answers'] = array();
+
+            //Now one by one we will fetch answers and will bind it in Answers array
+            $answerList = CcmModel::getAnswersViaQuestionIdAndPatientId($question->Id, $patientId);
+            if (count($answerList) > 0) {
+                error_log('answer found for question id : ' . $question->Id);
+
+                foreach ($answerList as $item2) {
+                    error_log('in for each loop');
+
+                    $data = array(
+                        'Id' => $item2->Id,
+                        'IsAnswered' => $item2->IsAnswered,
+                        'Answer' => $item2->Answer,
+                    );
+
+                    array_push($questionData['Answers'], $data);
+                }
+            }
+
+            if (count($questionData) > 0) {
+
+                return response()->json(['data' => $questionData, 'message' => 'Question and Answer found'], 200);
+            } else {
+
+                return response()->json(['data' => $questionData, 'message' => 'Question and Answer not found'], 400);
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Question not found'], 400);
+        }
+    }
+
 }
