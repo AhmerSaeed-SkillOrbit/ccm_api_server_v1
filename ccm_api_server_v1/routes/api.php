@@ -190,6 +190,11 @@ Route::post('/ticket/track/status/update', 'TicketController@TicketTrackStatusUp
 // get questions list API
 Route::get('/question/list', 'CcmPlanController@GetQuestionsList');
 
+Route::get('/answer/type/list', 'CcmPlanController@GetAnswerTypeList');
+
+// give answer to questions
+Route::get('/give/answer', 'CcmPlanController@GiveAnswerToQuestion');
+
 
 Route::get('/', function () {
     return 'Hello';

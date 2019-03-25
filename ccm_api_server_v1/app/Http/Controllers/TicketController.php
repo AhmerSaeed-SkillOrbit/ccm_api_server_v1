@@ -526,7 +526,7 @@ class TicketController extends Controller
     {
         error_log('in controller');
 
-        $ticketPriorities = TicketModel::getEnumValues('Priority');
+        $ticketPriorities = TicketModel::getEnumValues('ticket', 'Priority');
         if ($ticketPriorities == null) {
             return response()->json(['data' => null, 'message' => 'Priorities not found'], 200);
         } else {
@@ -538,7 +538,7 @@ class TicketController extends Controller
     {
         error_log('in controller');
 
-        $ticketPriorities = TicketModel::getEnumValues('Type');
+        $ticketPriorities = TicketModel::getEnumValues('ticket', 'Type');
         if ($ticketPriorities == null) {
             return response()->json(['data' => null, 'message' => 'Types not found'], 200);
         } else {
@@ -550,7 +550,7 @@ class TicketController extends Controller
     {
         error_log('in controller');
 
-        $ticketTrackStatus = TicketModel::getEnumValues('TrackStatus');
+        $ticketTrackStatus = TicketModel::getEnumValues('ticket', 'TrackStatus');
         if ($ticketTrackStatus == null) {
             return response()->json(['data' => null, 'message' => 'Track Status not found'], 200);
         } else {
