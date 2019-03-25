@@ -28,9 +28,17 @@ use Twilio\Twiml;
 
 class CcmPlanController extends Controller
 {
-    static public function GetQuestions()
+    static public function GetQuestionsList()
     {
+        error_log('in controller');
 //        $patientRoleCode = env('ROLE_PATIENT');
+        $questionsList = CcmModel::getQuestionList();
+
+        if (count($questionsList) > 0) {
+            return response()->json(['data' => $questionsList, 'message' => 'Questions found'], 400);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Questions not found'], 200);
+        }
     }
 
 }

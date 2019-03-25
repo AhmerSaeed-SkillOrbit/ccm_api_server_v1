@@ -18,5 +18,17 @@ use App\Models\HelperModel;
 
 class CcmModel
 {
+    static public function getQuestionList()
+    {
+        error_log('in model, fetching question list');
+
+        $query = DB::table('ccm_question')
+            ->select('Id', 'Question', 'Type')
+            ->where('IsActive', '=', true)
+            ->orderBy('Id', 'desc')
+            ->get();
+
+        return $query;
+    }
 
 }

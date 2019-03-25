@@ -184,6 +184,12 @@ Route::post('/ticket/assign', 'TicketController@AssignTicket');
 //ticket status update
 Route::post('/ticket/track/status/update', 'TicketController@TicketTrackStatusUpdate');
 
+##
+# CCM PLAN APIS
+# ##
+// get questions list API
+Route::get('/question/list', 'CcmPlanController@GetQuestionsList');
+
 
 Route::get('/', function () {
     return 'Hello';
