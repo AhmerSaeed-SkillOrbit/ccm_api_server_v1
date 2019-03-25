@@ -31,4 +31,16 @@ class CcmModel
         return $query;
     }
 
+    static public function getSingleAnswer($id)
+    {
+        error_log('in model, fetching single answer');
+
+        $query = DB::table('ccm_answer')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
 }

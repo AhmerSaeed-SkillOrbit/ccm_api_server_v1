@@ -195,6 +195,9 @@ Route::get('/answer/type/list', 'CcmPlanController@GetAnswerTypeList');
 // give answer to questions
 Route::post('/give/answer', 'CcmPlanController@GiveAnswerToQuestion');
 
+// update answer
+Route::post('/update/answer', 'CcmPlanController@UpdateAnswer');
+
 
 Route::get('/', function () {
     return 'Hello';

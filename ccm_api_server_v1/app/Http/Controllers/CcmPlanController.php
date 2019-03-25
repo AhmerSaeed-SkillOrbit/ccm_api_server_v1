@@ -73,7 +73,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'Error in inserting answers'], 400);
         } else {
             error_log('data inserted');
-            return response()->json(['data' => (int)$userId, 'message' => 'answers successfully added'], 200);
+            return response()->json(['data' => (int)$userId, 'message' => 'Answer successfully added'], 200);
         }
     }
 
@@ -86,6 +86,47 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'Answer type found'], 200);
         } else {
             return response()->json(['data' => $isAnsweredData, 'message' => 'Answer type not found'], 200);
+        }
+    }
+
+    static public function UpdateAnswer(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $answerId = $request->get('Id');
+
+        //First checking if answer exists or not
+
+        $checkAnswerData = CcmModel::getSingleAnswer($answerId);
+
+        if ($checkAnswerData == null) {
+            error_log('invalid answer');
+            return response()->json(['data' => null, 'message' => 'Answer is not valid'], 400);
+        } else {
+            error_log('Answer found');
+
+            $date = HelperModel::getDate();
+
+            $dataToUpdate = array(
+                'AskById' => $userId,
+                'PatientId' => $patientId,
+                'IsAnswered' => $request->get('IsAnswered'),
+                'Answer' => $request->get('Answer'),
+                'UpdatedBy' => $userId,
+                'UpdatedOn' => $date["timestamp"]
+            );
+
+            $updatedData = GenericModel::updateGeneric('ccm_answer', 'Id', $answerId, $dataToUpdate);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in updating answer'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => (int)$userId, 'message' => 'Answer successfully updated'], 200);
+            }
         }
     }
 
