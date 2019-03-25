@@ -40,9 +40,41 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GiveAnswerToQuestion()
+    static public function GiveAnswerToQuestion(Request $request)
     {
         error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $date = HelperModel::getDate();
+
+        $answerData = array();
+
+        foreach ($request->input('Answer') as $item) {
+
+            $data = array(
+                'CcmQuestionId' => $item['CcmQuestionId'],
+                'AskById' => $userId,
+                'PatientId' => $patientId,
+                'IsAnswered' => $item['IsAnswered'],
+                'Answer' => $item['Answer'],
+                'IsActive' => true,
+                'CreatedBy' => $userId,
+                'CreatedOn' => $date["timestamp"]
+            );
+
+            array_push($answerData, $data);
+        }
+
+        $insertedData = GenericModel::insertGeneric('ccm_answer', $answerData);
+        if ($insertedData == false) {
+            error_log('data not inserted');
+            return response()->json(['data' => null, 'message' => 'Error in inserting answers'], 400);
+        } else {
+            error_log('data inserted');
+            return response()->json(['data' => (int)$userId, 'message' => 'answers successfully added'], 200);
+        }
     }
 
     function GetAnswerTypeList()
