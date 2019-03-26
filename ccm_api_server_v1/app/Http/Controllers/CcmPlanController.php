@@ -505,4 +505,121 @@ class CcmPlanController extends Controller
         }
     }
 
+    static public function GetAllActiveMedicine(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $finalData = array();
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Get all active medicine via patient id
+        $medicineList = CcmModel::getAllActiveMedicineViaPatientId($patientId);
+        if (count($medicineList) > 0) {
+            error_log('medicine list found ');
+
+            foreach ($medicineList as $item) {
+                error_log('in for each loop');
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'MedicineName' => $item->MedicineName,
+                    'DoseNumber' => $item->DoseNumber,
+                    'Direction' => $item->Direction,
+                    'StartDate' => $item->StartDate,
+                    'StartBy' => $item->StartBy,
+                    'WhyComments' => $item->WhyComments
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($finalData) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Active medicine not found'], 200);
+        } else {
+            return response()->json(['data' => $finalData, 'message' => 'Active medicine found'], 400);
+        }
+    }
+
+    static public function GetSingleActiveMedicine(Request $request)
+    {
+        error_log('in controller');
+
+        $activeMedicineId = $request->get('id');
+
+        //Get single active medicine via medicine id
+        $medicineData = CcmModel::getSingleActiveMedicine($activeMedicineId);
+        if ($medicineData != null) {
+            error_log('medicine found ');
+
+            $data['Id'] = $medicineData->Id;
+            $data['MedicineName'] = $medicineData->MedicineName;
+            $data['DoseNumber'] = $medicineData->DoseNumber;
+            $data['Direction'] = $medicineData->Direction;
+            $data['StartDate'] = $medicineData->StartDate;
+            $data['StartBy'] = $medicineData->StartBy;
+            $data['WhyComments'] = $medicineData->WhyComments;
+
+            return response()->json(['data' => $data, 'message' => 'Active medicine found'], 200);
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Active medicine not found'], 400);
+        }
+    }
+
 }

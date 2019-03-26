@@ -210,6 +210,11 @@ Route::post('/add/active/medicine', 'CcmPlanController@AddActiveMedicine');
 // update active medicine
 Route::post('/update/active/medicine', 'CcmPlanController@UpdateActiveMedicine');
 
+//Get all prescribed medicine
+Route::get('/active/medicine/all', 'CcmPlanController@GetAllActiveMedicine');
+//Get single active medicine
+Route::get('/active/medicine/single', 'CcmPlanController@GetSingleActiveMedicine');
+
 
 Route::get('/', function () {
     return 'Hello';

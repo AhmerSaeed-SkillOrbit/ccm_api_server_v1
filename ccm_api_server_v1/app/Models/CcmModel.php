@@ -81,4 +81,16 @@ class CcmModel
         return $query;
     }
 
+    static public function getAllActiveMedicineViaPatientId($id)
+    {
+        error_log('in model, fetching all active medicine');
+
+        $query = DB::table('ccm_active_medicine')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
 }
