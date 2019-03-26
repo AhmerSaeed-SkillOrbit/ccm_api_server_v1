@@ -463,4 +463,46 @@ class CcmPlanController extends Controller
         }
     }
 
+    static public function UpdateActiveMedicine(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $activeMedicineId = $request->get('Id');
+
+        //First checking if answer exists or not
+
+        $date = HelperModel::getDate();
+
+        $checkData = CcmModel::getSingleActiveMedicine($activeMedicineId);
+
+        if ($checkData == null) {
+            error_log('active medicine not found');
+            return response()->json(['data' => null, 'message' => 'Active medicine not found'], 400);
+        } else {
+            error_log('Answer found');
+
+            $dataToUpdate = array(
+                'MedicineName' => $request->get('MedicineName'),
+                'DoseNumber' => $request->get('DoseNumber'),
+                'Direction' => $request->get('Direction'),
+                'StartDate' => $request->get('StartDate'),
+                'StartBy' => $request->get('StartBy'),
+                'WhyComments' => $request->get('WhyComments'),
+                'CreatedBy' => $userId,
+                'CreatedOn' => $date["timestamp"]
+            );
+
+            $updatedData = GenericModel::updateGeneric('ccm_active_medicine', 'Id', $activeMedicineId, $dataToUpdate);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in updating active medicine'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => (int)$userId, 'message' => 'Active medicine successfully updated'], 200);
+            }
+        }
+    }
+
 }

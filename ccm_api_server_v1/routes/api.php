@@ -204,8 +204,11 @@ Route::get('/question/answer/all', 'CcmPlanController@GetAllQuestionAnswers');
 //Get all question and answers
 Route::get('/question/answer/single', 'CcmPlanController@GetQuestionAnswerSingle');
 
-// give answer to questions
+// add active medicine
 Route::post('/add/active/medicine', 'CcmPlanController@AddActiveMedicine');
+
+// update active medicine
+Route::post('/update/active/medicine', 'CcmPlanController@UpdateActiveMedicine');
 
 
 Route::get('/', function () {
