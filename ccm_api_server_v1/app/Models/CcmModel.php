@@ -93,4 +93,28 @@ class CcmModel
         return $query;
     }
 
+    static public function getSingleAllergy($id)
+    {
+        error_log('in model, fetching single allergy');
+
+        $query = DB::table('ccm_medicine_allergy')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllAllergiesViaPatientId($id)
+    {
+        error_log('in model, fetching all allergies');
+
+        $query = DB::table('ccm_medicine_allergy')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
 }

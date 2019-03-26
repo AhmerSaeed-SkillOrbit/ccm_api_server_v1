@@ -206,14 +206,21 @@ Route::get('/question/answer/single', 'CcmPlanController@GetQuestionAnswerSingle
 
 // add active medicine
 Route::post('/add/active/medicine', 'CcmPlanController@AddActiveMedicine');
-
 // update active medicine
 Route::post('/update/active/medicine', 'CcmPlanController@UpdateActiveMedicine');
-
 //Get all prescribed medicine
 Route::get('/active/medicine/all', 'CcmPlanController@GetAllActiveMedicine');
 //Get single active medicine
 Route::get('/active/medicine/single', 'CcmPlanController@GetSingleActiveMedicine');
+
+// add allergy medicine
+Route::post('/add/allergy/medicine', 'CcmPlanController@AddAllergyMedicine');
+// update allergy medicine
+Route::post('/update/allergy/medicine', 'CcmPlanController@UpdateAllergyMedicine');
+//Get all prescribed allergy medicine
+Route::get('/allergy/medicine/all', 'CcmPlanController@GetAllAllergyMedicine');
+//Get single allergy medicine
+Route::get('/allergy/medicine/single', 'CcmPlanController@GetSingleAllergyMedicine');
 
 
 Route::get('/', function () {
