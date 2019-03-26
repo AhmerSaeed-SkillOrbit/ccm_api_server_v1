@@ -95,7 +95,7 @@ class CcmPlanController extends Controller
             }
 
         } else if ($checkUserData->RoleCodeName == $superAdminRole) {
-
+            error_log('logged in user is super admin');
         } else {
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
