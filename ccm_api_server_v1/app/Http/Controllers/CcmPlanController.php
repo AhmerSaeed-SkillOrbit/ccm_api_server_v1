@@ -154,15 +154,37 @@ class CcmPlanController extends Controller
 
         //First checking if answer exists or not
 
+        $date = HelperModel::getDate();
+
         $checkAnswerData = CcmModel::getSingleAnswer($answerId);
 
         if ($checkAnswerData == null) {
-            error_log('invalid answer');
+            error_log('Answer not found');
             return response()->json(['data' => null, 'message' => 'Answer is not valid'], 400);
+
+            error_log('now we will add that questions answer');
+
+            $dataToAdd = array(
+                'AskById' => $userId,
+                'PatientId' => $patientId,
+                'IsAnswered' => $request->get('IsAnswered'),
+                'Answer' => $request->get('Answer'),
+                'CreatedBy' => $userId,
+                'CreatedOn' => $date["timestamp"]
+            );
+
+            $insertedDataId = GenericModel::insertGenericAndReturnID('ccm_answer', $dataToAdd);
+
+            if ($insertedDataId == 0) {
+                error_log('data not inserted');
+                return response()->json(['data' => null, 'message' => 'Error in inserting answer'], 400);
+            } else {
+                error_log('data inserted');
+                return response()->json(['data' => $insertedDataId, 'message' => 'Answer successfully given'], 200);
+            }
+
         } else {
             error_log('Answer found');
-
-            $date = HelperModel::getDate();
 
             $dataToUpdate = array(
                 'AskById' => $userId,
