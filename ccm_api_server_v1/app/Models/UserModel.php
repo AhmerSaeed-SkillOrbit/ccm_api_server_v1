@@ -812,6 +812,16 @@ class UserModel
             ->get();
     }
 
+    static public function getAssociatedPatientViaDoctorId($userId, $associationType, $patientId)
+    {
+        return DB::table('user_association')
+            ->where('SourceUserId', '=', $userId)
+            ->where('AssociationType', '=', $associationType)
+            ->where('DestinationUserId', '=', $patientId)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
+
     static public function getSourceUserIdViaLoggedInUserId($userId)
     {
         return DB::table('user_association')
@@ -827,6 +837,17 @@ class UserModel
             ->select('DestinationUserId')
             ->whereIn('SourceUserId', $doctorIds)
             ->where('AssociationType', '=', $associationType)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
+
+    static public function getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $associationType, $patientId)
+    {
+        return DB::table('user_association')
+            ->select('DestinationUserId')
+            ->whereIn('SourceUserId', $doctorIds)
+            ->where('AssociationType', '=', $associationType)
+            ->where('DestinationUserId', '=', $patientId)
             ->where('IsActive', '=', true)
             ->get();
     }
@@ -876,6 +897,7 @@ class UserModel
             ->where('DestinationUserId', '=', $userId)
             ->where('AssociationType', '=', $associationType)
             ->first();
+
         return $result;
     }
 

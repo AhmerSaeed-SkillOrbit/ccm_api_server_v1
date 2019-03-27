@@ -184,6 +184,62 @@ Route::post('/ticket/assign', 'TicketController@AssignTicket');
 //ticket status update
 Route::post('/ticket/track/status/update', 'TicketController@TicketTrackStatusUpdate');
 
+##
+# CCM PLAN APIS
+# ##
+// get questions list API
+Route::get('/question/list', 'CcmPlanController@GetQuestionsList');
+
+Route::get('/answer/type/list', 'CcmPlanController@GetAnswerTypeList');
+
+// give answer to questions
+Route::post('/give/answer', 'CcmPlanController@GiveAnswerToQuestion');
+
+// update answer
+Route::post('/update/answer', 'CcmPlanController@UpdateAnswer');
+
+//Get all question and answers
+Route::get('/question/answer/all', 'CcmPlanController@GetAllQuestionAnswers');
+
+//Get all question and answers
+Route::get('/question/answer/single', 'CcmPlanController@GetQuestionAnswerSingle');
+
+// add active medicine
+Route::post('/add/active/medicine', 'CcmPlanController@AddActiveMedicine');
+// update active medicine
+Route::post('/update/active/medicine', 'CcmPlanController@UpdateActiveMedicine');
+//Get all prescribed medicine
+Route::get('/active/medicine/all', 'CcmPlanController@GetAllActiveMedicine');
+//Get single active medicine
+Route::get('/active/medicine/single', 'CcmPlanController@GetSingleActiveMedicine');
+
+// add allergy medicine
+Route::post('/add/allergy/medicine', 'CcmPlanController@AddAllergyMedicine');
+// update allergy medicine
+Route::post('/update/allergy/medicine', 'CcmPlanController@UpdateAllergyMedicine');
+//Get all prescribed allergy medicine
+Route::get('/allergy/medicine/all', 'CcmPlanController@GetAllAllergyMedicine');
+//Get single allergy medicine
+Route::get('/allergy/medicine/single', 'CcmPlanController@GetSingleAllergyMedicine');
+
+// add non medicine
+Route::post('/add/non/medicine', 'CcmPlanController@AddNonMedicine');
+// update non medicine
+Route::post('/update/non/medicine', 'CcmPlanController@UpdateNonMedicine');
+//Get all prescribed non medicine
+Route::get('/non/medicine/all', 'CcmPlanController@GetAllNonMedicine');
+//Get single non medicine
+Route::get('/non/medicine/single', 'CcmPlanController@GetSingleNonMedicine');
+
+// add immunization vaccine
+Route::post('/add/immunization/vaccine', 'CcmPlanController@AddImmunizationVaccine');
+// update immunization vaccine
+Route::post('/update/immunization/vaccine', 'CcmPlanController@UpdateImmunizationVaccine');
+//Get all prescribed immunization vaccine
+Route::get('/immunization/vaccine/all', 'CcmPlanController@GetAllImmunizationVaccine');
+//Get single immunization vaccine
+Route::get('/immunization/vaccine/single', 'CcmPlanController@GetSingleImmunizationVaccine');
+
 
 Route::get('/', function () {
     return 'Hello';
