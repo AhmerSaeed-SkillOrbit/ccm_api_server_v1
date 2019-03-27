@@ -231,6 +231,15 @@ Route::get('/non/medicine/all', 'CcmPlanController@GetAllNonMedicine');
 //Get single non medicine
 Route::get('/non/medicine/single', 'CcmPlanController@GetSingleNonMedicine');
 
+// add immunization vaccine
+Route::post('/add/immunization/vaccine', 'CcmPlanController@AddImmunizationVaccine');
+// update immunization vaccine
+Route::post('/update/immunization/vaccine', 'CcmPlanController@UpdateImmunizationVaccine');
+//Get all prescribed immunization vaccine
+Route::get('/immunization/vaccine/all', 'CcmPlanController@GetAllImmunizationVaccine');
+//Get single immunization vaccine
+Route::get('/immunization/vaccine/single', 'CcmPlanController@GetSingleImmunizationVaccine');
+
 
 Route::get('/', function () {
     return 'Hello';

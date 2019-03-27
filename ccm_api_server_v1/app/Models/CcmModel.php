@@ -131,9 +131,33 @@ class CcmModel
 
     static public function getAllNonMedicinesViaPatientId($id)
     {
-        error_log('in model, fetching all active medicine');
+        error_log('in model, fetching all non active medicine');
 
         $query = DB::table('ccm_non_medicine')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getSingleImmunizationVaccine($id)
+    {
+        error_log('in model, fetching single immunization vaccine');
+
+        $query = DB::table('ccm_immunization_vaccine')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllImmunizationVaccineViaPatientId($id)
+    {
+        error_log('in model, fetching all immunization vaccine');
+
+        $query = DB::table('ccm_immunization_vaccine')
             ->where('IsActive', '=', true)
             ->where('PatientId', '=', $id)
             ->get();

@@ -991,10 +991,10 @@ class CcmPlanController extends Controller
 
             if ($updatedData == false) {
                 error_log('data not updated');
-                return response()->json(['data' => null, 'message' => 'Error in updating allergy medicine'], 400);
+                return response()->json(['data' => null, 'message' => 'Error in updating non active medicine'], 400);
             } else {
                 error_log('data updated');
-                return response()->json(['data' => (int)$userId, 'message' => 'Allergy medicine successfully updated'], 200);
+                return response()->json(['data' => (int)$userId, 'message' => 'Non active medicine successfully updated'], 200);
             }
         }
     }
@@ -1108,6 +1108,242 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $data, 'message' => 'Non medicine found'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Non medicine not found'], 400);
+        }
+    }
+
+    static public function AddImmunizationVaccine(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+
+        $date = HelperModel::getDate();
+
+        $medicineData = array();
+
+
+        foreach ($request->input('ImmunizationVaccine') as $item) {
+
+            $data = array(
+                'PatientId' => $patientId,
+                'Vaccine' => $item['Vaccine'],
+                'VaccineDate' => $item['VaccineDate'],
+                'IsActive' => true,
+                'CreatedBy' => $userId,
+                'CreatedOn' => $date["timestamp"]
+            );
+
+            array_push($medicineData, $data);
+        }
+
+        $insertedData = GenericModel::insertGeneric('ccm_immunization_vaccine', $medicineData);
+        if ($insertedData == false) {
+            error_log('data not inserted');
+            return response()->json(['data' => null, 'message' => 'Error in inserting immunization vaccine'], 400);
+        } else {
+            error_log('data inserted');
+            return response()->json(['data' => (int)$userId, 'message' => 'Immunization vaccine successfully added'], 200);
+        }
+    }
+
+    static public function UpdateImmunizationVaccine(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $immunizationVaccineId = $request->get('id');
+
+        //First checking if answer exists or not
+
+        $date = HelperModel::getDate();
+
+        $checkData = CcmModel::getSingleImmunizationVaccine($immunizationVaccineId);
+
+        if ($checkData == null) {
+            error_log(' medicine not found');
+            return response()->json(['data' => null, 'message' => 'Non medicine not found'], 400);
+        } else {
+            error_log('Answer found');
+
+            $dataToUpdate = array(
+                'Vaccine' => $request->get('Vaccine'),
+                'VaccineDate' => $request->get('VaccineDate'),
+                'UpdatedBy' => $userId,
+                'UpdatedOn' => $date["timestamp"]
+            );
+
+            $updatedData = GenericModel::updateGeneric('ccm_immunization_vaccine', 'Id', $immunizationVaccineId, $dataToUpdate);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in updating immunization vaccine'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => (int)$userId, 'message' => 'Immunization successfully updated'], 200);
+            }
+        }
+    }
+
+    static public function GetAllImmunizationVaccince(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $finalData = array();
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Get all active medicine via patient id
+        $medicineList = CcmModel::getAllImmunizationVaccineViaPatientId($patientId);
+        if (count($medicineList) > 0) {
+            error_log('medicine list found ');
+
+            foreach ($medicineList as $item) {
+                error_log('in for each loop');
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'Vaccine' => $item->Vaccine,
+                    'VaccineDate' => $item->VaccineDate
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($finalData) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Immunization vaccine not found'], 200);
+        } else {
+            return response()->json(['data' => $finalData, 'message' => 'Immunization vaccine found'], 400);
+        }
+    }
+
+    static public function GetSingleImmunization(Request $request)
+    {
+        error_log('in controller');
+
+        $immunizationVaccineId = $request->get('id');
+
+        //Get single active medicine via medicine id
+        $medicineData = CcmModel::getSingleImmunizationVaccine($immunizationVaccineId);
+        if ($medicineData != null) {
+            error_log('medicine found ');
+
+            $data['Id'] = $medicineData->Id;
+            $data['Vaccine'] = $medicineData->Vaccine;
+            $data['VaccineDate'] = $medicineData->VaccineDate;
+
+            return response()->json(['data' => $data, 'message' => 'Immunization vaccine found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Immunization vaccine not found'], 400);
         }
     }
 
