@@ -117,4 +117,28 @@ class CcmModel
         return $query;
     }
 
+    static public function getSingleNonMedicine($id)
+    {
+        error_log('in model, fetching single non active medicine');
+
+        $query = DB::table('ccm_non_medicine')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllNonMedicinesViaPatientId($id)
+    {
+        error_log('in model, fetching all active medicine');
+
+        $query = DB::table('ccm_non_medicine')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
 }

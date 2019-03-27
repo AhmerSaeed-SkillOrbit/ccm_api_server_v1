@@ -222,6 +222,15 @@ Route::get('/allergy/medicine/all', 'CcmPlanController@GetAllAllergyMedicine');
 //Get single allergy medicine
 Route::get('/allergy/medicine/single', 'CcmPlanController@GetSingleAllergyMedicine');
 
+// add non medicine
+Route::post('/add/non/medicine', 'CcmPlanController@AddNonMedicine');
+// update non medicine
+Route::post('/update/non/medicine', 'CcmPlanController@UpdateNonMedicine');
+//Get all prescribed non medicine
+Route::get('/non/medicine/all', 'CcmPlanController@GetAllNonMedicine');
+//Get single non medicine
+Route::get('/non/medicine/single', 'CcmPlanController@GetSingleNonMedicine');
+
 
 Route::get('/', function () {
     return 'Hello';
