@@ -240,6 +240,15 @@ Route::get('/immunization/vaccine/all', 'CcmPlanController@GetAllImmunizationVac
 //Get single immunization vaccine
 Route::get('/immunization/vaccine/single', 'CcmPlanController@GetSingleImmunizationVaccine');
 
+// add health care history
+Route::post('/add/health/care/history', 'CcmPlanController@AddHealthCareHistory');
+// update health care history
+Route::post('/update/health/care/history', 'CcmPlanController@UpdateHealthCareHistory');
+//Get all health care history
+Route::get('/health/care/history/all', 'CcmPlanController@GetAllHealthCareHistory');
+//Get single health care history
+Route::get('/health/care/history/single', 'CcmPlanController@GetSingleHealthCareHistory');
+
 
 Route::get('/', function () {
     return 'Hello';
