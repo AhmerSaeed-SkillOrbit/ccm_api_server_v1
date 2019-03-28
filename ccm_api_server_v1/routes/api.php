@@ -249,6 +249,21 @@ Route::get('/health/care/history/all', 'CcmPlanController@GetAllHealthCareHistor
 //Get single health care history
 Route::get('/health/care/history/single', 'CcmPlanController@GetSingleHealthCareHistory');
 
+//Assistance APIS
+//Get asistance organization
+Route::get('/assistance/organization/all', 'CcmPlanController@GetAllAssistanceOrganization');
+//Get asistance type
+Route::get('/assistance/type/all', 'CcmPlanController@GetAllAssistanceType');
+
+// add patient organization assistance
+Route::post('/add/patient/organization/assistance', 'CcmPlanController@AddHealthCareHistory');
+// update patient organization assistance
+Route::post('/update/patient/organization/assistance', 'CcmPlanController@UpdateHealthCareHistory');
+//Get all patient organization assistance
+Route::get('/patient/organization/assistance/all', 'CcmPlanController@GetAllHealthCareHistory');
+//Get single patient organization assistance
+Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetSingleHealthCareHistory');
+
 
 Route::get('/', function () {
     return 'Hello';

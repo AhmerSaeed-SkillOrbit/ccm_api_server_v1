@@ -189,4 +189,78 @@ class CcmModel
         return $query;
     }
 
+    static public function getAllAssistanceOrganizationViaAssistanceType($assistanceTypeId)
+    {
+        error_log('in model, fetching all assistance organization');
+
+        $query = DB::table('ccm_healthcare_history')
+            ->where('IsActive', '=', true)
+            ->where('AssistanceTypeId', '=', $assistanceTypeId)
+            ->get();
+
+        return $query;
+    }
+
+
+    static public function getAllAssistanceType()
+    {
+        error_log('in model, fetching all assistance type');
+
+        $query = DB::table('assistance_type')
+            ->where('IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getSinglePatientOrganizationAssistance($id)
+    {
+        error_log('in model, fetching single health care history');
+
+        $query = DB::table('patient_organization_assistance')
+            ->leftjoin('assistance_organization as assistance_organization', 'patient_organization_assistance.AssistanceOrganizationId', 'assistance_organization.Id')
+            ->leftjoin('assistance_type as assistance_type', 'assistance_organization.AssistanceTypeId', 'assistance_type.Id')
+            ->select('patient_organization_assistance.Id as poaID', 'patient_organization_assistance.Organization as poaOrganization',
+                'patient_organization_assistance.TelephoneNumber as poaTelephoneNumber', 'patient_organization_assistance.OfficeAddress as poaOfficeAddress',
+                'patient_organization_assistance.ContactPerson as poaContactNumber', 'patient_organization_assistance.Description as poaDescription',
+                'patient_organization_assistance.IsPatientRefused as poaIsPatientRefused',
+                //assistance organization data
+                'assistance_organization.Id as aoId',
+                'assistance_organization.Organization as aoOrganization', 'assistance_organization.OfficeAddress as aoOfficeAddress',
+                'assistance_organization.ContactPerson as aoContactPerson', 'assistance_organization.Description as aoDescription',
+                //Assistance organization type data
+                'assistance_type.Id as atId', 'assistance_type.Type as atType', 'assistance_type.Description as atOrganization'
+            )
+            ->where('patient_organization_assistance.IsActive', '=', true)
+            ->where('patient_organization_assistance.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllPatientOrganizationAssistanceViaPatientId($id)
+    {
+        error_log('in model, fetching all health care history');
+
+        $query = DB::table('patient_organization_assistance')
+            ->leftjoin('assistance_organization as assistance_organization', 'patient_organization_assistance.AssistanceOrganizationId', 'assistance_organization.Id')
+            ->leftjoin('assistance_type as assistance_type', 'assistance_organization.AssistanceTypeId', 'assistance_type.Id')
+            ->select('patient_organization_assistance.Id as poaID', 'patient_organization_assistance.Organization as poaOrganization',
+                'patient_organization_assistance.TelephoneNumber as poaTelephoneNumber', 'patient_organization_assistance.OfficeAddress as poaOfficeAddress',
+                'patient_organization_assistance.ContactPerson as poaContactNumber', 'patient_organization_assistance.Description as poaDescription',
+                'patient_organization_assistance.IsPatientRefused as poaIsPatientRefused',
+                //assistance organization data
+                'assistance_organization.Id as aoId',
+                'assistance_organization.Organization as aoOrganization', 'assistance_organization.OfficeAddress as aoOfficeAddress',
+                'assistance_organization.ContactPerson as aoContactPerson', 'assistance_organization.Description as aoDescription',
+                //Assistance organization type data
+                'assistance_type.Id as atId', 'assistance_type.Type as atType', 'assistance_type.Description as atOrganization'
+            )
+            ->where('patient_organization_assistance.IsActive', '=', true)
+            ->where('patient_organization_assistance.PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
 }
