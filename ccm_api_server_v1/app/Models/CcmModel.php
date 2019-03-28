@@ -165,4 +165,28 @@ class CcmModel
         return $query;
     }
 
+    static public function getSingleHealthCareHistory($id)
+    {
+        error_log('in model, fetching single health care history');
+
+        $query = DB::table('ccm_healthcare_history')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllHealthCareHistoryViaPatientId($id)
+    {
+        error_log('in model, fetching all health care history');
+
+        $query = DB::table('ccm_healthcare_history')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
 }
