@@ -24,6 +24,7 @@ use App\Models\ForumModel;
 use App\Models\TicketModel;
 use App\Models\CcmModel;
 use Twilio\Twiml;
+use Carbon\Carbon;
 
 
 class CcmPlanController extends Controller
@@ -580,8 +581,8 @@ class CcmPlanController extends Controller
                     'MedicineName' => $item->MedicineName,
                     'DoseNumber' => $item->DoseNumber,
                     'Direction' => $item->Direction,
-                    'StartDate' => $item->StartDate,
-                    'StartBy' => $item->StartBy,
+                    'StartDate' =>  Carbon::createFromTimestamp($item->StartDate),
+                    'StartBy' => Carbon::createFromTimestamp($item->StartBy),
                     'WhyComments' => $item->WhyComments
                 );
 
@@ -611,8 +612,8 @@ class CcmPlanController extends Controller
             $data['MedicineName'] = $medicineData->MedicineName;
             $data['DoseNumber'] = $medicineData->DoseNumber;
             $data['Direction'] = $medicineData->Direction;
-            $data['StartDate'] = $medicineData->StartDate;
-            $data['StartBy'] = $medicineData->StartBy;
+            $data['StartDate'] =  Carbon::createFromTimestamp($medicineData->StartDate);
+            $data['StartBy'] = Carbon::createFromTimestamp($medicineData->StartBy);
             $data['WhyComments'] = $medicineData->WhyComments;
 
             return response()->json(['data' => $data, 'message' => 'Active medicine found'], 200);
@@ -828,7 +829,7 @@ class CcmPlanController extends Controller
                     'Id' => $item->Id,
                     'MedicineName' => $item->MedicineName,
                     'MedicineReaction' => $item->MedicineReaction,
-                    'ReactionDate' => $item->ReactionDate,
+                    'ReactionDate' => Carbon::createFromTimestamp($item->ReactionDate),
                     'IsReactionSevere' => $item->IsReactionSevere
                 );
 
@@ -857,7 +858,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $medicineData->Id;
             $data['MedicineName'] = $medicineData->MedicineName;
             $data['MedicineReaction'] = $medicineData->MedicineReaction;
-            $data['ReactionDate'] = $medicineData->ReactionDate;
+            $data['ReactionDate'] = Carbon::createFromTimestamp($medicineData->ReactionDate);
             $data['IsReactionSevere'] = $medicineData->IsReactionSevere;
 
             return response()->json(['data' => $data, 'message' => 'Allergy medicine found'], 200);
@@ -1073,7 +1074,7 @@ class CcmPlanController extends Controller
                     'Id' => $item->Id,
                     'SubstanceName' => $item->SubstanceName,
                     'SubstanceReaction' => $item->SubstanceReaction,
-                    'ReactionDate' => $item->ReactionDate,
+                    'ReactionDate' => Carbon::createFromTimestamp($item->ReactionDate),
                     'IsReactionSevere' => $item->IsReactionSevere
                 );
 
@@ -1102,7 +1103,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $medicineData->Id;
             $data['SubstanceName'] = $medicineData->SubstanceName;
             $data['SubstanceReaction'] = $medicineData->SubstanceReaction;
-            $data['ReactionDate'] = $medicineData->ReactionDate;
+            $data['ReactionDate'] = Carbon::createFromTimestamp($medicineData->ReactionDate);
             $data['IsReactionSevere'] = $medicineData->IsReactionSevere;
 
             return response()->json(['data' => $data, 'message' => 'Non medicine found'], 200);
@@ -1312,7 +1313,7 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'Vaccine' => $item->Vaccine,
-                    'VaccineDate' => $item->VaccineDate
+                    'VaccineDate' => Carbon::createFromTimestamp($item->VaccineDate)
                 );
 
                 array_push($finalData, $data);
@@ -1339,7 +1340,7 @@ class CcmPlanController extends Controller
 
             $data['Id'] = $medicineData->Id;
             $data['Vaccine'] = $medicineData->Vaccine;
-            $data['VaccineDate'] = $medicineData->VaccineDate;
+            $data['VaccineDate'] = Carbon::createFromTimestamp($medicineData->VaccineDate);
 
             return response()->json(['data' => $data, 'message' => 'Immunization vaccine found'], 200);
         } else {
@@ -1347,4 +1348,590 @@ class CcmPlanController extends Controller
         }
     }
 
+    static public function AddHealthCareHistory(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+
+        $date = HelperModel::getDate();
+
+        $dataToInsert = array();
+
+
+        foreach ($request->input('HealthCareHistory') as $item) {
+
+            $data = array(
+                'PatientId' => $patientId,
+                'Provider' => $item['Provider'],
+                'LastVisitDate' => $item['LastVisitDate'],
+                'VisitReason' => $item['VisitReason'],
+                'IsActive' => true,
+                'CreatedBy' => $userId,
+                'CreatedOn' => $date["timestamp"]
+            );
+
+            array_push($dataToInsert, $data);
+        }
+
+        $insertedData = GenericModel::insertGeneric('ccm_healthcare_history', $dataToInsert);
+        if ($insertedData == false) {
+            error_log('data not inserted');
+            return response()->json(['data' => null, 'message' => 'Error in inserting health care history'], 400);
+        } else {
+            error_log('data inserted');
+            return response()->json(['data' => (int)$userId, 'message' => 'Health care history successfully added'], 200);
+        }
+    }
+
+    static public function UpdateHealthCareHistory(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $healthCareHistoryId = $request->get('id');
+
+        //First checking if answer exists or not
+
+        $date = HelperModel::getDate();
+
+        $checkData = CcmModel::getSingleHealthCareHistory($healthCareHistoryId);
+
+        if ($checkData == null) {
+            error_log(' medicine not found');
+            return response()->json(['data' => null, 'message' => 'Health care history not found'], 400);
+        } else {
+            error_log('Answer found');
+
+            $dataToUpdate = array(
+                'Provider' => $request->get('Provider'),
+                'LastVisitDate' => $request->get('LastVisitDate'),
+                'VisitReason' => $request->get('VisitReason'),
+                'UpdatedBy' => $userId,
+                'UpdatedOn' => $date["timestamp"]
+            );
+
+            $updatedData = GenericModel::updateGeneric('ccm_healthcare_history', 'Id', $healthCareHistoryId, $dataToUpdate);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in updating health care history'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => (int)$userId, 'message' => 'Health care history successfully updated'], 200);
+            }
+        }
+    }
+
+    static public function GetAllHealthCareHistory(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $finalData = array();
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Get all active medicine via patient id
+        $medicineList = CcmModel::getAllHealthCareHistoryViaPatientId($patientId);
+        if (count($medicineList) > 0) {
+            error_log('health care history list found ');
+
+            foreach ($medicineList as $item) {
+                error_log('in for each loop');
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'Provider' => $item->Provider,
+                    'LastVisitDate' => Carbon::createFromTimestamp($item->LastVisitDate),
+                    'VisitReason' => $item->VisitReason
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($finalData) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Health care history not found'], 200);
+        } else {
+            return response()->json(['data' => $finalData, 'message' => 'Health care history found'], 400);
+        }
+    }
+
+    static public function GetSingleHealthCareHistory(Request $request)
+    {
+        error_log('in controller');
+
+        $healthCareHistoryId = $request->get('id');
+
+        //Get single active medicine via medicine id
+        $medicineData = CcmModel::getSingleHealthCareHistory($healthCareHistoryId);
+        if ($medicineData != null) {
+            error_log('health care history found ');
+
+            $data['Id'] = $medicineData->Id;
+            $data['Provider'] = $medicineData->Provider;
+            $data['LastVisitDate'] = Carbon::createFromTimestamp($medicineData->LastVisitDate);
+            $data['VisitReason'] = $medicineData->VisitReason;
+
+            return response()->json(['data' => $data, 'message' => 'Health care history found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Health care history not found'], 400);
+        }
+    }
+
+    static public function GetAllAssistanceOrganization(Request $request)
+    {
+        error_log('in controller');
+        $assistanceTypeId = $request->get('assistanceTypeId');
+
+        $finalData = array();
+
+        $assistanceList = CcmModel::getAllAssistanceOrganizationViaAssistanceType($assistanceTypeId);
+
+        if (count($assistanceList) > 0) {
+            error_log('Assistance organization list found ');
+
+            foreach ($assistanceList as $item) {
+                error_log('in for each loop');
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'Organization' => $item->Organization,
+                    'TelephoneNumber' => $item->TelephoneNumber,
+                    'OfficeAddress' => $item->OfficeAddress,
+                    'ContactPerson' => $item->ContactPerson,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($finalData) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Assistance organization not found'], 200);
+        } else {
+            return response()->json(['data' => $finalData, 'message' => 'Assistance organization found'], 400);
+        }
+    }
+
+    static public function GetAllAssistanceType()
+    {
+        error_log('in controller');
+
+        $assistanceList = CcmModel::getAllAssistanceType();
+        $finalData = array();
+
+        if (count($assistanceList) > 0) {
+            error_log('Assistance list found ');
+
+            foreach ($assistanceList as $item) {
+                error_log('in for each loop');
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'Type' => $item->Type,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($finalData) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Assistance type not found'], 200);
+        } else {
+            return response()->json(['data' => $finalData, 'message' => 'Assistance type found'], 400);
+        }
+    }
+
+    static public function AddPatientOrganizationAssistance(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $date = HelperModel::getDate();
+        $dataToInsert = array();
+
+        foreach ($request->input('PatientOrganization') as $item) {
+
+            $data = array(
+                'PatientId' => $patientId,
+                'AssistanceOrganizationId' => (int)$item['AssistanceOrganizationId'],
+                'Organization' => $item['Organization'],
+                'TelephoneNumber' => $item['TelephoneNumber'],
+                'OfficeAddress' => $item['OfficeAddress'],
+                'ContactPerson' => $item['ContactPerson'],
+                'Description' => $item['Description'],
+                'IsPatientRefused' => $item['IsPatientRefused'],
+                'IsActive' => true,
+                'CreatedBy' => $userId,
+                'CreatedOn' => $date["timestamp"]
+            );
+
+            array_push($dataToInsert, $data);
+        }
+
+        $insertedData = GenericModel::insertGeneric('patient_organization_assistance', $dataToInsert);
+        if ($insertedData == false) {
+            error_log('data not inserted');
+            return response()->json(['data' => null, 'message' => 'Error in inserting patient organization assistance'], 400);
+        } else {
+            error_log('data inserted');
+            return response()->json(['data' => (int)$userId, 'message' => 'Patient organization assistance successfully added'], 200);
+        }
+    }
+
+    static public function UpdatePatientOrganizationAssistance(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientOrganizationAssistanceId = $request->get('id');
+
+        //First checking if answer exists or not
+
+        $date = HelperModel::getDate();
+
+        $checkData = CcmModel::getSinglePatientOrganizationAssistance($patientOrganizationAssistanceId);
+
+        if ($checkData == null) {
+            error_log(' data not found');
+            return response()->json(['data' => null, 'message' => 'Patient organization not found'], 400);
+        } else {
+            error_log('data found');
+
+            $dataToUpdate = array(
+                'Organization' => $request->get('Organization'),
+                'TelephoneNumber' => $request->get('TelephoneNumber'),
+                'OfficeAddress' => $request->get('OfficeAddress'),
+                'ContactPerson' => $request->get('ContactPerson'),
+                'Description' => $request->get('Description'),
+                'IsPatientRefused' => $request->get('IsPatientRefused'),
+                'UpdatedBy' => $userId,
+                'UpdatedOn' => $date["timestamp"]
+            );
+
+            $updatedData = GenericModel::updateGeneric('patient_organization_assistance', 'Id', $patientOrganizationAssistanceId, $dataToUpdate);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in updating patient organization assistance'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => (int)$userId, 'message' => 'Patient organization assistance successfully updated'], 200);
+            }
+        }
+    }
+
+    static public function GetAllPatientOrgnizationAssistance(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $finalData = array();
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Get all active medicine via patient id
+        $medicineList = CcmModel::getAllPatientOrganizationAssistanceViaPatientId($patientId);
+        if (count($medicineList) > 0) {
+            error_log('Patient organization assistance list found ');
+
+            foreach ($medicineList as $item) {
+                error_log('in for each loop');
+
+                $data = array(
+                    'Id' => $item->poaID,
+                    'Organization' => $item->poaOrganization,
+                    'TelephoneNumber' => $item->poaTelephoneNumber,
+                    'OfficeAddress' => $item->poaOfficeAddress,
+                    'ContactPerson' => $item->poaContactPerson,
+                    'Description' => $item->poaDescription,
+                    'IsPatientRefused' => $item->poaIsPatientRefused,
+                    'AssistanceOrganization' => array(
+                        'AssistanceType' => array()
+                    )
+                );
+
+//                Assistance organization data
+                $data['AssistanceOrganization']['Id'] = $item->aoId;
+                $data['AssistanceOrganization']['Organization'] = $item->aoOrganization;
+                $data['AssistanceOrganization']['OfficeAddress'] = $item->aoOfficeAddress;
+                $data['AssistanceOrganization']['ContactPerson'] = $item->aoContactPerson;
+                $data['AssistanceOrganization']['Description'] = $item->aoDescription;
+
+                //Assistance organization type data
+
+                $data['AssistanceOrganization']['AssistanceType']['Id'] = $item->atId;
+                $data['AssistanceOrganization']['AssistanceType']['Type'] = $item->atType;
+                $data['AssistanceOrganization']['AssistanceType']['Organization'] = $item->atOrganization;
+
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($finalData) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Health care history not found'], 200);
+        } else {
+            return response()->json(['data' => $finalData, 'message' => 'Health care history found'], 400);
+        }
+    }
+
+    static public function GetSinglePatientOrganizationAssistance(Request $request)
+    {
+        error_log('in controller');
+
+        $patientOrganizationAssistanceId = $request->get('id');
+
+        //Get single active medicine via medicine id
+        $data = CcmModel::getSinglePatientOrganizationAssistance($patientOrganizationAssistanceId);
+        if ($data != null) {
+            error_log('patient organizaiton assistance found ');
+
+            $data['Id'] = $data->poaID;
+            $data['Organization'] = $data->poaOrganization;
+            $data['TelephoneNumber'] = $data->poaTelephoneNumber;
+            $data['OfficeAddress'] = $data->OfficeAddress;
+            $data['ContactPerson'] = $data->ContactPerson;
+            $data['Description'] = $data->Description;
+            $data['IsPatientRefused'] = $data->IsPatientRefused;
+            $data['AssistanceOrganization'] = array();
+
+            //Assistance organization data
+            $data['AssistanceOrganization']['Id'] = $data->aoId;
+            $data['AssistanceOrganization']['Organization'] = $data->aoOrganization;
+            $data['AssistanceOrganization']['OfficeAddress'] = $data->aoOfficeAddress;
+            $data['AssistanceOrganization']['ContactPerson'] = $data->aoContactPerson;
+            $data['AssistanceOrganization']['Description'] = $data->aoDescription;
+            $data['AssistanceOrganization']['AssistanceType'] = array();
+
+            //Assistance organization type data
+
+            $data['AssistanceOrganization']['AssistanceType']['Id'] = $data->atId;
+            $data['AssistanceOrganization']['AssistanceType']['Type'] = $data->atType;
+            $data['AssistanceOrganization']['AssistanceType']['Organization'] = $data->atOrganization;
+
+            return response()->json(['data' => $data, 'message' => 'Patient organization assistance not found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Patient organization assistance not found'], 400);
+        }
+    }
 }
