@@ -264,6 +264,25 @@ Route::get('/patient/organization/assistance/all', 'CcmPlanController@GetAllPati
 //Get single patient organization assistance
 Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetSinglePatientOrganizationAssistance');
 
+// add hospitalization history
+Route::post('/add/hospitalization/history', 'CcmPlanController@AddHospitalizationHistory');
+// update hospitalization history
+Route::post('/update/hospitalization/history', 'CcmPlanController@UpdateHospitalizationHistory');
+//Get all hospitalization history
+Route::get('/hospitalization/history/all', 'CcmPlanController@GetAllHospitalizationHistory');
+//Get single hospitalization history
+Route::get('/hospitalization/history/single', 'CcmPlanController@GetSingleHospitalizationHistory');
+
+
+// add srugery history
+Route::post('/add/srugery/history', 'CcmPlanController@AddSurgeryHistory');
+// update hospitalization history
+Route::post('/update/srugery/history', 'CcmPlanController@UpdateSurgeryHistory');
+//Get all hospitalization history
+Route::get('/srugery/history/all', 'CcmPlanController@GetAllSurgeryHistory');
+//Get single hospitalization history
+Route::get('/srugery/history/single', 'CcmPlanController@GetSingleSurgeryHistory');
+
 
 Route::get('/', function () {
     return 'Hello';

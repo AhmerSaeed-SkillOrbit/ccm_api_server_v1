@@ -263,4 +263,53 @@ class CcmModel
         return $query;
     }
 
+    static public function getSingleHospitalizationHistory($id)
+    {
+        error_log('in model, fetching single hospitalization history');
+
+        $query = DB::table('ccm_hospitalization_history')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllHospitalizationHistoryViaPatientId($id)
+    {
+        error_log('in model, fetching all hospitalization history');
+
+        $query = DB::table('ccm_hospitalization_history')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
+
+    static public function getSingleSurgeryHistory($id)
+    {
+        error_log('in model, fetching single surgery history');
+
+        $query = DB::table('ccm_surgery_history')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllSurgeryHistoryViaPatientId($id)
+    {
+        error_log('in model, fetching all surgery history');
+
+        $query = DB::table('ccm_surgery_history')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
 }
