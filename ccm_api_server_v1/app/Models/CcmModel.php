@@ -193,7 +193,7 @@ class CcmModel
     {
         error_log('in model, fetching all assistance organization');
 
-        $query = DB::table('ccm_healthcare_history')
+        $query = DB::table('assistance_organization')
             ->where('IsActive', '=', true)
             ->where('AssistanceTypeId', '=', $assistanceTypeId)
             ->get();

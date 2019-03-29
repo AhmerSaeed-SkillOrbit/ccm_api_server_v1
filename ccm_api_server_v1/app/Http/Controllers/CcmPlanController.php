@@ -1617,9 +1617,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Assistance organization not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Assistance organization found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Assistance organization found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Assistance organization not found'], 400);
         }
     }
 

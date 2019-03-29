@@ -251,7 +251,7 @@ Route::get('/health/care/history/single', 'CcmPlanController@GetSingleHealthCare
 
 //Assistance APIS
 //Get asistance organization
-Route::get('/assistance/organization/all', 'CcmPlanController@GetAllAssistanceOrganization');
+Route::get('/assistance/organization/via/assistance/type', 'CcmPlanController@GetAllAssistanceOrganization');
 //Get asistance type
 Route::get('/assistance/type/all', 'CcmPlanController@GetAllAssistanceType');
 
