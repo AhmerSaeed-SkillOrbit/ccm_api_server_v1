@@ -275,13 +275,13 @@ Route::get('/hospitalization/history/single', 'CcmPlanController@GetSingleHospit
 
 
 // add srugery history
-Route::post('/add/srugery/history', 'CcmPlanController@AddSurgeryHistory');
+Route::post('/add/surgery/history', 'CcmPlanController@AddSurgeryHistory');
 // update hospitalization history
-Route::post('/update/srugery/history', 'CcmPlanController@UpdateSurgeryHistory');
+Route::post('/update/surgery/history', 'CcmPlanController@UpdateSurgeryHistory');
 //Get all hospitalization history
-Route::get('/srugery/history/all', 'CcmPlanController@GetAllSurgeryHistory');
+Route::get('/surgery/history/all', 'CcmPlanController@GetAllSurgeryHistory');
 //Get single hospitalization history
-Route::get('/srugery/history/single', 'CcmPlanController@GetSingleSurgeryHistory');
+Route::get('/surgery/history/single', 'CcmPlanController@GetSingleSurgeryHistory');
 
 
 Route::get('/', function () {

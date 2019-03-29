@@ -2395,9 +2395,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Surgery history not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Surgery history found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Surgery history found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Surgery history not found'], 400);
         }
     }
 
@@ -2414,8 +2414,8 @@ class CcmPlanController extends Controller
 
             $data['Id'] = $medicineData->Id;
             $data['DiagnoseDescription'] = $medicineData->DiagnoseDescription;
-            $data['DiagnoseDate'] = $medicineData->DiagnoseDate;
-            $data['CurrentProblem'] = Carbon::createFromTimestamp($medicineData->CurrentProblem);
+            $data['DiagnoseDate'] = Carbon::createFromTimestamp($medicineData->DiagnoseDate);
+            $data['CurrentProblem'] = $medicineData->CurrentProblem;
             $data['NeedAttention'] = $medicineData->NeedAttention;
 
             return response()->json(['data' => $data, 'message' => 'Surgery history found'], 200);
