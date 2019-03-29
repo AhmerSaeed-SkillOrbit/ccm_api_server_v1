@@ -581,7 +581,7 @@ class CcmPlanController extends Controller
                     'MedicineName' => $item->MedicineName,
                     'DoseNumber' => $item->DoseNumber,
                     'Direction' => $item->Direction,
-                    'StartDate' =>  Carbon::createFromTimestamp($item->StartDate),
+                    'StartDate' => Carbon::createFromTimestamp($item->StartDate),
                     'StartBy' => Carbon::createFromTimestamp($item->StartBy),
                     'WhyComments' => $item->WhyComments
                 );
@@ -612,7 +612,7 @@ class CcmPlanController extends Controller
             $data['MedicineName'] = $medicineData->MedicineName;
             $data['DoseNumber'] = $medicineData->DoseNumber;
             $data['Direction'] = $medicineData->Direction;
-            $data['StartDate'] =  Carbon::createFromTimestamp($medicineData->StartDate);
+            $data['StartDate'] = Carbon::createFromTimestamp($medicineData->StartDate);
             $data['StartBy'] = Carbon::createFromTimestamp($medicineData->StartBy);
             $data['WhyComments'] = $medicineData->WhyComments;
 
@@ -1787,7 +1787,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetAllPatientOrgnizationAssistance(Request $request)
+    static public function GetAllPatientOrganizationAssistance(Request $request)
     {
         error_log('in controller');
 
@@ -1903,8 +1903,9 @@ class CcmPlanController extends Controller
 
         //Get single active medicine via medicine id
         $data = CcmModel::getSinglePatientOrganizationAssistance($patientOrganizationAssistanceId);
+
         if ($data != null) {
-            error_log('patient organizaiton assistance found ');
+            error_log('patient organization assistance found ');
 
             $data['Id'] = $data->poaID;
             $data['Organization'] = $data->poaOrganization;

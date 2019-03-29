@@ -256,13 +256,13 @@ Route::get('/assistance/organization/via/assistance/type', 'CcmPlanController@Ge
 Route::get('/assistance/type/all', 'CcmPlanController@GetAllAssistanceType');
 
 // add patient organization assistance
-Route::post('/add/patient/organization/assistance', 'CcmPlanController@AddHealthCareHistory');
+Route::post('/add/patient/organization/assistance', 'CcmPlanController@AddPatientOrganizationAssistance');
 // update patient organization assistance
-Route::post('/update/patient/organization/assistance', 'CcmPlanController@UpdateHealthCareHistory');
+Route::post('/update/patient/organization/assistance', 'CcmPlanController@UpdatePatientOrganizationAssistance');
 //Get all patient organization assistance
-Route::get('/patient/organization/assistance/all', 'CcmPlanController@GetAllHealthCareHistory');
+Route::get('/patient/organization/assistance/all', 'CcmPlanController@GetAllPatientOrganizationAssistance');
 //Get single patient organization assistance
-Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetSingleHealthCareHistory');
+Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetSinglePatientOrganizationAssistance');
 
 
 Route::get('/', function () {

@@ -215,14 +215,14 @@ class CcmModel
 
     static public function getSinglePatientOrganizationAssistance($id)
     {
-        error_log('in model, fetching single health care history');
+        error_log('in model, fetching single patient organization assistance');
 
         $query = DB::table('patient_organization_assistance')
             ->leftjoin('assistance_organization as assistance_organization', 'patient_organization_assistance.AssistanceOrganizationId', 'assistance_organization.Id')
             ->leftjoin('assistance_type as assistance_type', 'assistance_organization.AssistanceTypeId', 'assistance_type.Id')
             ->select('patient_organization_assistance.Id as poaID', 'patient_organization_assistance.Organization as poaOrganization',
                 'patient_organization_assistance.TelephoneNumber as poaTelephoneNumber', 'patient_organization_assistance.OfficeAddress as poaOfficeAddress',
-                'patient_organization_assistance.ContactPerson as poaContactNumber', 'patient_organization_assistance.Description as poaDescription',
+                'patient_organization_assistance.ContactPerson as poaContactPerson', 'patient_organization_assistance.Description as poaDescription',
                 'patient_organization_assistance.IsPatientRefused as poaIsPatientRefused',
                 //assistance organization data
                 'assistance_organization.Id as aoId',
@@ -240,14 +240,14 @@ class CcmModel
 
     static public function getAllPatientOrganizationAssistanceViaPatientId($id)
     {
-        error_log('in model, fetching all health care history');
+        error_log('in model, fetching all patient organization assistance');
 
         $query = DB::table('patient_organization_assistance')
             ->leftjoin('assistance_organization as assistance_organization', 'patient_organization_assistance.AssistanceOrganizationId', 'assistance_organization.Id')
             ->leftjoin('assistance_type as assistance_type', 'assistance_organization.AssistanceTypeId', 'assistance_type.Id')
             ->select('patient_organization_assistance.Id as poaID', 'patient_organization_assistance.Organization as poaOrganization',
                 'patient_organization_assistance.TelephoneNumber as poaTelephoneNumber', 'patient_organization_assistance.OfficeAddress as poaOfficeAddress',
-                'patient_organization_assistance.ContactPerson as poaContactNumber', 'patient_organization_assistance.Description as poaDescription',
+                'patient_organization_assistance.ContactPerson as poaContactPerson', 'patient_organization_assistance.Description as poaDescription',
                 'patient_organization_assistance.IsPatientRefused as poaIsPatientRefused',
                 //assistance organization data
                 'assistance_organization.Id as aoId',
