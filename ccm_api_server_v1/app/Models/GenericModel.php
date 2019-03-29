@@ -31,7 +31,7 @@ class GenericModel
         return $result;
     }
 
-    static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data, $orderby)
+    static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data, $orderby = "Id")
     {
         return DB::table($tableName)
             ->select('*')
