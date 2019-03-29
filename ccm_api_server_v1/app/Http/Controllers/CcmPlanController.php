@@ -581,7 +581,7 @@ class CcmPlanController extends Controller
                     'MedicineName' => $item->MedicineName,
                     'DoseNumber' => $item->DoseNumber,
                     'Direction' => $item->Direction,
-                    'StartDate' =>  Carbon::createFromTimestamp($item->StartDate),
+                    'StartDate' => Carbon::createFromTimestamp($item->StartDate),
                     'StartBy' => Carbon::createFromTimestamp($item->StartBy),
                     'WhyComments' => $item->WhyComments
                 );
@@ -612,7 +612,7 @@ class CcmPlanController extends Controller
             $data['MedicineName'] = $medicineData->MedicineName;
             $data['DoseNumber'] = $medicineData->DoseNumber;
             $data['Direction'] = $medicineData->Direction;
-            $data['StartDate'] =  Carbon::createFromTimestamp($medicineData->StartDate);
+            $data['StartDate'] = Carbon::createFromTimestamp($medicineData->StartDate);
             $data['StartBy'] = Carbon::createFromTimestamp($medicineData->StartBy);
             $data['WhyComments'] = $medicineData->WhyComments;
 
@@ -1617,9 +1617,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Assistance organization not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Assistance organization found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Assistance organization found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Assistance organization not found'], 400);
         }
     }
 
@@ -1787,7 +1787,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetAllPatientOrgnizationAssistance(Request $request)
+    static public function GetAllPatientOrganizationAssistance(Request $request)
     {
         error_log('in controller');
 
@@ -1902,34 +1902,35 @@ class CcmPlanController extends Controller
         $patientOrganizationAssistanceId = $request->get('id');
 
         //Get single active medicine via medicine id
-        $data = CcmModel::getSinglePatientOrganizationAssistance($patientOrganizationAssistanceId);
-        if ($data != null) {
-            error_log('patient organizaiton assistance found ');
+        $patientOrganizationData = CcmModel::getSinglePatientOrganizationAssistance($patientOrganizationAssistanceId);
 
-            $data['Id'] = $data->poaID;
-            $data['Organization'] = $data->poaOrganization;
-            $data['TelephoneNumber'] = $data->poaTelephoneNumber;
-            $data['OfficeAddress'] = $data->OfficeAddress;
-            $data['ContactPerson'] = $data->ContactPerson;
-            $data['Description'] = $data->Description;
-            $data['IsPatientRefused'] = $data->IsPatientRefused;
+        if ($patientOrganizationData != null) {
+            error_log('patient organization assistance found ');
+
+            $data['Id'] = $patientOrganizationData->poaID;
+            $data['Organization'] = $patientOrganizationData->poaOrganization;
+            $data['TelephoneNumber'] = $patientOrganizationData->poaTelephoneNumber;
+            $data['OfficeAddress'] = $patientOrganizationData->poaOfficeAddress;
+            $data['ContactPerson'] = $patientOrganizationData->poaContactPerson;
+            $data['Description'] = $patientOrganizationData->poaDescription;
+            $data['IsPatientRefused'] = $patientOrganizationData->poaIsPatientRefused;
             $data['AssistanceOrganization'] = array();
 
             //Assistance organization data
-            $data['AssistanceOrganization']['Id'] = $data->aoId;
-            $data['AssistanceOrganization']['Organization'] = $data->aoOrganization;
-            $data['AssistanceOrganization']['OfficeAddress'] = $data->aoOfficeAddress;
-            $data['AssistanceOrganization']['ContactPerson'] = $data->aoContactPerson;
-            $data['AssistanceOrganization']['Description'] = $data->aoDescription;
+            $data['AssistanceOrganization']['Id'] = $patientOrganizationData->aoId;
+            $data['AssistanceOrganization']['Organization'] = $patientOrganizationData->aoOrganization;
+            $data['AssistanceOrganization']['OfficeAddress'] = $patientOrganizationData->aoOfficeAddress;
+            $data['AssistanceOrganization']['ContactPerson'] = $patientOrganizationData->aoContactPerson;
+            $data['AssistanceOrganization']['Description'] = $patientOrganizationData->aoDescription;
             $data['AssistanceOrganization']['AssistanceType'] = array();
 
             //Assistance organization type data
 
-            $data['AssistanceOrganization']['AssistanceType']['Id'] = $data->atId;
-            $data['AssistanceOrganization']['AssistanceType']['Type'] = $data->atType;
-            $data['AssistanceOrganization']['AssistanceType']['Organization'] = $data->atOrganization;
+            $data['AssistanceOrganization']['AssistanceType']['Id'] = $patientOrganizationData->atId;
+            $data['AssistanceOrganization']['AssistanceType']['Type'] = $patientOrganizationData->atType;
+            $data['AssistanceOrganization']['AssistanceType']['Organization'] = $patientOrganizationData->atOrganization;
 
-            return response()->json(['data' => $data, 'message' => 'Patient organization assistance not found'], 200);
+            return response()->json(['data' => $data, 'message' => 'Patient organization assistance found'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Patient organization assistance not found'], 400);
         }
