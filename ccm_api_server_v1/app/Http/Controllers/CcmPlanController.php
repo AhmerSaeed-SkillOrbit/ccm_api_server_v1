@@ -2151,9 +2151,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Hospitalization history not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Hospitalization history found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Hospitalization history found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Hospitalization history not found'], 400);
         }
     }
 
