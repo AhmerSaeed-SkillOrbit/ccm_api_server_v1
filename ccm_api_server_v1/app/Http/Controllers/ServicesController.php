@@ -61,7 +61,8 @@ class ServicesController extends Controller
 
                 if ($check['status'] == "success") {
                     // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                    return response()->json(['data' => true, 'message' => $check['message']], 200);
+                    // return response()->json(['data' => true, 'message' => $check['message']], 200);
+                    return response()->json(['data' => $check['data'], 'message' => $check['message']], 200);
                 } else if ($check['status'] == "failed") {
                     return response()->json(['data' => false, 'message' => $check['message']], 400);
                 }

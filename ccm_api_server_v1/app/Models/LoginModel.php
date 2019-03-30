@@ -140,8 +140,7 @@ class LoginModel
                     error_log("Token Generation failed");
                     return array("status" => "failed", "data" => null, 'message' => "Something went wrong");
                 }
-            }
-            else {
+            } else {
                 error_log("in-correct");
                 // return redirect($loginRedirect)->withErrors(['email or password is incorrect']);
                 DB::rollBack();
@@ -237,7 +236,7 @@ class LoginModel
         try {
 
             $inviteCode = DB::table('account_invitation')
-                ->select('Id', 'Token', 'BelongTo','ByUserId')
+                ->select('Id', 'Token', 'BelongTo', 'ByUserId')
                 ->where('Token', '=', $inviteCode)
                 ->where('ToEmailAddress', '=', $email)
                 ->where('Status_', '=', "ignored")
@@ -429,7 +428,8 @@ class LoginModel
 
     }
 
-    static function checkEmailAvailable(string $email){
+    static function checkEmailAvailable(string $email)
+    {
         $result = DB::table('user')
             ->select('*')
             ->where('EmailAddress', '=', $email)
@@ -437,4 +437,43 @@ class LoginModel
             ->get();
         return $result;
     }
+
+    static function checkTokenAvailableForResetPass(string $token)
+    {
+        $result = DB::table('verification_token')
+            ->select('*')
+            ->where('Token', '=', $token)
+            ->where('IsActive', '=', 1)
+            ->get();
+        return $result;
+    }
+
+    public static function sendEmail($email, $subject, $emailMessage, $url = "")
+    {
+
+        $urlForEmail = url($url);
+
+        $subjectForEmail = $subject;
+        $contentForEmail = " <b>Dear User</b>, <br><br>" .
+            "  " . $emailMessage . " " .
+            "<br>" . $urlForEmail . " ";
+
+
+//        Mail::raw($contentForEmail, function ($message) use ($email, $subjectForEmail) {
+//            $message->to($email)->subject($subjectForEmail);
+//        });
+
+        Mail::send([], [], function ($message) use ($email, $subjectForEmail, $contentForEmail) {
+            $message->to($email)
+                ->subject($subjectForEmail)
+                // here comes what you want
+                // ->setBody('Hi, welcome user!'); // assuming text/plain
+                // or:
+                ->setBody($contentForEmail, 'text/html'); // for HTML rich messages
+        });
+
+        return true;
+    }
 }
+
+

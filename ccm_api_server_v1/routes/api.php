@@ -184,6 +184,86 @@ Route::post('/ticket/assign', 'TicketController@AssignTicket');
 //ticket status update
 Route::post('/ticket/track/status/update', 'TicketController@TicketTrackStatusUpdate');
 
+##
+# CCM PLAN APIS
+# ##
+// get questions list API
+Route::get('/question/list', 'CcmPlanController@GetQuestionsList');
+
+Route::get('/answer/type/list', 'CcmPlanController@GetAnswerTypeList');
+
+// give answer to questions
+Route::post('/give/answer', 'CcmPlanController@GiveAnswerToQuestion');
+
+// update answer
+Route::post('/update/answer', 'CcmPlanController@UpdateAnswer');
+
+//Get all question and answers
+Route::get('/question/answer/all', 'CcmPlanController@GetAllQuestionAnswers');
+
+//Get all question and answers
+Route::get('/question/answer/single', 'CcmPlanController@GetQuestionAnswerSingle');
+
+// add active medicine
+Route::post('/add/active/medicine', 'CcmPlanController@AddActiveMedicine');
+// update active medicine
+Route::post('/update/active/medicine', 'CcmPlanController@UpdateActiveMedicine');
+//Get all prescribed medicine
+Route::get('/active/medicine/all', 'CcmPlanController@GetAllActiveMedicine');
+//Get single active medicine
+Route::get('/active/medicine/single', 'CcmPlanController@GetSingleActiveMedicine');
+
+// add allergy medicine
+Route::post('/add/allergy/medicine', 'CcmPlanController@AddAllergyMedicine');
+// update allergy medicine
+Route::post('/update/allergy/medicine', 'CcmPlanController@UpdateAllergyMedicine');
+//Get all prescribed allergy medicine
+Route::get('/allergy/medicine/all', 'CcmPlanController@GetAllAllergyMedicine');
+//Get single allergy medicine
+Route::get('/allergy/medicine/single', 'CcmPlanController@GetSingleAllergyMedicine');
+
+// add non medicine
+Route::post('/add/non/medicine', 'CcmPlanController@AddNonMedicine');
+// update non medicine
+Route::post('/update/non/medicine', 'CcmPlanController@UpdateNonMedicine');
+//Get all prescribed non medicine
+Route::get('/non/medicine/all', 'CcmPlanController@GetAllNonMedicine');
+//Get single non medicine
+Route::get('/non/medicine/single', 'CcmPlanController@GetSingleNonMedicine');
+
+// add immunization vaccine
+Route::post('/add/immunization/vaccine', 'CcmPlanController@AddImmunizationVaccine');
+// update immunization vaccine
+Route::post('/update/immunization/vaccine', 'CcmPlanController@UpdateImmunizationVaccine');
+//Get all prescribed immunization vaccine
+Route::get('/immunization/vaccine/all', 'CcmPlanController@GetAllImmunizationVaccine');
+//Get single immunization vaccine
+Route::get('/immunization/vaccine/single', 'CcmPlanController@GetSingleImmunizationVaccine');
+
+// add health care history
+Route::post('/add/health/care/history', 'CcmPlanController@AddHealthCareHistory');
+// update health care history
+Route::post('/update/health/care/history', 'CcmPlanController@UpdateHealthCareHistory');
+//Get all health care history
+Route::get('/health/care/history/all', 'CcmPlanController@GetAllHealthCareHistory');
+//Get single health care history
+Route::get('/health/care/history/single', 'CcmPlanController@GetSingleHealthCareHistory');
+
+//Assistance APIS
+//Get asistance organization
+Route::get('/assistance/organization/via/assistance/type', 'CcmPlanController@GetAllAssistanceOrganization');
+//Get asistance type
+Route::get('/assistance/type/all', 'CcmPlanController@GetAllAssistanceType');
+
+// add patient organization assistance
+Route::post('/add/patient/organization/assistance', 'CcmPlanController@AddPatientOrganizationAssistance');
+// update patient organization assistance
+Route::post('/update/patient/organization/assistance', 'CcmPlanController@UpdatePatientOrganizationAssistance');
+//Get all patient organization assistance
+Route::get('/patient/organization/assistance/all', 'CcmPlanController@GetAllPatientOrganizationAssistance');
+//Get single patient organization assistance
+Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetSinglePatientOrganizationAssistance');
+
 
 Route::get('/', function () {
     return 'Hello';
@@ -201,6 +281,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('/login', 'LoginController@login');
 Route::post('/register', 'LoginController@register');
+Route::post('/forgetPass', 'LoginController@forgetPass');
+Route::post('/resetPass', 'LoginController@resetPass');
 Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
 

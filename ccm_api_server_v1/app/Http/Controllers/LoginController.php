@@ -83,8 +83,7 @@ class LoginController extends Controller
             } else if ($check['status'] == "failed") {
 
                 return response()->json(['data' => null, 'message' => $check['message']], 400);
-            }
-            else {
+            } else {
                 return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
             }
         } catch (Exception $e) {
@@ -138,6 +137,229 @@ class LoginController extends Controller
         }
     }
 
+    function forgetPass(Request $request)
+    {
+        try {
+
+            error_log('In controller');
+
+            $emailAddress = $request->post('EmailAddress');
+
+            if ($emailAddress) {
+                //First get and check if email record exists or not
+                $checkEmail = LoginModel::checkEmailAvailable($emailAddress);
+
+                error_log('Checking email bit' . $checkEmail);
+
+                if (count($checkEmail) == 0) {
+                    return response()->json(['data' => null, 'message' => 'Email not found'], 400);
+                } else {
+
+//                    return response()->json(['data' => null, 'message' => 'Test Break'], 400);
+//                    //Binding data to variable.
+
+                    $token = md5(uniqid(rand(), true));
+                    // $token = LoginModel::generateAccessToken();
+
+
+                    if ($token != null) {
+
+
+                        DB::beginTransaction();
+
+                        //Now making data for user_access
+                        $dataToUpdate = array(
+                            "IsActive" => false
+                        );
+
+                        $updateDataCheck = GenericModel::updateGeneric('verification_token', 'UserId', $checkEmail[0]->Id, $dataToUpdate);
+
+                        if ($updateDataCheck >= 0) {
+
+                            $mobileNumber = $checkEmail[0]->MobileNumber;
+
+                            $dataToInsert = array(
+                                "UserId" => $checkEmail[0]->Id,
+                                "Email" => $checkEmail[0]->EmailAddress,
+                                "Token" => $token,
+                                "IsActive" => true
+                            );
+
+                            $insertedRecord = GenericModel::insertGenericAndReturnID('verification_token', $dataToInsert);
+                            error_log('Inserted record id ' . $insertedRecord);
+
+                            if ($insertedRecord == 0) {
+                                DB::rollback();
+                                return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                            }
+
+                            $url = env('WEB_URL') . '/#/reset-password?token=' . $token;
+
+//                            $emailMessage = "To reset your password use this code " . $token . "";
+                            $emailMessage = "To reset your password click the link below.";
+
+                            DB::commit();
+                            //Now sending email
+                            LoginModel::sendEmail($emailAddress, "Reset Password", $emailMessage, $url);
+
+                            //Now sending sms
+                            if ($mobileNumber != null) {
+                                $url = env('WEB_URL') . '/#/';
+                                $toNumber = array();
+                                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                                $mobileNumber = $phoneCode . $mobileNumber;
+                                array_push($toNumber, $mobileNumber);
+                                try {
+//                                    HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address', $url);
+                                    HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address.', null);
+                                } catch (Exception $ex) {
+//                                    return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
+                                    return response()->json(['data' => $insertedRecord, 'message' => 'Verification link has been sent to your email address. '], 200);
+                                }
+                            }
+                            return response()->json(['data' => $insertedRecord, 'message' => 'Verification link has been sent to your email address.'], 200);
+
+
+                        } else {
+                            DB::rollback();
+                            return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
+                        }
+
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                    }
+
+
+                }
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Code type is missing'], 400);
+            }
+
+        } catch (Exception $e) {
+            error_log('error ' . $e);
+            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+        }
+
+    }
+
+    function resetPass(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            error_log('In controller');
+
+            $token = $request->post('VerificationKey');
+            $password = $request->post('UserPassword');
+
+            if ($token && $password) {
+                //First get and check if email record exists or not
+                $checkToken = LoginModel::checkTokenAvailableForResetPass($token);
+
+                error_log('Checking token bittt' . $checkToken);
+
+                if (count($checkToken) == 0) {
+                    return response()->json(['data' => null, 'message' => 'Invalid link'], 400);
+                }
+                else {
+
+
+//                    return response()->json(['data' => null, 'message' => 'Test Break'], 400);
+//                    //Binding data to variable.
+                    error_log('fectching User Record ');
+
+                    $checkUserData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $checkToken[0]->UserId);
+                    error_log('fectched User Record ' . $checkUserData);
+                    if (count($checkUserData) == 0) {
+                        return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                    } else {
+
+
+
+                        $hashedPassword = md5($password);
+                        //Now making data for user_access
+                        $dataToUpdate = array(
+                            "Password" => $hashedPassword
+                        );
+
+                        $updateDataCheck = GenericModel::updateGeneric('user', 'Id', $checkUserData[0]->Id, $dataToUpdate);
+
+                        error_log('updating password ');
+
+                        if ($updateDataCheck >= 0) {
+
+                            $vDataToUpdate = array(
+                                "IsActive" => false
+                            );
+
+                            error_log('updating token');
+                            $updateVerificationDataCheck = GenericModel::updateGeneric('verification_token', 'Id', $checkToken[0]->Id, $vDataToUpdate);
+
+                            if ($updateVerificationDataCheck >= 0) {
+
+                                DB::commit();
+                                $mobileNumber = $checkUserData[0]->MobileNumber;
+
+                                $emailAddress = $checkUserData[0]->EmailAddress;
+
+
+                                $emailMessage = "Your password has been updated.";
+
+                                //Now sending email
+                                LoginModel::sendEmail($emailAddress, "Update Password", $emailMessage, "");
+
+                                //Now sending sms
+                                if ($mobileNumber != null) {
+                                    $url = env('WEB_URL') . '/#/';
+                                    $toNumber = array();
+                                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
+                                    $mobileNumber = $phoneCode . $mobileNumber;
+                                    array_push($toNumber, $mobileNumber);
+                                    try {
+//                                    HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address', $url);
+                                        HelperModel::sendSms($toNumber, 'Your password has been updated.', null);
+                                    } catch (Exception $ex) {
+//                                    return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
+                                        return response()->json(['data' => null, 'message' => 'Your password has been updated. '], 200);
+                                    }
+                                }
+                                return response()->json(['data' => null, 'message' => 'Your password has been updated.'], 200);
+
+                            } else {
+                                DB::rollback();
+                                return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
+                            }
+
+                        } else {
+                            DB::rollback();
+                            return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
+                        }
+
+                    }
+
+
+                }
+
+            } else {
+
+                if (!$token) {
+                    return response()->json(['data' => null, 'message' => 'Invalid link'], 400);
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Password is required'], 400);
+                }
+//                return response()->json(['data' => null, 'message' => 'Code type is missing'], 400);
+            }
+
+        } catch (Exception $e) {
+            DB::rollback();
+            error_log('error ' . $e);
+            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+        }
+
+    }
+
+
     function adminLogin(Request $request)
     {
         return LoginModel::getAdminLogin($request);
@@ -159,7 +381,8 @@ class LoginController extends Controller
      * @param  array $data
      * @return \Illuminate\Contracts\Validation\Validator
      */
-    protected function registerValidator(array $data)
+    protected
+    function registerValidator(array $data)
     {
         return Validator::make($data, [
             'EmailAddress' => ['required', 'string', 'email', 'max:255'],

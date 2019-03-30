@@ -57,8 +57,7 @@ class TicketModel
             && $trackStatus == "null"
             && $priority == "null"
             && $searchKeyword == "null"
-        )
-        {
+        ) {
             error_log('All search parameters are null');
 
             $query = DB::table('ticket')
@@ -71,8 +70,7 @@ class TicketModel
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
-        }
-        else {
+        } else {
             error_log('some of the parameters are given');
             if ($searchKeyword != "null") {
                 error_log('search keyword is not null');
@@ -1145,9 +1143,9 @@ class TicketModel
         return $enum;
     }
 
-    public static function getEnumValues($columnName)
+    public static function getEnumValues($tableName, $columnName)
     {
-        $type = DB::select(DB::raw("SHOW COLUMNS FROM ticket WHERE Field = '" . $columnName . "'"))[0]->Type;
+        $type = DB::select(DB::raw("SHOW COLUMNS FROM " . $tableName . " WHERE Field = '" . $columnName . "'"))[0]->Type;
         preg_match('/^enum\((.*)\)$/', $type, $matches);
         $enum = array();
         foreach (explode(',', $matches[1]) as $value) {
