@@ -52,7 +52,7 @@ class CcmModel
             ->where('ccm_answer.IsActive', '=', true)
             ->where('ccm_answer.PatientId', '=', $patientId)
             ->where('ccm_answer.CcmQuestionId', '=', $questionId)
-            ->get();
+            ->first();
 
         return $query;
     }

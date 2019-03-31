@@ -274,25 +274,21 @@ class CcmPlanController extends Controller
                     'Id' => $item->Id,
                     'Question' => $item->Question,
                     'Type' => $item->Type,
-                    'Answers' => array()
+                    'Answer' => array()
                 );
 
                 //Now one by one we will fetch answers and will bind it in Answers array
                 $answerList = CcmModel::getAnswersViaQuestionIdAndPatientId($item->Id, $patientId);
-                if (count($answerList) > 0) {
+                if ($answerList != null) {
                     error_log('answer found for question id : ' . $item->Id);
+                    error_log('in for each loop');
 
-                    foreach ($answerList as $item2) {
-                        error_log('in for each loop');
+                    $questionData['Answer']['Id'] = $answerList->Id;
+                    $questionData['Answer']['IsAnswered'] = $answerList->IsAnswered;
+                    $questionData['Answer']['Answer'] = $answerList->Answer;
 
-                        $data = array(
-                            'Id' => $item2->Id,
-                            'IsAnswered' => $item2->IsAnswered,
-                            'Answer' => $item2->Answer,
-                        );
-
-                        array_push($questionData['Answers'], $data);
-                    }
+                } else {
+                    $questionData['Answer'] = null;
                 }
 
                 array_push($finalData, $questionData);
