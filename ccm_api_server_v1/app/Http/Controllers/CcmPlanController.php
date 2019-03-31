@@ -1652,7 +1652,7 @@ class CcmPlanController extends Controller
                     foreach ($assistanceOrganizationList as $item2) {
                         error_log('in for each loop of assistance organization');
 
-                        $data = array(
+                        $data1 = array(
                             'Id' => $item2->Id,
                             'Organization' => $item2->Organization,
                             'TelephoneNumber' => $item2->TelephoneNumber,
@@ -1661,7 +1661,7 @@ class CcmPlanController extends Controller
                             'Description' => $item2->Description
                         );
 
-                        array_push($assistanceOrganizationData, $data);
+                        array_push($assistanceOrganizationData, $data1);
                     }
 
                     $data['AssistanceOrganization'] = $assistanceOrganizationData;
