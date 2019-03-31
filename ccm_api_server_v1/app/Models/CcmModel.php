@@ -52,7 +52,7 @@ class CcmModel
             ->where('ccm_answer.IsActive', '=', true)
             ->where('ccm_answer.PatientId', '=', $patientId)
             ->where('ccm_answer.CcmQuestionId', '=', $questionId)
-            ->get();
+            ->first();
 
         return $query;
     }
@@ -258,6 +258,55 @@ class CcmModel
             )
             ->where('patient_organization_assistance.IsActive', '=', true)
             ->where('patient_organization_assistance.PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getSingleHospitalizationHistory($id)
+    {
+        error_log('in model, fetching single hospitalization history');
+
+        $query = DB::table('ccm_hospitalization_history')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllHospitalizationHistoryViaPatientId($id)
+    {
+        error_log('in model, fetching all hospitalization history');
+
+        $query = DB::table('ccm_hospitalization_history')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
+
+
+    static public function getSingleSurgeryHistory($id)
+    {
+        error_log('in model, fetching single surgery history');
+
+        $query = DB::table('ccm_surgery_history')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function getAllSurgeryHistoryViaPatientId($id)
+    {
+        error_log('in model, fetching all surgery history');
+
+        $query = DB::table('ccm_surgery_history')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
             ->get();
 
         return $query;

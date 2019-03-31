@@ -916,4 +916,18 @@ class UserModel
 
         return $query;
     }
+
+    static public function getPatientLastUniqueId()
+    {
+        error_log('in model, fetching last ticket number');
+
+        $query = DB::table("user")
+            ->select('PatientUniqueId')
+            ->where("IsActive", "=", true)
+            ->where("PatientUniqueId", "!=", 0)
+            ->orderBy('Id', 'desc')
+            ->first();
+
+        return $query;
+    }
 }
