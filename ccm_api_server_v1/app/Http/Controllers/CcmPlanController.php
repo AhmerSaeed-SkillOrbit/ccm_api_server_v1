@@ -1661,10 +1661,8 @@ class CcmPlanController extends Controller
                             'Description' => $item2->Description
                         );
 
-                        array_push($assistanceOrganizationData, $data1);
+                        array_push($data['AssistanceOrganization'], $data1);
                     }
-
-                    $data['AssistanceOrganization'] = $assistanceOrganizationData;
                 }
 
                 array_push($finalData, $data);
