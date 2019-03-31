@@ -1629,6 +1629,7 @@ class CcmPlanController extends Controller
 
         $assistanceList = CcmModel::getAllAssistanceType();
         $finalData = array();
+        $assistanceOrganizationData = array();
 
         if (count($assistanceList) > 0) {
             error_log('Assistance list found ');
@@ -1639,8 +1640,32 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'Type' => $item->Type,
-                    'Description' => $item->Description
+                    'Description' => $item->Description,
+                    'AssistanceOrganization' => array()
                 );
+
+                $assistanceOrganizationList = CcmModel::getAllAssistanceOrganizationViaAssistanceType($item->Id);
+
+                if (count($assistanceOrganizationList) > 0) {
+                    error_log('Assistance organization list found ');
+
+                    foreach ($assistanceOrganizationList as $item2) {
+                        error_log('in for each loop of assistance organization');
+
+                        $data = array(
+                            'Id' => $item2->Id,
+                            'Organization' => $item2->Organization,
+                            'TelephoneNumber' => $item2->TelephoneNumber,
+                            'OfficeAddress' => $item2->OfficeAddress,
+                            'ContactPerson' => $item2->ContactPerson,
+                            'Description' => $item2->Description
+                        );
+
+                        array_push($assistanceOrganizationData, $data);
+                    }
+
+                    $data['AssistanceOrganization'] = $assistanceOrganizationData;
+                }
 
                 array_push($finalData, $data);
             }
