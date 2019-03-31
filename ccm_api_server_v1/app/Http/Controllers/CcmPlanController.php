@@ -2423,4 +2423,36 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'Surgery history not found'], 400);
         }
     }
+
+    static public function GetPatientGeneralInformation(Request $request)
+    {
+        error_log('in controller');
+
+        $id = $request->get('patientId');
+
+        //Get single active medicine via medicine id
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($id);
+        if ($checkUserData != null) {
+            error_log('data found ');
+
+            $data['Id'] = $checkUserData->Id;
+            $data['FirstName'] = $checkUserData->FirstName;
+            $data['LastName'] = $checkUserData->LastName;
+            $data['MiddleName'] = $checkUserData->MiddleName;
+            $data['PatientUniqueId'] = $checkUserData->PatientUniqueId;
+            $data['EmailAddress'] = $checkUserData->EmailAddress;
+            $data['MobileNumber'] = $checkUserData->MobileNumber;
+            $data['TelephoneNumber'] = $checkUserData->TelephoneNumber;
+            $data['OfficeAddress'] = $checkUserData->OfficeAddress;
+            $data['ResidentialAddress'] = $checkUserData->ResidentialAddress;
+            $data['Gender'] = $checkUserData->Gender;
+            $data['FunctionalTitle'] = $checkUserData->FunctionalTitle;
+            $data['Age'] = $checkUserData->Age;
+            $data['AgeGroup'] = $checkUserData->AgeGroup;
+
+            return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Patient general information not found'], 400);
+        }
+    }
 }

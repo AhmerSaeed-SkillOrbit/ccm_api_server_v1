@@ -283,6 +283,9 @@ Route::get('/surgery/history/all', 'CcmPlanController@GetAllSurgeryHistory');
 //Get single hospitalization history
 Route::get('/surgery/history/single', 'CcmPlanController@GetSingleSurgeryHistory');
 
+//Get patient general information
+Route::get('/patient/general/information', 'CcmPlanController@GetPatientGeneralInformation');
+
 
 Route::get('/', function () {
     return 'Hello';
