@@ -104,26 +104,18 @@ class CcmPlanController extends Controller
 
         $date = HelperModel::getDate();
 
-        $answerData = array();
+        $data = array(
+            'CcmQuestionId' => $request->get('CcmQuestionId'),
+            'AskById' => $userId,
+            'PatientId' => $patientId,
+            'IsAnswered' => $request->get('IsAnswered'),
+            'Answer' => $request->get('Answer'),
+            'IsActive' => true,
+            'CreatedBy' => $userId,
+            'CreatedOn' => $date["timestamp"]
+        );
 
-
-        foreach ($request->input('Answer') as $item) {
-
-            $data = array(
-                'CcmQuestionId' => $item['CcmQuestionId'],
-                'AskById' => $userId,
-                'PatientId' => $patientId,
-                'IsAnswered' => $item['IsAnswered'],
-                'Answer' => $item['Answer'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($answerData, $data);
-        }
-
-        $insertedData = GenericModel::insertGeneric('ccm_answer', $answerData);
+        $insertedData = GenericModel::insertGeneric('ccm_answer', $data);
         if ($insertedData == false) {
             error_log('data not inserted');
             return response()->json(['data' => null, 'message' => 'Error in inserting answers'], 400);
