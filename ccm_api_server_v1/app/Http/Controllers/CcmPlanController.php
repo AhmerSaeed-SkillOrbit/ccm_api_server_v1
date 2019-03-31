@@ -425,22 +425,25 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('ActiveMedicine') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'MedicineName' => $item['MedicineName'],
+                    'DoseNumber' => $item['DoseNumber'],
+                    'Direction' => $item['Direction'],
+                    'StartDate' => $item['StartDate'],
+                    'StartBy' => $item['StartBy'],
+                    'WhyComments' => $item['WhyComments'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'MedicineName' => $item['MedicineName'],
-                'DoseNumber' => $item['DoseNumber'],
-                'Direction' => $item['Direction'],
-                'StartDate' => $item['StartDate'],
-                'StartBy' => $item['StartBy'],
-                'WhyComments' => $item['WhyComments'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($activeMedicineData, $data);
+                array_push($activeMedicineData, $data);
+            }
         }
+
+        error_log('data count is : ' . count($activeMedicineData));
 
         $insertedData = GenericModel::insertGeneric('ccm_active_medicine', $activeMedicineData);
         if ($insertedData == false) {
@@ -478,6 +481,7 @@ class CcmPlanController extends Controller
                 'StartDate' => $request->get('StartDate'),
                 'StartBy' => $request->get('StartBy'),
                 'WhyComments' => $request->get('WhyComments'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -678,19 +682,20 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('AllergyMedicine') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'MedicineName' => $item['MedicineName'],
+                    'MedicineReaction' => $item['MedicineReaction'],
+                    'ReactionDate' => $item['ReactionDate'],
+                    'IsReactionSevere' => $item['IsReactionSevere'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'MedicineName' => $item['MedicineName'],
-                'MedicineReaction' => $item['MedicineReaction'],
-                'ReactionDate' => $item['ReactionDate'],
-                'IsReactionSevere' => $item['IsReactionSevere'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($medicineData, $data);
+                array_push($medicineData, $data);
+            }
         }
 
         $insertedData = GenericModel::insertGeneric('ccm_medicine_allergy', $medicineData);
@@ -727,6 +732,7 @@ class CcmPlanController extends Controller
                 'MedicineReaction' => $request->get('MedicineReaction'),
                 'ReactionDate' => $request->get('ReactionDate'),
                 'IsReactionSevere' => $request->get('IsReactionSevere'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -923,19 +929,20 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('NonMedicine') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'SubstanceName' => $item['SubstanceName'],
+                    'SubstanceReaction' => $item['SubstanceReaction'],
+                    'ReactionDate' => $item['ReactionDate'],
+                    'IsReactionSevere' => $item['IsReactionSevere'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'SubstanceName' => $item['SubstanceName'],
-                'SubstanceReaction' => $item['SubstanceReaction'],
-                'ReactionDate' => $item['ReactionDate'],
-                'IsReactionSevere' => $item['IsReactionSevere'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($medicineData, $data);
+                array_push($medicineData, $data);
+            }
         }
 
         $insertedData = GenericModel::insertGeneric('ccm_non_medicine', $medicineData);
@@ -972,6 +979,7 @@ class CcmPlanController extends Controller
                 'SubstanceReaction' => $request->get('SubstanceReaction'),
                 'ReactionDate' => $request->get('ReactionDate'),
                 'IsReactionSevere' => $request->get('IsReactionSevere'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -1167,17 +1175,18 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('ImmunizationVaccine') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'Vaccine' => $item['Vaccine'],
+                    'VaccineDate' => $item['VaccineDate'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'Vaccine' => $item['Vaccine'],
-                'VaccineDate' => $item['VaccineDate'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($medicineData, $data);
+                array_push($medicineData, $data);
+            }
         }
 
         $insertedData = GenericModel::insertGeneric('ccm_immunization_vaccine', $medicineData);
@@ -1212,6 +1221,7 @@ class CcmPlanController extends Controller
             $dataToUpdate = array(
                 'Vaccine' => $request->get('Vaccine'),
                 'VaccineDate' => $request->get('VaccineDate'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -1403,18 +1413,19 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('HealthCareHistory') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'Provider' => $item['Provider'],
+                    'LastVisitDate' => $item['LastVisitDate'],
+                    'VisitReason' => $item['VisitReason'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'Provider' => $item['Provider'],
-                'LastVisitDate' => $item['LastVisitDate'],
-                'VisitReason' => $item['VisitReason'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($dataToInsert, $data);
+                array_push($dataToInsert, $data);
+            }
         }
 
         $insertedData = GenericModel::insertGeneric('ccm_healthcare_history', $dataToInsert);
@@ -1450,6 +1461,7 @@ class CcmPlanController extends Controller
                 'Provider' => $request->get('Provider'),
                 'LastVisitDate' => $request->get('LastVisitDate'),
                 'VisitReason' => $request->get('VisitReason'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -1728,22 +1740,23 @@ class CcmPlanController extends Controller
         $dataToInsert = array();
 
         foreach ($request->input('PatientOrganization') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'AssistanceOrganizationId' => (int)$item['AssistanceOrganizationId'],
+                    'Organization' => $item['Organization'],
+                    'TelephoneNumber' => $item['TelephoneNumber'],
+                    'OfficeAddress' => $item['OfficeAddress'],
+                    'ContactPerson' => $item['ContactPerson'],
+                    'Description' => $item['Description'],
+                    'IsPatientRefused' => $item['IsPatientRefused'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'AssistanceOrganizationId' => (int)$item['AssistanceOrganizationId'],
-                'Organization' => $item['Organization'],
-                'TelephoneNumber' => $item['TelephoneNumber'],
-                'OfficeAddress' => $item['OfficeAddress'],
-                'ContactPerson' => $item['ContactPerson'],
-                'Description' => $item['Description'],
-                'IsPatientRefused' => $item['IsPatientRefused'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($dataToInsert, $data);
+                array_push($dataToInsert, $data);
+            }
         }
 
         $insertedData = GenericModel::insertGeneric('patient_organization_assistance', $dataToInsert);
@@ -1782,6 +1795,7 @@ class CcmPlanController extends Controller
                 'ContactPerson' => $request->get('ContactPerson'),
                 'Description' => $request->get('Description'),
                 'IsPatientRefused' => $request->get('IsPatientRefused'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -2014,19 +2028,20 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('HospitalizationHistory') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'IsHospitalized' => $item['IsHospitalized'],
+                    'HospitalizedDate' => $item['HospitalizedDate'],
+                    'HospitalName' => $item['HospitalName'],
+                    'PatientComments' => $item['PatientComments'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'IsHospitalized' => $item['IsHospitalized'],
-                'HospitalizedDate' => $item['HospitalizedDate'],
-                'HospitalName' => $item['HospitalName'],
-                'PatientComments' => $item['PatientComments'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($dataToInsert, $data);
+                array_push($dataToInsert, $data);
+            }
         }
 
         $insertedData = GenericModel::insertGeneric('ccm_hospitalization_history', $dataToInsert);
@@ -2063,6 +2078,7 @@ class CcmPlanController extends Controller
                 'HospitalizedDate' => $request->get('HospitalizedDate'),
                 'HospitalName' => $request->get('HospitalName'),
                 'PatientComments' => $request->get('PatientComments'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -2258,19 +2274,20 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('SurgeryHistory') as $item) {
+            if ($item['Id'] == null || $item['Id'] == 0 ) {
+                $data = array(
+                    'PatientId' => $patientId,
+                    'DiagnoseDescription' => $item['DiagnoseDescription'],
+                    'DiagnoseDate' => $item['DiagnoseDate'],
+                    'CurrentProblem' => $item['CurrentProblem'],
+                    'NeedAttention' => $item['NeedAttention'],
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
 
-            $data = array(
-                'PatientId' => $patientId,
-                'DiagnoseDescription' => $item['DiagnoseDescription'],
-                'DiagnoseDate' => $item['DiagnoseDate'],
-                'CurrentProblem' => $item['CurrentProblem'],
-                'NeedAttention' => $item['NeedAttention'],
-                'IsActive' => true,
-                'CreatedBy' => $userId,
-                'CreatedOn' => $date["timestamp"]
-            );
-
-            array_push($dataToInsert, $data);
+                array_push($dataToInsert, $data);
+            }
         }
 
         $insertedData = GenericModel::insertGeneric('ccm_surgery_history', $dataToInsert);
@@ -2307,6 +2324,7 @@ class CcmPlanController extends Controller
                 'DiagnoseDate' => $request->get('DiagnoseDate'),
                 'CurrentProblem' => $request->get('CurrentProblem'),
                 'NeedAttention' => $request->get('NeedAttention'),
+                'IsActive' => $request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
