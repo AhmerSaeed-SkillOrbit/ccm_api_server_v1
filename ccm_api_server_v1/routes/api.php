@@ -295,6 +295,10 @@ Route::get('/psychological/review/all', 'CcmPlanController@GetAllPsychologicalRe
 Route::get('/functional/review/all', 'CcmPlanController@GetAllFunctionalReviewParam');
 //Get social review param
 Route::get('/social/review/all', 'CcmPlanController@GetAllSocialReviewParam');
+//Get preventative screening param
+Route::get('/preventative/screen/exam/all', 'CcmPlanController@GetAllPreventativeScreenExamParam');
+//Get diabetic measure param
+Route::get('/diabetic/measure/all', 'CcmPlanController@GetAllDiabeticMeasureParam');
 
 
 Route::get('/', function () {
