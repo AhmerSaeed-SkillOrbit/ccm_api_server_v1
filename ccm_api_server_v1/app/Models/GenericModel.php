@@ -44,9 +44,18 @@ class GenericModel
     {
         return DB::table($tableName)
             ->select('*')
-            ->where('IsActive', '=' , true)
+            ->where('IsActive', '=', true)
             ->orderBy('Id', 'desc')
             ->get();
+    }
+
+    static public function simpleFetchGenericById($tableName, $columnName, $id)
+    {
+        return DB::table($tableName)
+            ->select('*')
+            ->where($columnName, '=', $id)
+            ->where('IsActive', '=', true)
+            ->first();
     }
 
     static public function simpleFetchGenericWithPaginationByWhereWithSortOrderAndSearchKeyword

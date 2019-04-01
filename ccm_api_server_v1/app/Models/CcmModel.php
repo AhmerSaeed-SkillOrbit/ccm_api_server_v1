@@ -311,18 +311,4 @@ class CcmModel
 
         return $query;
     }
-
-    static public function getPsychologicalReviewParam()
-    {
-        error_log('in model, fetching  psychological review param');
-
-        $query = DB::table('psychological_review_param')
-            ->select('Id', 'Name', 'Description')
-            ->where('IsActive', '=', true)
-            ->orderBy('Id', 'desc')
-            ->get();
-
-        return $query;
-    }
-
 }

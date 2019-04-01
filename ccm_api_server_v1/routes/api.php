@@ -300,6 +300,22 @@ Route::get('/preventative/screen/exam/all', 'CcmPlanController@GetAllPreventativ
 //Get diabetic measure param
 Route::get('/diabetic/measure/all', 'CcmPlanController@GetAllDiabeticMeasureParam');
 
+//
+//ENUM apis
+//
+
+Route::get('/insurance/type/list', 'CcmPlanController@GetInsuranceType');
+Route::get('/insurance/coverage/type/list', 'CcmPlanController@GetInsuranceCoverageType');
+Route::get('/patient/live/type/list', 'CcmPlanController@GetPatientLiveType');
+Route::get('/patient/challenge/type/list', 'CcmPlanController@GetPatientChallengeType');
+Route::get('/patient/learn/by/type/list', 'CcmPlanController@GetPatientLearningType');
+Route::get('/patient/assistance/available/type/list', 'CcmPlanController@GetPatientAssistanceAvailabilityType');
+
+
+//Save patient assessment
+Route::post('/save/patient/assessment', 'CcmPlanController@SavePatientAssessment');
+Route::get('/patient/assessment/single', 'CcmPlanController@GetPatientAssessment');
+
 
 Route::get('/', function () {
     return 'Hello';

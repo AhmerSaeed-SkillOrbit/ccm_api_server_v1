@@ -2640,7 +2640,6 @@ class CcmPlanController extends Controller
     }
 
 
-
     static public function GetAllDiabeticMeasureParam()
     {
         error_log('in controller');
@@ -2666,6 +2665,308 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $finalData, 'message' => 'Diabetic measures found'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Diabetic measures not found'], 200);
+        }
+    }
+
+    function GetInsuranceType()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_insurance', 'InsuranceType');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Insurance type not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Insurance type found'], 200);
+        }
+    }
+
+    function GetInsuranceCoverageType()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_insurance', 'CoverageType');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Insurance coverage type not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Insurance coverage type found'], 200);
+        }
+    }
+
+    function GetPatientLiveType()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'LiveType');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Live type not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Live type found'], 200);
+        }
+    }
+
+    function GetPatientChallengeType()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'ChallengeWith');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Challenge type not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Challenge type found'], 200);
+        }
+    }
+
+    function GetPatientLearningType()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'LearnBestBy');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Learn type not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Learn type found'], 200);
+        }
+    }
+
+    function GetPatientAssistanceAvailabilityType()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'AssistanceAvailable');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Assistance type not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Assistance type found'], 200);
+        }
+    }
+
+    static public function SavePatientAssessment(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+
+        $date = HelperModel::getDate();
+
+        //First check if id is null or not
+        //If id is null then insert
+        //else check that record
+        if ($request->get('Id') == "null" || $request->get('Id') == null) {
+            error_log('Data id is null');
+            error_log('Now checking if record is existing via patient id or not');
+
+            $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'PatientId', $patientId);
+
+            if ($checkData == null) {
+                error_log('data not found, so INSERTING');
+
+                $dataToAdd = array(
+                    'PatientId' => $patientId,
+                    'AbleToMessage' => (bool)$request->get('AbleToMessage'),
+                    'AbleToCall' => (bool)$request->get('AbleToCall'),
+                    'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
+                    'FeasibleCallTime' => $request->get('FeasibleCallTime'),
+                    'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
+                    'NightTimePhoneNumber' => $request->get('NightTimePhoneNumber'),
+                    'IsInternetAvailable' => (bool)$request->get('IsInternetAvailable'),
+                    'IsInternetHelper' => (bool)$request->get('IsInternetHelper'),
+                    'CanUseInternet' => (bool)$request->get('CanUseInternet'),
+                    'WantToChange' => $request->get('WantToChange'),
+                    'EffortToChange' => $request->get('EffortToChange'),
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
+                $insertedData = GenericModel::insertGenericAndReturnID('patient_assessment', $dataToAdd);
+                if ($insertedData == false) {
+                    error_log('data not inserted');
+                    return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment medicine'], 400);
+                } else {
+                    error_log('data inserted');
+                    return response()->json(['data' => $insertedData, 'message' => 'Patient assessment successfully added'], 200);
+                }
+            } else {
+                error_log('data found. But id is null so we cannot update');
+                return response()->json(['data' => null, 'message' => 'Patient assessment cannot be updated because id is NULL'], 200);
+            }
+        } else {
+            error_log('fetching single data');
+            $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'Id', $request->get('Id'));
+            if ($checkData == null) {
+                error_log('data not found');
+                return response()->json(['data' => null, 'message' => 'Patient assessment not found'], 400);
+            } else {
+                error_log('data found. Now update');
+
+                $dataToUpdate = array(
+                    'AbleToMessage' => (bool)$request->get('AbleToMessage'),
+                    'AbleToCall' => (bool)$request->get('AbleToCall'),
+                    'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
+                    'FeasibleCallTime' => $request->get('FeasibleCallTime'),
+                    'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
+                    'NightTimePhoneNumber' => $request->get('NightTimePhoneNumber'),
+                    'IsInternetAvailable' => (bool)$request->get('IsInternetAvailable'),
+                    'IsInternetHelper' => (bool)$request->get('IsInternetHelper'),
+                    'CanUseInternet' => (bool)$request->get('CanUseInternet'),
+                    'WantToChange' => $request->get('WantToChange'),
+                    'EffortToChange' => $request->get('EffortToChange'),
+                    'IsActive' => true,
+                    'UpdatedBy' => $userId,
+                    'UpdatedOn' => $date["timestamp"]
+                );
+
+                $updatedData = GenericModel::updateGeneric('patient_assessment', 'Id', (int)$request->get('Id'), $dataToUpdate);
+
+                if ($updatedData == false) {
+                    error_log('data not updated');
+                    return response()->json(['data' => null, 'message' => 'Error in updating patient assessment'], 400);
+                } else {
+                    error_log('data updated');
+                    return response()->json(['data' => (int)$request->get('Id'), 'message' => 'Patient assessment successfully updated'], 200);
+                }
+            }
+        }
+    }
+
+    static public function GetPatientAssessment(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'Id', $id);
+        if ($checkData == null) {
+            error_log('data not found');
+            return response()->json(['data' => null, 'message' => 'Patient assessment not found'], 400);
+        } else {
+            error_log('data found. Now update');
+
+            $data = array(
+                'Id' => $checkData->Id,
+                'AbleToMessage' => $checkData->AbleToMessage,
+                'AbleToCall' => $checkData->AbleToCall,
+                'FeasibleMessageTime' => $checkData->FeasibleMessageTime,
+                'FeasibleCallTime' => $checkData->FeasibleCallTime,
+                'DayTimePhoneNumber' => $checkData->DayTimePhoneNumber,
+                'NightTimePhoneNumber' => $checkData->NightTimePhoneNumber,
+                'IsInternetAvailable' => $checkData->IsInternetAvailable,
+                'IsInternetHelper' => $checkData->IsInternetHelper,
+                'CanUseInternet' => $checkData->CanUseInternet,
+                'WantToChange' => $checkData->WantToChange,
+                'EffortToChange' => $checkData->EffortToChange
+            );
+
+            return response()->json(['data' => $data, 'message' => 'Patient assessment found'], 200);
         }
     }
 }
