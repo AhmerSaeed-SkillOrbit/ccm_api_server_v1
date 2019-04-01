@@ -342,11 +342,11 @@ class UserModel
         if ($keyword != null && $keyword != "null") {
             error_log('Keyword NOT NULL');
             $query = DB::table('user')
-                ->join('user_access', 'user_access.UserId', 'user.Id')
-                ->join('role', 'user_access.RoleId', 'role.Id')
-                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
-                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
-                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+//                ->join('user_access', 'user_access.UserId', 'user.Id')
+//                ->join('role', 'user_access.RoleId', 'role.Id')
+//                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+//                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+//                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                 ->where($tableName . '.' . $columnName, $operator, $data)
                 ->whereIn('user.Id', $destinationUserId)
                 ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
@@ -355,24 +355,19 @@ class UserModel
                 ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
                 ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
                 ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
-                ->groupBy('user.Id')
                 ->count();
 
             error_log($query);
 
             return $query;
         } else {
-            error_log('keyword is NULL');
+            error_log('keyword is NULL ' . count($destinationUserId));
+
             $query = DB::table('user')
-                ->join('user_access', 'user_access.UserId', 'user.Id')
-                ->join('role', 'user_access.RoleId', 'role.Id')
-                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
-                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
-                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                 ->where($tableName . '.' . $columnName, $operator, $data)
                 ->whereIn('user.Id', $destinationUserId)
-                ->groupBy('user.Id')
                 ->count();
+
 
             error_log($query);
 
@@ -648,7 +643,7 @@ class UserModel
         return $query;
     }
 
-    static public function GetPatientViaMobileNum($mobileNum,$patientRoleCode)
+    static public function GetPatientViaMobileNum($mobileNum, $patientRoleCode)
     {
         error_log('in GetUserViaMobileNum function - Model');
         error_log($mobileNum);
