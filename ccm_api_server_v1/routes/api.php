@@ -287,7 +287,7 @@ Route::get('/surgery/history/single', 'CcmPlanController@GetSingleSurgeryHistory
 Route::get('/patient/general/information', 'CcmPlanController@GetPatientGeneralInformation');
 
 //Update patient general information
-Route::post('/patient/general/info//update', 'CcmPlanController@UpdatePatientGeneralInfo');
+Route::post('/patient/general/info/update', 'CcmPlanController@UpdatePatientGeneralInfo');
 
 
 Route::get('/', function () {

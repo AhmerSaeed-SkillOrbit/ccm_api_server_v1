@@ -2492,7 +2492,7 @@ class CcmPlanController extends Controller
         //First get and check if record exists or not
         $data = UserModel::GetSingleUserViaIdNewFunction($id);
 
-        if (count($data) == 0) {
+        if ($data == null) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
 
@@ -2504,6 +2504,7 @@ class CcmPlanController extends Controller
         $mobileNumber = $request->post('MobileNumber');
         $telephoneNumber = $request->post('TelephoneNumber');
         $gender = $request->post('Gender');
+        $age = $request->post('Age');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2511,14 +2512,15 @@ class CcmPlanController extends Controller
             "LastName" => $lastName,
             "MobileNumber" => $mobileNumber,
             "TelephoneNumber" => $telephoneNumber,
-            "Gender" => $gender
+            "Gender" => $gender,
+            "Age" => $age
         );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
         if ($update == true) {
             DB::commit();
-            return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
+            return response()->json(['data' => $id, 'message' => 'User successfully updated'], 200);
         } else {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
