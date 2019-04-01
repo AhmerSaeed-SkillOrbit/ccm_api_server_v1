@@ -289,6 +289,9 @@ Route::get('/patient/general/information', 'CcmPlanController@GetPatientGeneralI
 //Update patient general information
 Route::post('/patient/general/info/update', 'CcmPlanController@UpdatePatientGeneralInfo');
 
+//Get phsychological review param
+Route::get('/psychological/review/all', 'CcmPlanController@GetAllPsychologicalReviewParam');
+
 
 Route::get('/', function () {
     return 'Hello';
