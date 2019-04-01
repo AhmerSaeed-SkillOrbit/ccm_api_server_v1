@@ -2480,4 +2480,44 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'Patient general information not found'], 400);
         }
     }
+
+    function UpdatePatientGeneralInfo(Request $request)
+    {
+        $id = $request->get('patientId');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaIdNewFunction($id);
+
+        if (count($data) == 0) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        //Binding data to variable.
+
+        $firstName = $request->post('FirstName');
+        $middleName = $request->post('MiddleName');
+        $lastName = $request->post('LastName');
+        $mobileNumber = $request->post('MobileNumber');
+        $telephoneNumber = $request->post('TelephoneNumber');
+        $gender = $request->post('Gender');
+
+        $dataToUpdate = array(
+            "FirstName" => $firstName,
+            "MiddleName" => $middleName,
+            "LastName" => $lastName,
+            "MobileNumber" => $mobileNumber,
+            "TelephoneNumber" => $telephoneNumber,
+            "Gender" => $gender
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            DB::commit();
+            return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
+        } else {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
+        }
+    }
 }
