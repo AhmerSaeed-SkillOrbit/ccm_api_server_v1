@@ -286,6 +286,20 @@ Route::get('/surgery/history/single', 'CcmPlanController@GetSingleSurgeryHistory
 //Get patient general information
 Route::get('/patient/general/information', 'CcmPlanController@GetPatientGeneralInformation');
 
+//Update patient general information
+Route::post('/patient/general/info/update', 'CcmPlanController@UpdatePatientGeneralInfo');
+
+//Get phsychological review param
+Route::get('/psychological/review/all', 'CcmPlanController@GetAllPsychologicalReviewParam');
+//Get functional review param
+Route::get('/functional/review/all', 'CcmPlanController@GetAllFunctionalReviewParam');
+//Get social review param
+Route::get('/social/review/all', 'CcmPlanController@GetAllSocialReviewParam');
+//Get preventative screening param
+Route::get('/preventative/screen/exam/all', 'CcmPlanController@GetAllPreventativeScreenExamParam');
+//Get diabetic measure param
+Route::get('/diabetic/measure/all', 'CcmPlanController@GetAllDiabeticMeasureParam');
+
 
 Route::get('/', function () {
     return 'Hello';

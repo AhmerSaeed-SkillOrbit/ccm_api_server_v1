@@ -425,7 +425,7 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('ActiveMedicine') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'MedicineName' => $item['MedicineName'],
@@ -583,9 +583,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Active medicine not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Active medicine found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Active medicine found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Active medicine not found'], 200);
         }
     }
 
@@ -682,7 +682,7 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('AllergyMedicine') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'MedicineName' => $item['MedicineName'],
@@ -832,9 +832,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Allergy medicine not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Allergy medicine found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Allergy medicine found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Allergy medicine not found'], 200);
         }
     }
 
@@ -929,7 +929,7 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('NonMedicine') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'SubstanceName' => $item['SubstanceName'],
@@ -1079,9 +1079,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Non medicine not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Non medicine found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Non medicine found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Non medicine not found'], 200);
         }
     }
 
@@ -1175,7 +1175,7 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('ImmunizationVaccine') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'Vaccine' => $item['Vaccine'],
@@ -1319,9 +1319,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Immunization vaccine not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Immunization vaccine found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Immunization vaccine found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Immunization vaccine not found'], 200);
         }
     }
 
@@ -1413,7 +1413,7 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('HealthCareHistory') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'Provider' => $item['Provider'],
@@ -1560,9 +1560,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Health care history not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Health care history found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Health care history found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Health care history not found'], 200);
         }
     }
 
@@ -1670,9 +1670,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Assistance type not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Assistance type found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Assistance type found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Assistance type not found'], 200);
         }
     }
 
@@ -1740,7 +1740,7 @@ class CcmPlanController extends Controller
         $dataToInsert = array();
 
         foreach ($request->input('PatientOrganization') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'AssistanceOrganizationId' => (int)$item['AssistanceOrganizationId'],
@@ -1914,9 +1914,9 @@ class CcmPlanController extends Controller
         }
 
         if (count($finalData) > 0) {
-            return response()->json(['data' => $finalData, 'message' => 'Health care history not found'], 200);
+            return response()->json(['data' => $finalData, 'message' => 'Health care history found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Health care history found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Health care history not found'], 200);
         }
     }
 
@@ -2028,7 +2028,7 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('HospitalizationHistory') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'IsHospitalized' => $item['IsHospitalized'],
@@ -2180,7 +2180,7 @@ class CcmPlanController extends Controller
         if (count($finalData) > 0) {
             return response()->json(['data' => $finalData, 'message' => 'Hospitalization history found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Hospitalization history not found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Hospitalization history not found'], 200);
         }
     }
 
@@ -2274,7 +2274,7 @@ class CcmPlanController extends Controller
 
 
         foreach ($request->input('SurgeryHistory') as $item) {
-            if ($item['Id'] == null || $item['Id'] == 0 ) {
+            if ($item['Id'] == null || $item['Id'] == 0) {
                 $data = array(
                     'PatientId' => $patientId,
                     'DiagnoseDescription' => $item['DiagnoseDescription'],
@@ -2426,7 +2426,7 @@ class CcmPlanController extends Controller
         if (count($finalData) > 0) {
             return response()->json(['data' => $finalData, 'message' => 'Surgery history found'], 200);
         } else {
-            return response()->json(['data' => $finalData, 'message' => 'Surgery history not found'], 400);
+            return response()->json(['data' => $finalData, 'message' => 'Surgery history not found'], 200);
         }
     }
 
@@ -2482,6 +2482,190 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Patient general information not found'], 400);
+        }
+    }
+
+    function UpdatePatientGeneralInfo(Request $request)
+    {
+        $id = $request->get('patientId');
+
+        //First get and check if record exists or not
+        $data = UserModel::GetSingleUserViaIdNewFunction($id);
+
+        if ($data == null) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        }
+
+        //Binding data to variable.
+
+        $firstName = $request->post('FirstName');
+        $middleName = $request->post('MiddleName');
+        $lastName = $request->post('LastName');
+        $mobileNumber = $request->post('MobileNumber');
+        $telephoneNumber = $request->post('TelephoneNumber');
+        $gender = $request->post('Gender');
+        $age = $request->post('Age');
+
+        $dataToUpdate = array(
+            "FirstName" => $firstName,
+            "MiddleName" => $middleName,
+            "LastName" => $lastName,
+            "MobileNumber" => $mobileNumber,
+            "TelephoneNumber" => $telephoneNumber,
+            "Gender" => $gender,
+            "Age" => $age
+        );
+
+        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+        if ($update == true) {
+            DB::commit();
+            return response()->json(['data' => $id, 'message' => 'User successfully updated'], 200);
+        } else {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
+        }
+    }
+
+    static public function GetAllPsychologicalReviewParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('psychological_review_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Psychological reviews found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Psychological reviews not found'], 200);
+        }
+    }
+
+    static public function GetAllFunctionalReviewParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('functional_review_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Functional reviews found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Functional reviews not found'], 200);
+        }
+    }
+
+    static public function GetAllSocialReviewParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('social_review_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Social reviews found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Social reviews not found'], 200);
+        }
+    }
+
+    static public function GetAllPreventativeScreenExamParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('prevent_screening_examination_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Preventative screen examination found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Preventative screen examination not found'], 200);
+        }
+    }
+
+
+
+    static public function GetAllDiabeticMeasureParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('diabetic_measure_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Diabetic measures found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Diabetic measures not found'], 200);
         }
     }
 }
