@@ -573,8 +573,8 @@ class CcmPlanController extends Controller
                     'MedicineName' => $item->MedicineName,
                     'DoseNumber' => $item->DoseNumber,
                     'Direction' => $item->Direction,
-                    'StartDate' => Carbon::createFromTimestamp($item->StartDate),
-                    'StartBy' => Carbon::createFromTimestamp($item->StartBy),
+                    'StartDate' => $item->StartDate,
+                    'StartBy' => $item->StartBy,
                     'WhyComments' => $item->WhyComments
                 );
 
@@ -604,8 +604,8 @@ class CcmPlanController extends Controller
             $data['MedicineName'] = $medicineData->MedicineName;
             $data['DoseNumber'] = $medicineData->DoseNumber;
             $data['Direction'] = $medicineData->Direction;
-            $data['StartDate'] = Carbon::createFromTimestamp($medicineData->StartDate);
-            $data['StartBy'] = Carbon::createFromTimestamp($medicineData->StartBy);
+            $data['StartDate'] = $medicineData->StartDate;
+            $data['StartBy'] = $medicineData->StartBy;
             $data['WhyComments'] = $medicineData->WhyComments;
 
             return response()->json(['data' => $data, 'message' => 'Active medicine found'], 200);
@@ -823,7 +823,7 @@ class CcmPlanController extends Controller
                     'Id' => $item->Id,
                     'MedicineName' => $item->MedicineName,
                     'MedicineReaction' => $item->MedicineReaction,
-                    'ReactionDate' => Carbon::createFromTimestamp($item->ReactionDate),
+                    'ReactionDate' => $item->ReactionDate,
                     'IsReactionSevere' => $item->IsReactionSevere
                 );
 
@@ -852,7 +852,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $medicineData->Id;
             $data['MedicineName'] = $medicineData->MedicineName;
             $data['MedicineReaction'] = $medicineData->MedicineReaction;
-            $data['ReactionDate'] = Carbon::createFromTimestamp($medicineData->ReactionDate);
+            $data['ReactionDate'] = $medicineData->ReactionDate;
             $data['IsReactionSevere'] = $medicineData->IsReactionSevere;
 
             return response()->json(['data' => $data, 'message' => 'Allergy medicine found'], 200);
@@ -1070,7 +1070,7 @@ class CcmPlanController extends Controller
                     'Id' => $item->Id,
                     'SubstanceName' => $item->SubstanceName,
                     'SubstanceReaction' => $item->SubstanceReaction,
-                    'ReactionDate' => Carbon::createFromTimestamp($item->ReactionDate),
+                    'ReactionDate' => $item->ReactionDate,
                     'IsReactionSevere' => $item->IsReactionSevere
                 );
 
@@ -1099,7 +1099,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $medicineData->Id;
             $data['SubstanceName'] = $medicineData->SubstanceName;
             $data['SubstanceReaction'] = $medicineData->SubstanceReaction;
-            $data['ReactionDate'] = Carbon::createFromTimestamp($medicineData->ReactionDate);
+            $data['ReactionDate'] = $medicineData->ReactionDate;
             $data['IsReactionSevere'] = $medicineData->IsReactionSevere;
 
             return response()->json(['data' => $data, 'message' => 'Non medicine found'], 200);
@@ -1311,7 +1311,7 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'Vaccine' => $item->Vaccine,
-                    'VaccineDate' => Carbon::createFromTimestamp($item->VaccineDate)
+                    'VaccineDate' => $item->VaccineDate
                 );
 
                 array_push($finalData, $data);
@@ -1338,7 +1338,7 @@ class CcmPlanController extends Controller
 
             $data['Id'] = $medicineData->Id;
             $data['Vaccine'] = $medicineData->Vaccine;
-            $data['VaccineDate'] = Carbon::createFromTimestamp($medicineData->VaccineDate);
+            $data['VaccineDate'] = $medicineData->VaccineDate;
 
             return response()->json(['data' => $data, 'message' => 'Immunization vaccine found'], 200);
         } else {
@@ -1551,7 +1551,7 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'Provider' => $item->Provider,
-                    'LastVisitDate' => Carbon::createFromTimestamp($item->LastVisitDate),
+                    'LastVisitDate' => $item->LastVisitDate,
                     'VisitReason' => $item->VisitReason
                 );
 
@@ -1579,7 +1579,7 @@ class CcmPlanController extends Controller
 
             $data['Id'] = $medicineData->Id;
             $data['Provider'] = $medicineData->Provider;
-            $data['LastVisitDate'] = Carbon::createFromTimestamp($medicineData->LastVisitDate);
+            $data['LastVisitDate'] = $medicineData->LastVisitDate;
             $data['VisitReason'] = $medicineData->VisitReason;
 
             return response()->json(['data' => $data, 'message' => 'Health care history found'], 200);
