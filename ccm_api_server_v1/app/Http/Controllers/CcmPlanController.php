@@ -2527,7 +2527,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetAllPsychologicalReviewParam(Request $request)
+    static public function GetAllPsychologicalReviewParam()
     {
         error_log('in controller');
 
@@ -2552,6 +2552,61 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $finalData, 'message' => 'Psychological reviews found'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Psychological reviews not found'], 200);
+        }
+    }
+
+    static public function GetAllFunctionalReviewParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('functional_review_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Functional reviews found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Functional reviews not found'], 200);
+        }
+    }
+    static public function GetAllSocialReviewParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('social_review_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Social reviews found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Social reviews not found'], 200);
         }
     }
 }

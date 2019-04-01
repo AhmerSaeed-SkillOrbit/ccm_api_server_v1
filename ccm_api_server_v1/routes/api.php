@@ -291,6 +291,10 @@ Route::post('/patient/general/info/update', 'CcmPlanController@UpdatePatientGene
 
 //Get phsychological review param
 Route::get('/psychological/review/all', 'CcmPlanController@GetAllPsychologicalReviewParam');
+//Get functional review param
+Route::get('/functional/review/all', 'CcmPlanController@GetAllFunctionalReviewParam');
+//Get social review param
+Route::get('/social/review/all', 'CcmPlanController@GetAllSocialReviewParam');
 
 
 Route::get('/', function () {
