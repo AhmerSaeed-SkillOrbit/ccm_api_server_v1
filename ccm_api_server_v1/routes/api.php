@@ -356,6 +356,10 @@ Route::get('/patient/screen/examination/single', 'CcmPlanController@GetPatientSc
 Route::post('/save/patient/psychological/review', 'CcmPlanController@SavePatientPsychologicalReview');
 Route::get('/patient/psychological/review/single', 'CcmPlanController@GetPatientPsychologicalReview');
 
+//Save patient social review APIS
+Route::post('/save/patient/social/review', 'CcmPlanController@SavePatientSocialReview');
+Route::get('/patient/social/review/single', 'CcmPlanController@GetPatientSocialReview');
+
 
 Route::get('/', function () {
     return 'Hello';

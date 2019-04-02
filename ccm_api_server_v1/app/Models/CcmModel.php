@@ -397,4 +397,20 @@ class CcmModel
 
         return $query;
     }
+
+    static public function GetSinglePatientSocialReview($patientId)
+    {
+        $query = DB::table('patient_social_review')
+            ->leftjoin('social_review_param as social_review_param', 'patient_social_review.SocialReviewParamId', 'social_review_param.Id')
+            ->select('patient_social_review.Id as psrId', 'patient_social_review.IsOkay',
+                'patient_social_review.Description as psrDescription',
+                'social_review_param.Id as srpId', 'social_review_param.Name',
+                'social_review_param.Description as srpDescription'
+            )
+            ->where('patient_psychological_review.IsActive', '=', true)
+            ->where('patient_psychological_review.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
 }
