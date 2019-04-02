@@ -51,11 +51,18 @@ class GenericModel
 
     static public function simpleFetchGenericById($tableName, $columnName, $id)
     {
-        return DB::table($tableName)
+//        DB::enableQueryLog();
+
+        $query = DB::table($tableName)
             ->select('*')
             ->where($columnName, '=', $id)
             ->where('IsActive', '=', true)
             ->first();
+
+//        dd(DB::getQueryLog());
+
+        return $query;
+
     }
 
     static public function simpleFetchGenericWithPaginationByWhereWithSortOrderAndSearchKeyword
