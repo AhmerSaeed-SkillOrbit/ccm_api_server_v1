@@ -381,4 +381,20 @@ class CcmModel
 
         return $query;
     }
+
+    static public function GetSinglePatientPsychologicalReview($patientId)
+    {
+        $query = DB::table('patient_psychological_review')
+            ->leftjoin('psychological_review_param as psychological_review_param', 'patient_prevent_screening_examination.PsychologicalReviewParamId', 'psychological_review_param.Id')
+            ->select('patient_psychological_review.Id as ppsId', 'patient_psychological_review.IsOkay',
+                'patient_psychological_review.Description as ppsDescription',
+                'psychological_review_param.Id as prpId', 'psychological_review_param.Name',
+                'psychological_review_param.Description as prpDescription'
+            )
+            ->where('patient_psychological_review.IsActive', '=', true)
+            ->where('patient_psychological_review.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
 }
