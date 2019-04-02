@@ -2889,7 +2889,6 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
-        $id = $request->get('id');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -2944,7 +2943,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'Id', $id);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'PatientId', $patientId);
         if ($checkData == null) {
             error_log('data not found');
             return response()->json(['data' => null, 'message' => 'Patient assessment not found'], 400);
@@ -3143,7 +3142,6 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
-        $id = $request->get('id');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -3198,7 +3196,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_ability_concern', 'Id', $id);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_ability_concern', 'PatientId', $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -3382,7 +3380,6 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
-        $id = $request->get('id');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -3437,7 +3434,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_alternate_contact', 'Id', $id);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_alternate_contact', 'PatientId', $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -3603,7 +3600,6 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
-        $id = $request->get('id');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -3658,7 +3654,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_insurance', 'Id', $id);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_insurance', 'PatientId', $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -3758,23 +3754,23 @@ class CcmPlanController extends Controller
 
                 $dataToAdd = array(
                     'PatientId' => $patientId,
-                    'IsForgetMedicine' => (bool) $request->get('IsForgetMedicine'),
+                    'IsForgetMedicine' => (bool)$request->get('IsForgetMedicine'),
                     'IsForgetMedicineComment' => $request->get('IsForgetMedicineComment'),
-                    'IsForgetAppointment' => (bool) $request->get('IsForgetAppointment'),
+                    'IsForgetAppointment' => (bool)$request->get('IsForgetAppointment'),
                     'IsForgetAppointmentComment' => $request->get('IsForgetAppointmentComment'),
-                    'IsGoWhenSick' => (bool) $request->get('IsGoWhenSick'),
+                    'IsGoWhenSick' => (bool)$request->get('IsGoWhenSick'),
                     'IsGoWhenSickComment' => $request->get('IsGoWhenSickComment'),
-                    'GoWithoutFood' => (bool) $request->get('GoWithoutFood'),
+                    'GoWithoutFood' => (bool)$request->get('GoWithoutFood'),
                     'GoWithoutFoodComment' => $request->get('GoWithoutFoodComment'),
-                    'IsPowerShutOff' => (bool) $request->get('IsPowerShutOff'),
+                    'IsPowerShutOff' => (bool)$request->get('IsPowerShutOff'),
                     'IsPowerShutOffComment' => $request->get('IsPowerShutOffComment'),
-                    'GetUnAbleToDress' => (bool) $request->get('GetUnAbleToDress'),
+                    'GetUnAbleToDress' => (bool)$request->get('GetUnAbleToDress'),
                     'GetUnAbleToDressComment' => $request->get('GetUnAbleToDressComment'),
-                    'HardToPrepareFood' => (bool) $request->get('HardToPrepareFood'),
+                    'HardToPrepareFood' => (bool)$request->get('HardToPrepareFood'),
                     'HardToPrepareFoodComment' => $request->get('HardToPrepareFoodComment'),
-                    'IsFrequentlySad' => (bool) $request->get('IsFrequentlySad'),
+                    'IsFrequentlySad' => (bool)$request->get('IsFrequentlySad'),
                     'IsFrequentlySadComment' => $request->get('IsFrequentlySadComment'),
-                    'HardToTakeBath' => (bool) $request->get('HardToTakeBath'),
+                    'HardToTakeBath' => (bool)$request->get('HardToTakeBath'),
                     'HardToTakeBathComment' => $request->get('HardToTakeBathComment'),
                     'IsActive' => true,
                     'CreatedBy' => $userId,
@@ -3802,23 +3798,23 @@ class CcmPlanController extends Controller
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
-                    'IsForgetMedicine' => (bool) $request->get('IsForgetMedicine'),
+                    'IsForgetMedicine' => (bool)$request->get('IsForgetMedicine'),
                     'IsForgetMedicineComment' => $request->get('IsForgetMedicineComment'),
-                    'IsForgetAppointment' => (bool) $request->get('IsForgetAppointment'),
+                    'IsForgetAppointment' => (bool)$request->get('IsForgetAppointment'),
                     'IsForgetAppointmentComment' => $request->get('IsForgetAppointmentComment'),
-                    'IsGoWhenSick' => (bool) $request->get('IsGoWhenSick'),
+                    'IsGoWhenSick' => (bool)$request->get('IsGoWhenSick'),
                     'IsGoWhenSickComment' => $request->get('IsGoWhenSickComment'),
-                    'GoWithoutFood' => (bool) $request->get('GoWithoutFood'),
+                    'GoWithoutFood' => (bool)$request->get('GoWithoutFood'),
                     'GoWithoutFoodComment' => $request->get('GoWithoutFoodComment'),
-                    'IsPowerShutOff' => (bool) $request->get('IsPowerShutOff'),
+                    'IsPowerShutOff' => (bool)$request->get('IsPowerShutOff'),
                     'IsPowerShutOffComment' => $request->get('IsPowerShutOffComment'),
-                    'GetUnAbleToDress' => (bool) $request->get('GetUnAbleToDress'),
+                    'GetUnAbleToDress' => (bool)$request->get('GetUnAbleToDress'),
                     'GetUnAbleToDressComment' => $request->get('GetUnAbleToDressComment'),
-                    'HardToPrepareFood' => (bool) $request->get('HardToPrepareFood'),
+                    'HardToPrepareFood' => (bool)$request->get('HardToPrepareFood'),
                     'HardToPrepareFoodComment' => $request->get('HardToPrepareFoodComment'),
-                    'IsFrequentlySad' => (bool) $request->get('IsFrequentlySad'),
+                    'IsFrequentlySad' => (bool)$request->get('IsFrequentlySad'),
                     'IsFrequentlySadComment' => $request->get('IsFrequentlySadComment'),
-                    'HardToTakeBath' => (bool) $request->get('HardToTakeBath'),
+                    'HardToTakeBath' => (bool)$request->get('HardToTakeBath'),
                     'HardToTakeBathComment' => $request->get('HardToTakeBathComment'),
                     'IsActive' => true,
                     'UpdatedBy' => $userId,
@@ -3844,7 +3840,6 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
-        $id = $request->get('id');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -3899,7 +3894,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_resource', 'Id', $id);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_resource', 'PatientId', $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -4025,7 +4020,7 @@ class CcmPlanController extends Controller
                     'LearnBestByComment' => $request->get('LearnBestByComment'),
                     'ThingImpactHealth' => $request->get('ThingImpactHealth'),
                     'ThingImpactHealthOther' => $request->get('ThingImpactHealthOther'),
-                    'IsDietaryRequire' => (bool) $request->get('IsDietaryRequire'),
+                    'IsDietaryRequire' => (bool)$request->get('IsDietaryRequire'),
                     'DietaryRequireDescription' => $request->get('DietaryRequireDescription'),
                     'AssistanceAvailable' => $request->get('AssistanceAvailable'),
                     'IsActive' => true,
@@ -4069,7 +4064,7 @@ class CcmPlanController extends Controller
                     'LearnBestByComment' => $request->get('LearnBestByComment'),
                     'ThingImpactHealth' => $request->get('ThingImpactHealth'),
                     'ThingImpactHealthOther' => $request->get('ThingImpactHealthOther'),
-                    'IsDietaryRequire' => (bool) $request->get('IsDietaryRequire'),
+                    'IsDietaryRequire' => (bool)$request->get('IsDietaryRequire'),
                     'DietaryRequireDescription' => $request->get('DietaryRequireDescription'),
                     'AssistanceAvailable' => $request->get('AssistanceAvailable'),
                     'IsActive' => true,
@@ -4096,7 +4091,6 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
-        $id = $request->get('id');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -4151,7 +4145,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_self', 'Id', $id);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_self', 'PatientId', $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -4181,6 +4175,225 @@ class CcmPlanController extends Controller
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment self found'], 200);
+        }
+    }
+
+    static public function SavePatientDiabeticMeasure(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+
+        $date = HelperModel::getDate();
+
+        //First check if id is null or not
+        //If id is null then insert
+        //else check that record
+        if ($request->get('Id') == "null" || $request->get('Id') == null) {
+            error_log('Data id is null');
+            error_log('Now checking if record is existing via patient id or not');
+
+            //Check if diabetic measure is valid
+
+            if ((int)$request->get('DiabeticMeasureParamId') != null || (int)$request->get('DiabeticMeasureParamId') == "null") {
+                $checkDiabeticMeasure = GenericModel::simpleFetchGenericById('diabetic_measure_param', 'Id', (int)$request->get('DiabeticMeasureParamId'));
+                if ($checkDiabeticMeasure == null) {
+                    return response()->json(['data' => null, 'message' => 'Invalid diabetic measure param'], 400);
+                }
+            }
+
+            $checkData = GenericModel::simpleFetchGenericById('patient_diabetic_measure', 'PatientId', $patientId);
+
+            if ($checkData == null) {
+                error_log('data not found, so INSERTING');
+
+                $dataToAdd = array(
+                    'PatientId' => $patientId,
+                    'DiabeticMeasureParamId' => (int)$request->get('DiabeticMeasureParamId'),
+                    'IsPatientMeasure' => (bool)$request->get('IsPatientMeasure'),
+                    'Description' => $request->get('Description'),
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
+                $insertedData = GenericModel::insertGenericAndReturnID('patient_diabetic_measure', $dataToAdd);
+                if ($insertedData == false) {
+                    error_log('data not inserted');
+                    return response()->json(['data' => null, 'message' => 'Error in inserting patient diabetic measure'], 400);
+                } else {
+                    error_log('data inserted');
+                    return response()->json(['data' => $insertedData, 'message' => 'Patient diabetic measure successfully added'], 200);
+                }
+            } else {
+                error_log('data found. But id is null so we cannot update');
+                return response()->json(['data' => null, 'message' => 'Patient diabetic measure cannot be updated because id is NULL'], 200);
+            }
+        } else {
+            error_log('fetching single data');
+            $checkData = GenericModel::simpleFetchGenericById('patient_diabetic_measure', 'Id', $request->get('Id'));
+            if ($checkData == null) {
+                error_log('data not found');
+                return response()->json(['data' => null, 'message' => 'Patient diabetic measure not found'], 400);
+            } else {
+                error_log('data found. Now update');
+
+                $dataToUpdate = array(
+                    'DiabeticMeasureParamId' => $request->get('DiabeticMeasureParamId'),
+                    'IsPatientMeasure' => (bool)$request->get('IsPatientMeasure'),
+                    'Description' => $request->get('Description'),
+                    'IsActive' => true,
+                    'UpdatedBy' => $userId,
+                    'UpdatedOn' => $date["timestamp"]
+                );
+
+                $updatedData = GenericModel::updateGeneric('patient_diabetic_measure', 'Id', (int)$request->get('Id'), $dataToUpdate);
+
+                if ($updatedData == false) {
+                    error_log('data not updated');
+                    return response()->json(['data' => null, 'message' => 'Error in updating patient diabetic measure'], 400);
+                } else {
+                    error_log('data updated');
+                    return response()->json(['data' => (int)$request->get('Id'), 'message' => 'Patient diabetic measure successfully updated'], 200);
+                }
+            }
+        }
+    }
+
+    static public function GetPatientPatientDiabeticMeasure(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = CcmModel::GetSinglePatientDiabeticMeasure($patientId);
+
+        if ($checkData == null) {
+            error_log('data not found');
+            return response()->json(['data' => null, 'message' => 'Patient diabetic measure not found'], 400);
+        } else {
+            error_log('data found. Now update');
+
+            $data = array(
+                'Id' => $checkData->pdmId,
+                'IsPatientMeasure' => $checkData->IsPatientMeasure,
+                'Description' => $checkData->pdmDescription,
+                'DiabeticMeasureParamId' => array()
+            );
+
+            $data['DiabeticMeasureParamId']['Id'] = $checkData->dmpId;
+            $data['DiabeticMeasureParamId']['Name'] = $checkData->Name;
+            $data['DiabeticMeasureParamId']['Description'] = $checkData->dmpDescription;
+
+            return response()->json(['data' => $data, 'message' => 'Patient diabetic measure found'], 200);
         }
     }
 }

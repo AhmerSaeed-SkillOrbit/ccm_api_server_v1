@@ -311,4 +311,18 @@ class CcmModel
 
         return $query;
     }
+
+    static public function GetSinglePatientDiabeticMeasure($patientId)
+    {
+        $query = DB::table('patient_diabetic_measure')
+            ->leftjoin('diabetic_measure_param as diabetic_measure_param', 'patient_diabetic_measure.DiabeticMeasureParamId', 'diabetic_measure_param.Id')
+            ->select('patient_diabetic_measure.Id as pdmId', 'patient_diabetic_measure.IsPatientMeasure', 'patient_diabetic_measure.Description as pdmDescription',
+                'diabetic_measure_param.Id as dmpId' ,'diabetic_measure_param.Name', 'diabetic_measure_param.Description as dmpDescription'
+                )
+            ->where('patient_diabetic_measure.IsActive', '=', true)
+            ->where('patient_diabetic_measure.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
 }

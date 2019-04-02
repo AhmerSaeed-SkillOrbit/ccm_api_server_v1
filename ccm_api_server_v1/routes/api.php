@@ -336,6 +336,10 @@ Route::get('/patient/assessment/resource/single', 'CcmPlanController@GetPatientA
 Route::post('/save/patient/assessment/self', 'CcmPlanController@SavePatientAssessmentSelf');
 Route::get('/patient/assessment/self/single', 'CcmPlanController@GetPatientAssessmentSelf');
 
+//Save patient assessment self APIS
+Route::post('/save/patient/diabetic/measure', 'CcmPlanController@SavePatientDiabeticMeasure');
+Route::get('/patient/diabetic/measure/single', 'CcmPlanController@GetPatientPatientDiabeticMeasure');
+
 
 Route::get('/', function () {
     return 'Hello';
