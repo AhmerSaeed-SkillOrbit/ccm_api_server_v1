@@ -320,6 +320,22 @@ Route::get('/patient/assessment/single', 'CcmPlanController@GetPatientAssessment
 Route::post('/save/patient/assessment/ability/concern', 'CcmPlanController@SavePatientAssessmentAbilityConcern');
 Route::get('/patient/assessment/ability/concern/single', 'CcmPlanController@GetPatientAssessmentAbilityConcern');
 
+//Save patient assessment alternate contact APIS
+Route::post('/save/patient/assessment/alternate/contact', 'CcmPlanController@SavePatientAssessmentAlternateContact');
+Route::get('/patient/assessment/alternate/contact/single', 'CcmPlanController@GetPatientAssessmentAlternateContact');
+
+//Save patient assessment insurance APIS
+Route::post('/save/patient/assessment/insurance', 'CcmPlanController@SavePatientAssessmentInsurance');
+Route::get('/patient/assessment/insurance/single', 'CcmPlanController@GetPatientAssessmentInsurance');
+
+//Save patient assessment resource APIS
+Route::post('/save/patient/assessment/resource', 'CcmPlanController@SavePatientAssessmentResource');
+Route::get('/patient/assessment/resource/single', 'CcmPlanController@GetPatientAssessmentResource');
+
+//Save patient assessment self APIS
+Route::post('/save/patient/assessment/self', 'CcmPlanController@SavePatientAssessmentSelf');
+Route::get('/patient/assessment/self/single', 'CcmPlanController@GetPatientAssessmentSelf');
+
 
 Route::get('/', function () {
     return 'Hello';
