@@ -317,8 +317,8 @@ class CcmModel
         $query = DB::table('patient_diabetic_measure')
             ->leftjoin('diabetic_measure_param as diabetic_measure_param', 'patient_diabetic_measure.DiabeticMeasureParamId', 'diabetic_measure_param.Id')
             ->select('patient_diabetic_measure.Id as pdmId', 'patient_diabetic_measure.IsPatientMeasure', 'patient_diabetic_measure.Description as pdmDescription',
-                'diabetic_measure_param.Id as dmpId' ,'diabetic_measure_param.Name', 'diabetic_measure_param.Description as dmpDescription'
-                )
+                'diabetic_measure_param.Id as dmpId', 'diabetic_measure_param.Name', 'diabetic_measure_param.Description as dmpDescription'
+            )
             ->where('patient_diabetic_measure.IsActive', '=', true)
             ->where('patient_diabetic_measure.PatientId', '=', $patientId)
             ->first();
@@ -331,10 +331,36 @@ class CcmModel
         $query = DB::table('patient_functional_review')
             ->leftjoin('functional_review_param as functional_review_param', 'patient_functional_review.FunctionalReviewParamId', 'functional_review_param.Id')
             ->select('patient_functional_review.Id as ptrId', 'patient_functional_review.IsOkay', 'patient_functional_review.Description as pdmDescription',
-                'functional_review_param.Id as frpId' ,'functional_review_param.Name', 'functional_review_param.Description as frpDescription'
-                )
+                'functional_review_param.Id as frpId', 'functional_review_param.Name', 'functional_review_param.Description as frpDescription'
+            )
             ->where('patient_functional_review.IsActive', '=', true)
             ->where('patient_functional_review.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
+
+
+    static public function GetSinglePatientOrgnizationAssistanceViaPatientId($patientId)
+    {
+        error_log('in model, fetching single patient organization assistance');
+
+        $query = DB::table('patient_organization_assistance')
+            ->leftjoin('assistance_organization as assistance_organization', 'patient_organization_assistance.AssistanceOrganizationId', 'assistance_organization.Id')
+            ->leftjoin('assistance_type as assistance_type', 'assistance_organization.AssistanceTypeId', 'assistance_type.Id')
+            ->select('patient_organization_assistance.Id as poaID', 'patient_organization_assistance.Organization as poaOrganization',
+                'patient_organization_assistance.TelephoneNumber as poaTelephoneNumber', 'patient_organization_assistance.OfficeAddress as poaOfficeAddress',
+                'patient_organization_assistance.ContactPerson as poaContactPerson', 'patient_organization_assistance.Description as poaDescription',
+                'patient_organization_assistance.IsPatientRefused as poaIsPatientRefused',
+                //assistance organization data
+                'assistance_organization.Id as aoId',
+                'assistance_organization.Organization as aoOrganization', 'assistance_organization.OfficeAddress as aoOfficeAddress',
+                'assistance_organization.ContactPerson as aoContactPerson', 'assistance_organization.Description as aoDescription',
+                //Assistance organization type data
+                'assistance_type.Id as atId', 'assistance_type.Type as atType', 'assistance_type.Description as atOrganization'
+            )
+            ->where('patient_organization_assistance.IsActive', '=', true)
+            ->where('patient_organization_assistance.PatientId', '=', $patientId)
             ->first();
 
         return $query;

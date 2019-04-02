@@ -344,6 +344,10 @@ Route::get('/patient/diabetic/measure/single', 'CcmPlanController@GetPatientPati
 Route::post('/save/patient/functional/review', 'CcmPlanController@SavePatientFunctionalReview');
 Route::get('/patient/functional/review/single', 'CcmPlanController@GetPatientPatientFunctionalReview');
 
+//Save patient organization assistance APIS
+Route::post('/save/patient/organization/assistance', 'CcmPlanController@SavePatientOrganizationAssistance');
+Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetPatientOrganizationAssistanceViaPatientId');
+
 
 Route::get('/', function () {
     return 'Hello';
