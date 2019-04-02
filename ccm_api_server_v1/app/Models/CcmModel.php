@@ -365,4 +365,20 @@ class CcmModel
 
         return $query;
     }
+
+    static public function GetSinglePatientScreenExamination($patientId)
+    {
+        $query = DB::table('patient_prevent_screening_examination')
+            ->leftjoin('prevent_screening_examination_param as prevent_screening_examination_param', 'patient_prevent_screening_examination.PreventScreeningParamId', 'prevent_screening_examination_param.Id')
+            ->select('patient_prevent_screening_examination.Id as ppseId', 'patient_prevent_screening_examination.IsPatientExamined',
+                'patient_prevent_screening_examination.Description as ppseDescription',
+                'prevent_screening_examination_param.Id as psepId', 'prevent_screening_examination_param.Name',
+                'prevent_screening_examination_param.Description as psepDescription'
+            )
+            ->where('patient_prevent_screening_examination.IsActive', '=', true)
+            ->where('patient_prevent_screening_examination.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
 }
