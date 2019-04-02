@@ -2835,7 +2835,7 @@ class CcmPlanController extends Controller
                 $insertedData = GenericModel::insertGenericAndReturnID('patient_assessment', $dataToAdd);
                 if ($insertedData == false) {
                     error_log('data not inserted');
-                    return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment medicine'], 400);
+                    return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment'], 400);
                 } else {
                     error_log('data inserted');
                     return response()->json(['data' => $insertedData, 'message' => 'Patient assessment successfully added'], 200);
@@ -2967,6 +2967,273 @@ class CcmPlanController extends Controller
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment found'], 200);
+        }
+    }
+
+    static public function SavePatientAssessmentAbilityConcern(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+
+        $date = HelperModel::getDate();
+
+        //First check if id is null or not
+        //If id is null then insert
+        //else check that record
+        if ($request->get('Id') == "null" || $request->get('Id') == null) {
+            error_log('Data id is null');
+            error_log('Now checking if record is existing via patient id or not');
+
+            $checkData = GenericModel::simpleFetchGenericById('patient_assessment_ability_concern', 'PatientId', $patientId);
+
+            if ($checkData == null) {
+                error_log('data not found, so INSERTING');
+
+                $dataToAdd = array(
+                    'PatientId' => $patientId,
+                    'ManageChronicCondition' => (bool)$request->get('ManageChronicCondition'),
+                    'ManageChronicConditionComment' => $request->get('ManageChronicConditionComment'),
+                    'DecreaseEnergyLevel' => (bool) $request->get('DecreaseEnergyLevel'),
+                    'DecreaseEnergyLevelComment' => $request->get('DecreaseEnergyLevelComment'),
+                    'CanCleanHome' => (bool) $request->get('CanCleanHome'),
+                    'CanCleanHomeComment' => $request->get('CanCleanHomeComment'),
+                    'EmotionalCurrentIssue' => (bool)$request->get('EmotionalCurrentIssue'),
+                    'EmotionalCurrentIssueComment' => $request->get('EmotionalCurrentIssueComment'),
+                    'ManageMedication' => (bool)$request->get('ManageMedication'),
+                    'ManageMedicationComment' => $request->get('ManageMedicationComment'),
+                    'ObtainHealthyFood' => (bool) $request->get('ObtainHealthyFood'),
+                    'ObtainHealthyFoodComment' =>  $request->get('ObtainHealthyFoodComment'),
+                    'CopeLifeIssue' => (bool) $request->get('CopeLifeIssue'),
+                    'CopeLifeIssueComment' =>  $request->get('CopeLifeIssueComment'),
+                    'IsCurrentlyDnr' => (bool) $request->get('IsCurrentlyDnr'),
+                    'CurrentlyDnrComment' =>  $request->get('CurrentlyDnrComment'),
+                    'IsCurrentlyPoa' => (bool) $request->get('IsCurrentlyPoa'),
+                    'CurrentlyPoaComment' =>  $request->get('CurrentlyPoaComment'),
+                    'IsCurrentlyDirective' => (bool) $request->get('IsCurrentlyDirective'),
+                    'CurrentlyDirectiveComment' =>  $request->get('CurrentlyDirectiveComment'),
+                    'IsAbleToMoveDaily' => (bool) $request->get('IsAbleToMoveDaily'),
+                    'AbleToMoveDailyComment' =>  $request->get('AbleToMoveDailyComment'),
+                    'ConcernDetailComment' =>  $request->get('ConcernDetailComment'),
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
+                $insertedData = GenericModel::insertGenericAndReturnID('patient_assessment_ability_concern', $dataToAdd);
+                if ($insertedData == false) {
+                    error_log('data not inserted');
+                    return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment ability concern'], 400);
+                } else {
+                    error_log('data inserted');
+                    return response()->json(['data' => $insertedData, 'message' => 'Patient assessment ability concern successfully added'], 200);
+                }
+            } else {
+                error_log('data found. But id is null so we cannot update');
+                return response()->json(['data' => null, 'message' => 'Patient assessment ability concern cannot be updated because id is NULL'], 200);
+            }
+        } else {
+            error_log('fetching single data');
+            $checkData = GenericModel::simpleFetchGenericById('patient_assessment_ability_concern', 'Id', $request->get('Id'));
+            if ($checkData == null) {
+                error_log('data not found');
+                return response()->json(['data' => null, 'message' => 'Patient assessment ability not found'], 400);
+            } else {
+                error_log('data found. Now update');
+
+                $dataToUpdate = array(
+                    'ManageChronicCondition' => (bool)$request->get('ManageChronicCondition'),
+                    'ManageChronicConditionComment' => $request->get('ManageChronicConditionComment'),
+                    'DecreaseEnergyLevel' => (bool) $request->get('DecreaseEnergyLevel'),
+                    'DecreaseEnergyLevelComment' => $request->get('DecreaseEnergyLevelComment'),
+                    'CanCleanHome' => (bool) $request->get('CanCleanHome'),
+                    'CanCleanHomeComment' => $request->get('CanCleanHomeComment'),
+                    'EmotionalCurrentIssue' => (bool)$request->get('EmotionalCurrentIssue'),
+                    'EmotionalCurrentIssueComment' => $request->get('EmotionalCurrentIssueComment'),
+                    'ManageMedication' => (bool)$request->get('ManageMedication'),
+                    'ManageMedicationComment' => $request->get('ManageMedicationComment'),
+                    'ObtainHealthyFood' => (bool) $request->get('ObtainHealthyFood'),
+                    'ObtainHealthyFoodComment' =>  $request->get('ObtainHealthyFoodComment'),
+                    'CopeLifeIssue' => (bool) $request->get('CopeLifeIssue'),
+                    'CopeLifeIssueComment' =>  $request->get('CopeLifeIssueComment'),
+                    'IsCurrentlyDnr' => (bool) $request->get('IsCurrentlyDnr'),
+                    'CurrentlyDnrComment' =>  $request->get('CurrentlyDnrComment'),
+                    'IsCurrentlyPoa' => (bool) $request->get('IsCurrentlyPoa'),
+                    'CurrentlyPoaComment' =>  $request->get('CurrentlyPoaComment'),
+                    'IsCurrentlyDirective' => (bool) $request->get('IsCurrentlyDirective'),
+                    'CurrentlyDirectiveComment' =>  $request->get('CurrentlyDirectiveComment'),
+                    'IsAbleToMoveDaily' => (bool) $request->get('IsAbleToMoveDaily'),
+                    'AbleToMoveDailyComment' =>  $request->get('AbleToMoveDailyComment'),
+                    'ConcernDetailComment' =>  $request->get('ConcernDetailComment'),
+                    'IsActive' => true,
+                    'UpdatedBy' => $userId,
+                    'UpdatedOn' => $date["timestamp"]
+                );
+
+                $updatedData = GenericModel::updateGeneric('patient_assessment_ability_concern', 'Id', (int)$request->get('Id'), $dataToUpdate);
+
+                if ($updatedData == false) {
+                    error_log('data not updated');
+                    return response()->json(['data' => null, 'message' => 'Error in updating patient assessment ability concern'], 400);
+                } else {
+                    error_log('data updated');
+                    return response()->json(['data' => (int)$request->get('Id'), 'message' => 'Patient assessment ability concern successfully updated'], 200);
+                }
+            }
+        }
+    }
+
+    static public function GetPatientAssessmentAbilityConcern(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_ability_concern', 'Id', $id);
+
+        if ($checkData == null) {
+            error_log('data not found');
+            return response()->json(['data' => null, 'message' => 'Patient assessment ability concern not found'], 400);
+        } else {
+            error_log('data found. Now update');
+
+            $data = array(
+                'Id' => $checkData->Id,
+                'ManageChronicCondition' => $checkData->ManageChronicCondition,
+                'ManageChronicConditionComment' => $checkData->ManageChronicConditionComment,
+                'DecreaseEnergyLevel' => $checkData->DecreaseEnergyLevel,
+                'DecreaseEnergyLevelComment' => $checkData->DecreaseEnergyLevelComment,
+                'CanCleanHome' => $checkData->CanCleanHome,
+                'CanCleanHomeComment' => $checkData->CanCleanHomeComment,
+                'EmotionalCurrentIssue' => $checkData->EmotionalCurrentIssue,
+                'EmotionalCurrentIssueComment' => $checkData->EmotionalCurrentIssueComment,
+                'ManageMedication' => $checkData->ManageMedication,
+                'ManageMedicationComment' => $checkData->ManageMedicationComment,
+                'ObtainHealthyFood' => $checkData->ObtainHealthyFood,
+                'ObtainHealthyFoodComment' => $checkData->ObtainHealthyFoodComment,
+                'CopeLifeIssue' => $checkData->CopeLifeIssue,
+                'CopeLifeIssueComment' => $checkData->CopeLifeIssueComment,
+                'IsCurrentlyDnr' => $checkData->IsCurrentlyDnr,
+                'CurrentlyDnrComment' => $checkData->CurrentlyDnrComment,
+                'IsCurrentlyPoa' => $checkData->IsCurrentlyPoa,
+                'CurrentlyPoaComment' => $checkData->CurrentlyPoaComment,
+                'IsCurrentlyDirective' => $checkData->IsCurrentlyDirective,
+                'CurrentlyDirectiveComment' => $checkData->CurrentlyDirectiveComment,
+                'IsAbleToMoveDaily' => $checkData->IsAbleToMoveDaily,
+                'AbleToMoveDailyComment' => $checkData->AbleToMoveDailyComment,
+                'ConcernDetailComment' => $checkData->ConcernDetailComment
+            );
+
+            return response()->json(['data' => $data, 'message' => 'Patient assessment ability concern found'], 200);
         }
     }
 }

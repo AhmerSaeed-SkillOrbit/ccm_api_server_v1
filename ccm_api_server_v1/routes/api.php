@@ -316,6 +316,10 @@ Route::get('/patient/assistance/available/type/list', 'CcmPlanController@GetPati
 Route::post('/save/patient/assessment', 'CcmPlanController@SavePatientAssessment');
 Route::get('/patient/assessment/single', 'CcmPlanController@GetPatientAssessment');
 
+//Save patient assessment ability concern APIS
+Route::post('/save/patient/assessment/ability/concern', 'CcmPlanController@SavePatientAssessmentAbilityConcern');
+Route::get('/patient/assessment/ability/concern/single', 'CcmPlanController@GetPatientAssessmentAbilityConcern');
+
 
 Route::get('/', function () {
     return 'Hello';
