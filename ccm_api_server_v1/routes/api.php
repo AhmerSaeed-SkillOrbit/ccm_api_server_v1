@@ -353,6 +353,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('/login', 'LoginController@login');
 Route::post('/register', 'LoginController@register');
+Route::post('/forgetPass', 'LoginController@forgetPass');
+Route::post('/resetPass', 'LoginController@resetPass');
 Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
 
