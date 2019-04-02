@@ -156,14 +156,16 @@ class ServicesModel
                         ->update($inviteUpdateData);
 
                     if ($inviteUpdate > 0) {
-                        return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                        // return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                        return array("status" => "success", "data" => $checkInvite[0]['ToEmailAddress'], "message" => "Your Invitation is pending");
                     } else {
                         return array("status" => "failed", "data" => null, "message" => "Your Invitation is pending");
                     }
 
                 }
                 if ($checkInvite[0]['Status_'] == "ignored" && $checkInvite[0]['IsActive'] == 0) {
-                    return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                    // return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                    return array("status" => "success", "data" => $checkInvite[0]['ToEmailAddress'], "message" => "Your Invitation is pending");
                 } else if ($checkInvite[0]['Status_'] == "accepted") {
                     return array("status" => "failed", "data" => null, "message" => "Your invitation is accepted");
                 } else if ($checkInvite[0]['Status_'] == "rejected") {
