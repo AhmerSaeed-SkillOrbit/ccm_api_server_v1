@@ -4293,7 +4293,7 @@ class CcmPlanController extends Controller
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
-                    'DiabeticMeasureParamId' => $request->get('DiabeticMeasureParamId'),
+                    'DiabeticMeasureParamId' => (int)$request->get('DiabeticMeasureParamId'),
                     'IsPatientMeasure' => (bool)$request->get('IsPatientMeasure'),
                     'Description' => $request->get('Description'),
                     'IsActive' => true,
@@ -4386,14 +4386,233 @@ class CcmPlanController extends Controller
                 'Id' => $checkData->pdmId,
                 'IsPatientMeasure' => $checkData->IsPatientMeasure,
                 'Description' => $checkData->pdmDescription,
-                'DiabeticMeasureParamId' => array()
+                'DiabeticMeasureParam' => array()
             );
 
-            $data['DiabeticMeasureParamId']['Id'] = $checkData->dmpId;
-            $data['DiabeticMeasureParamId']['Name'] = $checkData->Name;
-            $data['DiabeticMeasureParamId']['Description'] = $checkData->dmpDescription;
+            $data['DiabeticMeasureParam']['Id'] = $checkData->dmpId;
+            $data['DiabeticMeasureParam']['Name'] = $checkData->Name;
+            $data['DiabeticMeasureParam']['Description'] = $checkData->dmpDescription;
 
             return response()->json(['data' => $data, 'message' => 'Patient diabetic measure found'], 200);
+        }
+    }
+
+    static public function SavePatientFunctionalReview(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+
+        $date = HelperModel::getDate();
+
+        //First check if id is null or not
+        //If id is null then insert
+        //else check that record
+        if ($request->get('Id') == "null" || $request->get('Id') == null) {
+            error_log('Data id is null');
+            error_log('Now checking if record is existing via patient id or not');
+
+            //Check if diabetic measure is valid
+
+            if ((int)$request->get('FunctionalReviewParamId') != null || (int)$request->get('FunctionalReviewParamId') == "null") {
+                $checkDiabeticMeasure = GenericModel::simpleFetchGenericById('functional_review_param', 'Id', (int)$request->get('FunctionalReviewParamId'));
+                if ($checkDiabeticMeasure == null) {
+                    return response()->json(['data' => null, 'message' => 'Invalid functional review param'], 400);
+                }
+            }
+
+            $checkData = GenericModel::simpleFetchGenericById('patient_functional_review', 'PatientId', $patientId);
+
+            if ($checkData == null) {
+                error_log('data not found, so INSERTING');
+
+                $dataToAdd = array(
+                    'PatientId' => $patientId,
+                    'FunctionalReviewParamId' => (int)$request->get('FunctionalReviewParamId'),
+                    'IsOkay' => (bool)$request->get('IsOkay'),
+                    'Description' => $request->get('Description'),
+                    'IsActive' => true,
+                    'CreatedBy' => $userId,
+                    'CreatedOn' => $date["timestamp"]
+                );
+                $insertedData = GenericModel::insertGenericAndReturnID('patient_functional_review', $dataToAdd);
+                if ($insertedData == false) {
+                    error_log('data not inserted');
+                    return response()->json(['data' => null, 'message' => 'Error in inserting patient functional review'], 400);
+                } else {
+                    error_log('data inserted');
+                    return response()->json(['data' => $insertedData, 'message' => 'Patient functional review successfully added'], 200);
+                }
+            } else {
+                error_log('data found. But id is null so we cannot update');
+                return response()->json(['data' => null, 'message' => 'Patient functional review cannot be updated because id is NULL'], 200);
+            }
+        } else {
+            error_log('fetching single data');
+            $checkData = GenericModel::simpleFetchGenericById('patient_functional_review', 'Id', $request->get('Id'));
+            if ($checkData == null) {
+                error_log('data not found');
+                return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 400);
+            } else {
+                error_log('data found. Now update');
+
+                $dataToUpdate = array(
+                    'FunctionalReviewParamId' => (int)$request->get('FunctionalReviewParamId'),
+                    'IsOkay' => (bool)$request->get('IsOkay'),
+                    'Description' => $request->get('Description'),
+                    'IsActive' => true,
+                    'UpdatedBy' => $userId,
+                    'UpdatedOn' => $date["timestamp"]
+                );
+
+                $updatedData = GenericModel::updateGeneric('patient_functional_review', 'Id', (int)$request->get('Id'), $dataToUpdate);
+
+                if ($updatedData == false) {
+                    error_log('data not updated');
+                    return response()->json(['data' => null, 'message' => 'Error in updating patient functional review'], 400);
+                } else {
+                    error_log('data updated');
+                    return response()->json(['data' => (int)$request->get('Id'), 'message' => 'Patient functional review successfully updated'], 200);
+                }
+            }
+        }
+    }
+
+    static public function GetPatientPatientFunctionalReview(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = CcmModel::GetSinglePatientFunctionalReview($patientId);
+
+        if ($checkData == null) {
+            error_log('data not found');
+            return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 400);
+        } else {
+            error_log('data found. Now update');
+
+            $data = array(
+                'Id' => $checkData->ptrId,
+                'IsOkay' => $checkData->IsOkay,
+                'Description' => $checkData->ptrDescription,
+                'FunctionalReviewParam' => array()
+            );
+
+            $data['FunctionalReviewParam']['Id'] = $checkData->frpId;
+            $data['FunctionalReviewParam']['Name'] = $checkData->Name;
+            $data['FunctionalReviewParam']['Description'] = $checkData->frpDescription;
+
+            return response()->json(['data' => $data, 'message' => 'Patient functional review found'], 200);
         }
     }
 }

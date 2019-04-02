@@ -325,4 +325,18 @@ class CcmModel
 
         return $query;
     }
+
+    static public function GetSinglePatientFunctionalReview($patientId)
+    {
+        $query = DB::table('patient_functional_review')
+            ->leftjoin('functional_review_param as functional_review_param', 'patient_functional_review.FunctionalReviewParamId', 'functional_review_param.Id')
+            ->select('patient_functional_review.Id as ptrId', 'patient_functional_review.IsOkay', 'patient_functional_review.Description as pdmDescription',
+                'functional_review_param.Id as frpId' ,'functional_review_param.Name', 'functional_review_param.Description as frpDescription'
+                )
+            ->where('patient_functional_review.IsActive', '=', true)
+            ->where('patient_functional_review.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
 }
