@@ -312,17 +312,105 @@ class CcmModel
         return $query;
     }
 
-    static public function getPsychologicalReviewParam()
+    static public function GetSinglePatientDiabeticMeasure($patientId)
     {
-        error_log('in model, fetching  psychological review param');
-
-        $query = DB::table('psychological_review_param')
-            ->select('Id', 'Name', 'Description')
-            ->where('IsActive', '=', true)
-            ->orderBy('Id', 'desc')
-            ->get();
+        $query = DB::table('patient_diabetic_measure')
+            ->leftjoin('diabetic_measure_param as diabetic_measure_param', 'patient_diabetic_measure.DiabeticMeasureParamId', 'diabetic_measure_param.Id')
+            ->select('patient_diabetic_measure.Id as pdmId', 'patient_diabetic_measure.IsPatientMeasure', 'patient_diabetic_measure.Description as pdmDescription',
+                'diabetic_measure_param.Id as dmpId', 'diabetic_measure_param.Name', 'diabetic_measure_param.Description as dmpDescription'
+            )
+            ->where('patient_diabetic_measure.IsActive', '=', true)
+            ->where('patient_diabetic_measure.PatientId', '=', $patientId)
+            ->first();
 
         return $query;
     }
 
+    static public function GetSinglePatientFunctionalReview($patientId)
+    {
+        $query = DB::table('patient_functional_review')
+            ->leftjoin('functional_review_param as functional_review_param', 'patient_functional_review.FunctionalReviewParamId', 'functional_review_param.Id')
+            ->select('patient_functional_review.Id as ptrId', 'patient_functional_review.IsOkay', 'patient_functional_review.Description as ptrDescription',
+                'functional_review_param.Id as frpId', 'functional_review_param.Name', 'functional_review_param.Description as frpDescription'
+            )
+            ->where('patient_functional_review.IsActive', '=', true)
+            ->where('patient_functional_review.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
+
+
+    static public function GetSinglePatientOrgnizationAssistanceViaPatientId($patientId)
+    {
+        error_log('in model, fetching single patient organization assistance');
+
+        $query = DB::table('patient_organization_assistance')
+            ->leftjoin('assistance_organization as assistance_organization', 'patient_organization_assistance.AssistanceOrganizationId', 'assistance_organization.Id')
+            ->leftjoin('assistance_type as assistance_type', 'assistance_organization.AssistanceTypeId', 'assistance_type.Id')
+            ->select('patient_organization_assistance.Id as poaID', 'patient_organization_assistance.Organization as poaOrganization',
+                'patient_organization_assistance.TelephoneNumber as poaTelephoneNumber', 'patient_organization_assistance.OfficeAddress as poaOfficeAddress',
+                'patient_organization_assistance.ContactPerson as poaContactPerson', 'patient_organization_assistance.Description as poaDescription',
+                'patient_organization_assistance.IsPatientRefused as poaIsPatientRefused',
+                //assistance organization data
+                'assistance_organization.Id as aoId',
+                'assistance_organization.Organization as aoOrganization', 'assistance_organization.OfficeAddress as aoOfficeAddress',
+                'assistance_organization.ContactPerson as aoContactPerson', 'assistance_organization.Description as aoDescription',
+                //Assistance organization type data
+                'assistance_type.Id as atId', 'assistance_type.Type as atType', 'assistance_type.Description as atOrganization'
+            )
+            ->where('patient_organization_assistance.IsActive', '=', true)
+            ->where('patient_organization_assistance.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetSinglePatientScreenExamination($patientId)
+    {
+        $query = DB::table('patient_prevent_screening_examination')
+            ->leftjoin('prevent_screening_examination_param as prevent_screening_examination_param', 'patient_prevent_screening_examination.PreventScreeningParamId', 'prevent_screening_examination_param.Id')
+            ->select('patient_prevent_screening_examination.Id as ppseId', 'patient_prevent_screening_examination.IsPatientExamined',
+                'patient_prevent_screening_examination.Description as ppseDescription',
+                'prevent_screening_examination_param.Id as psepId', 'prevent_screening_examination_param.Name',
+                'prevent_screening_examination_param.Description as psepDescription'
+            )
+            ->where('patient_prevent_screening_examination.IsActive', '=', true)
+            ->where('patient_prevent_screening_examination.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetSinglePatientPsychologicalReview($patientId)
+    {
+        $query = DB::table('patient_psychological_review')
+            ->leftjoin('psychological_review_param as psychological_review_param', 'patient_prevent_screening_examination.PsychologicalReviewParamId', 'psychological_review_param.Id')
+            ->select('patient_psychological_review.Id as ppsId', 'patient_psychological_review.IsOkay',
+                'patient_psychological_review.Description as ppsDescription',
+                'psychological_review_param.Id as prpId', 'psychological_review_param.Name',
+                'psychological_review_param.Description as prpDescription'
+            )
+            ->where('patient_psychological_review.IsActive', '=', true)
+            ->where('patient_psychological_review.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetSinglePatientSocialReview($patientId)
+    {
+        $query = DB::table('patient_social_review')
+            ->leftjoin('social_review_param as social_review_param', 'patient_social_review.SocialReviewParamId', 'social_review_param.Id')
+            ->select('patient_social_review.Id as psrId', 'patient_social_review.IsOkay',
+                'patient_social_review.Description as psrDescription',
+                'social_review_param.Id as srpId', 'social_review_param.Name',
+                'social_review_param.Description as srpDescription'
+            )
+            ->where('patient_psychological_review.IsActive', '=', true)
+            ->where('patient_psychological_review.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
 }

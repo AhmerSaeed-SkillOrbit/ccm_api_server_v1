@@ -300,6 +300,66 @@ Route::get('/preventative/screen/exam/all', 'CcmPlanController@GetAllPreventativ
 //Get diabetic measure param
 Route::get('/diabetic/measure/all', 'CcmPlanController@GetAllDiabeticMeasureParam');
 
+//
+//ENUM apis
+//
+
+Route::get('/insurance/type/list', 'CcmPlanController@GetInsuranceType');
+Route::get('/insurance/coverage/type/list', 'CcmPlanController@GetInsuranceCoverageType');
+Route::get('/patient/live/type/list', 'CcmPlanController@GetPatientLiveType');
+Route::get('/patient/challenge/type/list', 'CcmPlanController@GetPatientChallengeType');
+Route::get('/patient/learn/by/type/list', 'CcmPlanController@GetPatientLearningType');
+Route::get('/patient/assistance/available/type/list', 'CcmPlanController@GetPatientAssistanceAvailabilityType');
+
+
+//Save patient assessment
+Route::post('/save/patient/assessment', 'CcmPlanController@SavePatientAssessment');
+Route::get('/patient/assessment/single', 'CcmPlanController@GetPatientAssessment');
+
+//Save patient assessment ability concern APIS
+Route::post('/save/patient/assessment/ability/concern', 'CcmPlanController@SavePatientAssessmentAbilityConcern');
+Route::get('/patient/assessment/ability/concern/single', 'CcmPlanController@GetPatientAssessmentAbilityConcern');
+
+//Save patient assessment alternate contact APIS
+Route::post('/save/patient/assessment/alternate/contact', 'CcmPlanController@SavePatientAssessmentAlternateContact');
+Route::get('/patient/assessment/alternate/contact/single', 'CcmPlanController@GetPatientAssessmentAlternateContact');
+
+//Save patient assessment insurance APIS
+Route::post('/save/patient/assessment/insurance', 'CcmPlanController@SavePatientAssessmentInsurance');
+Route::get('/patient/assessment/insurance/single', 'CcmPlanController@GetPatientAssessmentInsurance');
+
+//Save patient assessment resource APIS
+Route::post('/save/patient/assessment/resource', 'CcmPlanController@SavePatientAssessmentResource');
+Route::get('/patient/assessment/resource/single', 'CcmPlanController@GetPatientAssessmentResource');
+
+//Save patient assessment self APIS
+Route::post('/save/patient/assessment/self', 'CcmPlanController@SavePatientAssessmentSelf');
+Route::get('/patient/assessment/self/single', 'CcmPlanController@GetPatientAssessmentSelf');
+
+//Save patient diabetic measure APIS
+Route::post('/save/patient/diabetic/measure', 'CcmPlanController@SavePatientDiabeticMeasure');
+Route::get('/patient/diabetic/measure/single', 'CcmPlanController@GetPatientPatientDiabeticMeasure');
+
+//Save patient functional review APIS
+Route::post('/save/patient/functional/review', 'CcmPlanController@SavePatientFunctionalReview');
+Route::get('/patient/functional/review/single', 'CcmPlanController@GetPatientPatientFunctionalReview');
+
+//Save patient organization assistance APIS
+Route::post('/save/patient/organization/assistance', 'CcmPlanController@SavePatientOrganizationAssistance');
+Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetPatientOrganizationAssistanceViaPatientId');
+
+//Save patient screen examination APIS
+Route::post('/save/patient/screen/examination', 'CcmPlanController@SavePatientScreenExamination');
+Route::get('/patient/screen/examination/single', 'CcmPlanController@GetPatientScreenExamination');
+
+//Save patient psychological review APIS
+Route::post('/save/patient/psychological/review', 'CcmPlanController@SavePatientPsychologicalReview');
+Route::get('/patient/psychological/review/single', 'CcmPlanController@GetPatientPsychologicalReview');
+
+//Save patient social review APIS
+Route::post('/save/patient/social/review', 'CcmPlanController@SavePatientSocialReview');
+Route::get('/patient/social/review/single', 'CcmPlanController@GetPatientSocialReview');
+
 
 Route::get('/', function () {
     return 'Hello';
