@@ -385,7 +385,7 @@ class CcmModel
     static public function GetSinglePatientPsychologicalReview($patientId)
     {
         $query = DB::table('patient_psychological_review')
-            ->leftjoin('psychological_review_param as psychological_review_param', 'patient_prevent_screening_examination.PsychologicalReviewParamId', 'psychological_review_param.Id')
+            ->leftjoin('psychological_review_param as psychological_review_param', 'patient_psychological_review.PsychologicalReviewParamId', 'psychological_review_param.Id')
             ->select('patient_psychological_review.Id as ppsId', 'patient_psychological_review.IsOkay',
                 'patient_psychological_review.Description as ppsDescription',
                 'psychological_review_param.Id as prpId', 'psychological_review_param.Name',
@@ -407,8 +407,8 @@ class CcmModel
                 'social_review_param.Id as srpId', 'social_review_param.Name',
                 'social_review_param.Description as srpDescription'
             )
-            ->where('patient_psychological_review.IsActive', '=', true)
-            ->where('patient_psychological_review.PatientId', '=', $patientId)
+            ->where('patient_social_review.IsActive', '=', true)
+            ->where('patient_social_review.PatientId', '=', $patientId)
             ->first();
 
         return $query;
