@@ -1238,7 +1238,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetAllImmunizationVaccince(Request $request)
+    static public function GetAllImmunizationVaccine(Request $request)
     {
         error_log('in controller');
 
@@ -5073,7 +5073,6 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $data, 'message' => 'Patient screen examination found'], 200);
         }
     }
-
 
 
     static public function SavePatientPsychologicalReview(Request $request)
