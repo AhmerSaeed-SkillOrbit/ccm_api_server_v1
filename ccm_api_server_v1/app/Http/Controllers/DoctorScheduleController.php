@@ -1066,8 +1066,7 @@ class DoctorScheduleController extends Controller
                 if ($patientData[0]->MobileNumber != null) {
                     $url = env('WEB_URL') . '/#/';
                     $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
+                    $mobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
                     HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
                 }
@@ -1077,8 +1076,7 @@ class DoctorScheduleController extends Controller
                 if ($DoctorData[0]->MobileNumber != null) {
                     $url = env('WEB_URL') . '/#/';
                     $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
+                    $mobileNumber = $DoctorData[0]->CountryPhoneCode . $DoctorData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
                     HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
                 }
@@ -1397,8 +1395,7 @@ class DoctorScheduleController extends Controller
             if ($getAppointmentData->PatientMobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
                 $toNumber = array();
-                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                $mobileNumber = $phoneCode . $getAppointmentData->PatientMobileNumber;
+                $mobileNumber = $getAppointmentData->PatientCountryPhoneCode . $getAppointmentData->PatientMobileNumber;
                 array_push($toNumber, $mobileNumber);
                 HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
             }
@@ -1408,8 +1405,7 @@ class DoctorScheduleController extends Controller
             if ($getAppointmentData->DoctorMobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
                 $toNumber = array();
-                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                $mobileNumber = $phoneCode . $getAppointmentData->DoctorMobileNumber;
+                $mobileNumber = $getAppointmentData->DoctorCountryPhoneCode . $getAppointmentData->DoctorMobileNumber;
                 array_push($toNumber, $mobileNumber);
                 HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
             }

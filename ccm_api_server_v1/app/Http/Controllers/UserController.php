@@ -501,7 +501,7 @@ class UserController extends Controller
         $resultArray = json_decode(json_encode($val), true);
         $data = $resultArray;
         if (count($data) > 0) {
-            return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
+            return response()->UserRegistrationjson(['data' => $data, 'message' => 'Users fetched successfully'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Users not found'], 200);
         }
@@ -923,6 +923,7 @@ class UserController extends Controller
         $firstName = $request->get('FirstName');
         $lastName = $request->get('LastName');
         $mobileNumber = $request->get('MobileNumber');
+        $countryPhoneCode = $request->get('CountryPhoneCode');
         $telephoneNumber = $request->get('TelephoneNumber');
         $officeAddress = $request->get('OfficeAddress');
         $residentialAddress = $request->get('ResidentialAddress');
@@ -948,6 +949,7 @@ class UserController extends Controller
             "EmailAddress" => $emailAddress,
             "FirstName" => $firstName,
             "LastName" => $lastName,
+            "CountryPhoneCode" => $countryPhoneCode,
             "MobileNumber" => $mobileNumber,
             "TelephoneNumber" => $telephoneNumber,
             "OfficeAddress" => $officeAddress,
@@ -993,11 +995,10 @@ class UserController extends Controller
             if ($mobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
                 $toNumber = array();
-                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                $mobileNumber = $phoneCode . $mobileNumber;
+                $mobileNumber = $countryPhoneCode . $mobileNumber;
                 array_push($toNumber, $mobileNumber);
                 try {
-                    HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM as ' . $roleName . ', use this password to login ' . $defaultPassword, $url);
+                    HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM as "'. $roleName . '", use this password to login ' . $defaultPassword, $url);
                 } catch (Exception $ex) {
                     return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
                 }
@@ -1269,13 +1270,12 @@ class UserController extends Controller
             error_log(count($getFacilitatorEmails));
 
             $toNumber = array();
-            $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
             foreach ($getFacilitatorEmails as $item) {
 
                 //pushing mobile number
                 //in array for use in sending sms
-                array_push($toNumber, $phoneCode . $item->MobileNumber);
+                array_push($toNumber, $item->CountryPhoneCode . $item->MobileNumber);
 
                 error_log('$item' . $item->EmailAddress);
                 error_log('$item' . $item->MobileNumber);

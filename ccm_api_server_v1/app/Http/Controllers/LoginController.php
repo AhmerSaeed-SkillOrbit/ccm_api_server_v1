@@ -98,11 +98,9 @@ class LoginController extends Controller
         try {
 
             $invite = $request->input('InviteCode');
-            $code = $request->input('Type');
-
             $data = $request->all();
 
-            if ($invite && $code) {
+            if ($invite) {
                 $validator = LoginController::registerValidator($data);
 
                 if ($validator->fails()) {
@@ -177,6 +175,7 @@ class LoginController extends Controller
                         if ($updateDataCheck >= 0) {
 
                             $mobileNumber = $checkEmail[0]->MobileNumber;
+                            $countyPhoneCode = $checkEmail[0]->CountryPhoneCode;
 
                             $dataToInsert = array(
                                 "UserId" => $checkEmail[0]->Id,
@@ -206,11 +205,10 @@ class LoginController extends Controller
                             if ($mobileNumber != null) {
                                 $url = env('WEB_URL') . '/#/';
                                 $toNumber = array();
-                                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                                $mobileNumber = $phoneCode . $mobileNumber;
+                                $mobileNumber = $countyPhoneCode . $mobileNumber;
+
                                 array_push($toNumber, $mobileNumber);
                                 try {
-//                                    HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address', $url);
                                     HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address.', null);
                                 } catch (Exception $ex) {
 //                                    return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
@@ -274,9 +272,6 @@ class LoginController extends Controller
                     if (count($checkUserData) == 0) {
                         return response()->json(['data' => null, 'message' => 'User not found'], 400);
                     } else {
-
-
-
                         $hashedPassword = md5($password);
                         //Now making data for user_access
                         $dataToUpdate = array(
@@ -300,6 +295,7 @@ class LoginController extends Controller
 
                                 DB::commit();
                                 $mobileNumber = $checkUserData[0]->MobileNumber;
+                                $countryPhoneCode = $checkUserData[0]->CountryPhoneCode;
 
                                 $emailAddress = $checkUserData[0]->EmailAddress;
 
@@ -313,8 +309,7 @@ class LoginController extends Controller
                                 if ($mobileNumber != null) {
                                     $url = env('WEB_URL') . '/#/';
                                     $toNumber = array();
-                                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                                    $mobileNumber = $phoneCode . $mobileNumber;
+                                    $mobileNumber = $countryPhoneCode . $mobileNumber;
                                     array_push($toNumber, $mobileNumber);
                                     try {
 //                                    HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address', $url);
