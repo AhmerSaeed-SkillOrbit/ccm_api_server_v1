@@ -1238,7 +1238,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetAllImmunizationVaccince(Request $request)
+    static public function GetAllImmunizationVaccine(Request $request)
     {
         error_log('in controller');
 
@@ -4707,7 +4707,7 @@ class CcmPlanController extends Controller
                     'ContactPerson' => $request->get('ContactPerson'),
                     'Description' => $request->get('Description'),
                     'IsPatientRefused' => (bool)$request->get('IsPatientRefused'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -4740,7 +4740,7 @@ class CcmPlanController extends Controller
                     'ContactPerson' => $request->get('ContactPerson'),
                     'Description' => $request->get('Description'),
                     'IsPatientRefused' => (bool)$request->get('IsPatientRefused'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -4943,7 +4943,7 @@ class CcmPlanController extends Controller
                     'PreventScreeningParamId' => (int)$request->get('PreventScreeningParamId'),
                     'Description' => $request->get('Description'),
                     'IsPatientExamined' => (bool)$request->get('IsPatientExamined'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -4972,7 +4972,7 @@ class CcmPlanController extends Controller
                     'PreventScreeningParamId' => (int)$request->get('PreventScreeningParamId'),
                     'Description' => $request->get('Description'),
                     'IsPatientExamined' => (bool)$request->get('IsPatientExamined'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -5073,7 +5073,6 @@ class CcmPlanController extends Controller
     }
 
 
-
     static public function SavePatientPsychologicalReview(Request $request)
     {
         error_log('in controller');
@@ -5163,7 +5162,7 @@ class CcmPlanController extends Controller
                     'PsychologicalReviewParamId' => (int)$request->get('PsychologicalReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -5192,7 +5191,7 @@ class CcmPlanController extends Controller
                     'PsychologicalReviewParamId' => (int)$request->get('PsychologicalReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -5381,7 +5380,7 @@ class CcmPlanController extends Controller
                     'SocialReviewParamId' => (int)$request->get('SocialReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -5410,7 +5409,7 @@ class CcmPlanController extends Controller
                     'SocialReviewParamId' => (int)$request->get('SocialReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => $request->get('IsActive'),
+                    'IsActive' => (bool) $request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
