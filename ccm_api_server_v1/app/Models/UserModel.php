@@ -869,7 +869,7 @@ class UserModel
     static public function getMultipleUsers($userIds)
     {
         $result = DB::table('user')
-            ->select('user.EmailAddress', 'user.Id', 'user.FirstName', 'user.LastName', 'user.MobileNumber')
+            ->select('user.EmailAddress', 'user.Id', 'user.FirstName', 'user.LastName', 'user.MobileNumber','user.CountryPhoneCode')
             ->whereIn('Id', $userIds)
             ->where('IsActive', '=', true)
             ->get();

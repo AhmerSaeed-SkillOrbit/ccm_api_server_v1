@@ -236,7 +236,7 @@ class LoginModel
         try {
 
             $inviteCode = DB::table('account_invitation')
-                ->select('Id', 'Token', 'BelongTo', 'ByUserId')
+                ->select('Id', 'Token', 'BelongTo', 'ByUserId','ToMobileNumber','CountryPhoneCode')
                 ->where('Token', '=', $inviteCode)
                 ->where('ToEmailAddress', '=', $email)
                 ->where('Status_', '=', "ignored")
@@ -249,6 +249,8 @@ class LoginModel
 
                 $belongTo = $checkInviteCode[0]['BelongTo'];
                 $byUserId = $checkInviteCode[0]['ByUserId'];
+                $countryPhoneCode = $checkInviteCode[0]['CountryPhoneCode'];
+                $mobileNumber = $checkInviteCode[0]['ToMobileNumber'];
 
                 $inviteUpdateData = array(
                     "Status_" => "accepted",
@@ -265,7 +267,8 @@ class LoginModel
                         "FirstName" => $data["FirstName"],
                         "LastName" => $data["LastName"],
                         "EmailAddress" => $data["EmailAddress"],
-                        "MobileNumber" => $data["MobileNumber"],
+                        "CountryPhoneCode" => $countryPhoneCode,
+                        "MobileNumber" => $mobileNumber,
                         "TelephoneNumber" => $data["TelephoneNumber"],
                         "OfficeAddress" => $data["OfficeAddress"],
                         "ResidentialAddress" => $data["ResidentialAddress"],
@@ -320,12 +323,11 @@ class LoginModel
 
                             if ($checkInsertUserId) {
 
-                                Mail::raw('Welcome to CCM', function ($message) use ($email) {
-                                    $message->to($email)->subject("Invitation");
+                                Mail::raw('Welcome, You are successfully registered to CCM', function ($message) use ($email) {
+                                    $message->to($email)->subject("Registration Successful");
                                 });
 
                                 DB::commit();
-                                // return array("status" => true, "data" => $data);
                                 return array("status" => "success", "data" => $checkInsertUserId, "message" => "You have successfully Signed up");
 
                             } else {
