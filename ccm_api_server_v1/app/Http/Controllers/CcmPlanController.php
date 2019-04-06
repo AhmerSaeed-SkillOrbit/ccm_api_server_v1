@@ -2716,6 +2716,30 @@ class CcmPlanController extends Controller
         }
     }
 
+    function GetPatientPrimaryLanguage()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'PrimaryLanguage');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Primary language not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Primary language found'], 200);
+        }
+    }
+
+    function GetThingsImpactOnHealth()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'ThingImpactHealth');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Things impact not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Things impact found'], 200);
+        }
+    }
+
     function GetPatientLearningType()
     {
         error_log('in controller');
