@@ -4402,6 +4402,7 @@ class CcmPlanController extends Controller
                 'Id' => $checkData->pdmId,
                 'IsPatientMeasure' => $checkData->IsPatientMeasure,
                 'Description' => $checkData->pdmDescription,
+                'IsActive' => $checkData->pdmIsActive,
                 'DiabeticMeasureParam' => array()
             );
 
@@ -4621,6 +4622,7 @@ class CcmPlanController extends Controller
                 'Id' => $checkData->ptrId,
                 'IsOkay' => $checkData->IsOkay,
                 'Description' => $checkData->ptrDescription,
+                'IsActive' => $checkData->ptrIsActive,
                 'FunctionalReviewParam' => array()
             );
 
