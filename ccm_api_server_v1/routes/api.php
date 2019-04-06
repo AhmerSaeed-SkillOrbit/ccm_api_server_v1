@@ -365,6 +365,9 @@ Route::get('/patient/social/review/single', 'CcmPlanController@GetPatientSocialR
 //Get diabetic measure param
 Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
 
+//Save CCM plan APIS
+Route::post('/patient/ccm/plan/add', 'CcmPlanController@SavePatientCCMPlan');
+
 
 Route::get('/', function () {
     return 'Hello';

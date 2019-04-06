@@ -415,4 +415,13 @@ class CcmModel
 
         return $query;
     }
+
+
+    static public function GetTotalCcmPlans()
+    {
+        $query = DB::table('ccm_plan')
+            ->count();
+
+        return $query;
+    }
 }
