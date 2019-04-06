@@ -330,7 +330,8 @@ class CcmModel
     {
         $query = DB::table('patient_functional_review')
             ->leftjoin('functional_review_param as functional_review_param', 'patient_functional_review.FunctionalReviewParamId', 'functional_review_param.Id')
-            ->select('patient_functional_review.Id as ptrId', 'patient_functional_review.IsOkay', 'patient_functional_review.Description as ptrDescription',
+            ->select('patient_functional_review.Id as ptrId', 'patient_functional_review.IsOkay', 'patient_functional_review.IsActive as ptrIsActive',
+                'patient_functional_review.Description as ptrDescription',
                 'functional_review_param.Id as frpId', 'functional_review_param.Name', 'functional_review_param.Description as frpDescription'
             )
             ->where('patient_functional_review.IsActive', '=', true)
@@ -371,7 +372,7 @@ class CcmModel
         $query = DB::table('patient_prevent_screening_examination')
             ->leftjoin('prevent_screening_examination_param as prevent_screening_examination_param', 'patient_prevent_screening_examination.PreventScreeningParamId', 'prevent_screening_examination_param.Id')
             ->select('patient_prevent_screening_examination.Id as ppseId', 'patient_prevent_screening_examination.IsPatientExamined',
-                'patient_prevent_screening_examination.Description as ppseDescription',
+                'patient_prevent_screening_examination.Description as ppseDescription', 'patient_prevent_screening_examination.IsActive as ppseIsActive',
                 'prevent_screening_examination_param.Id as psepId', 'prevent_screening_examination_param.Name',
                 'prevent_screening_examination_param.Description as psepDescription'
             )
@@ -387,7 +388,7 @@ class CcmModel
         $query = DB::table('patient_psychological_review')
             ->leftjoin('psychological_review_param as psychological_review_param', 'patient_psychological_review.PsychologicalReviewParamId', 'psychological_review_param.Id')
             ->select('patient_psychological_review.Id as ppsId', 'patient_psychological_review.IsOkay',
-                'patient_psychological_review.Description as ppsDescription',
+                'patient_psychological_review.Description as ppsDescription', 'patient_psychological_review.IsActive as ppsIsActive',
                 'psychological_review_param.Id as prpId', 'psychological_review_param.Name',
                 'psychological_review_param.Description as prpDescription'
             )
@@ -403,7 +404,7 @@ class CcmModel
         $query = DB::table('patient_social_review')
             ->leftjoin('social_review_param as social_review_param', 'patient_social_review.SocialReviewParamId', 'social_review_param.Id')
             ->select('patient_social_review.Id as psrId', 'patient_social_review.IsOkay',
-                'patient_social_review.Description as psrDescription',
+                'patient_social_review.Description as psrDescription', 'patient_social_review.IsActive as psrIsActive',
                 'social_review_param.Id as srpId', 'social_review_param.Name',
                 'social_review_param.Description as srpDescription'
             )
