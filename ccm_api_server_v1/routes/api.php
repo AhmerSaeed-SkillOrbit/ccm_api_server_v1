@@ -360,6 +360,9 @@ Route::get('/patient/psychological/review/single', 'CcmPlanController@GetPatient
 Route::post('/save/patient/social/review', 'CcmPlanController@SavePatientSocialReview');
 Route::get('/patient/social/review/single', 'CcmPlanController@GetPatientSocialReview');
 
+//Get diabetic measure param
+Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
+
 
 Route::get('/', function () {
     return 'Hello';

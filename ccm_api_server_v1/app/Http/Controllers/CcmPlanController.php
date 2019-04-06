@@ -2974,7 +2974,8 @@ class CcmPlanController extends Controller
                 'CanCallOnDayTimePhone' => $checkData->CanCallOnDayTimePhone,
                 'CanMsgOnDayTimePhone' => $checkData->CanMsgOnDayTimePhone,
                 'CanCallOnNightTimePhone' => $checkData->CanCallOnNightTimePhone,
-                'CanMsgOnNightTimePhone' => $checkData->CanMsgOnNightTimePhone
+                'CanMsgOnNightTimePhone' => $checkData->CanMsgOnNightTimePhone,
+                'IsActive' => $checkData->IsActive
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment found'], 200);
@@ -3240,7 +3241,8 @@ class CcmPlanController extends Controller
                 'CurrentlyDirectiveComment' => $checkData->CurrentlyDirectiveComment,
                 'IsAbleToMoveDaily' => $checkData->IsAbleToMoveDaily,
                 'AbleToMoveDailyComment' => $checkData->AbleToMoveDailyComment,
-                'ConcernDetailComment' => $checkData->ConcernDetailComment
+                'ConcernDetailComment' => $checkData->ConcernDetailComment,
+                'IsActive' => $checkData->IsActive
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment ability concern found'], 200);
@@ -3464,7 +3466,8 @@ class CcmPlanController extends Controller
                 'FinancerPhoneNumber' => $checkData->FinancerPhoneNumber,
                 'HealthCarerName' => $checkData->HealthCarerName,
                 'HealthCarerPhoneNumber' => $checkData->HealthCarerPhoneNumber,
-                'Comment' => $checkData->Comment
+                'Comment' => $checkData->Comment,
+                'IsActive' => $checkData->IsActive
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment alternate contact found'], 200);
@@ -3682,7 +3685,8 @@ class CcmPlanController extends Controller
                 'CoverageType' => $checkData->CoverageType,
                 'CoverageOtherType' => $checkData->CoverageOtherType,
                 'CoveragePolicyNumber' => $checkData->CoveragePolicyNumber,
-                'Comment' => $checkData->Comment
+                'Comment' => $checkData->Comment,
+                'IsActive' => $checkData->IsActive
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment insurance found'], 200);
@@ -3933,7 +3937,8 @@ class CcmPlanController extends Controller
                 'IsFrequentlySad' => $checkData->IsFrequentlySad,
                 'IsFrequentlySadComment' => $checkData->IsFrequentlySadComment,
                 'HardToTakeBath' => $checkData->HardToTakeBath,
-                'HardToTakeBathComment' => $checkData->HardToTakeBathComment
+                'HardToTakeBathComment' => $checkData->HardToTakeBathComment,
+                'IsActive' => $checkData->IsActive
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment resource found'], 200);
@@ -4181,7 +4186,8 @@ class CcmPlanController extends Controller
                 'ThingImpactHealthOther' => $checkData->ThingImpactHealthOther,
                 'IsDietaryRequire' => $checkData->IsDietaryRequire,
                 'DietaryRequireDescription' => $checkData->DietaryRequireDescription,
-                'AssistanceAvailable' => $checkData->AssistanceAvailable
+                'AssistanceAvailable' => $checkData->AssistanceAvailable,
+                'IsActive' => $checkData->IsActive
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment self found'], 200);
@@ -4845,6 +4851,7 @@ class CcmPlanController extends Controller
             $data['ContactPerson'] = $patientOrganizationData->poaContactPerson;
             $data['Description'] = $patientOrganizationData->poaDescription;
             $data['IsPatientRefused'] = $patientOrganizationData->poaIsPatientRefused;
+            $data['IsActive'] = $patientOrganizationData->ptrIsActive;
             $data['AssistanceOrganization'] = array();
 
             //Assistance organization data
@@ -5073,6 +5080,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $checkData->ppseId;
             $data['IsPatientExamined'] = $checkData->IsPatientExamined;
             $data['Description'] = $checkData->ppseDescription;
+            $data['IsActive'] = $checkData->ppseIsActive;
             $data['PreventScreeningParam'] = array();
 
             //Assistance organization data
@@ -5292,6 +5300,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $checkData->ppsId;
             $data['IsPatientExamined'] = $checkData->IsOkay;
             $data['Description'] = $checkData->ppsDescription;
+            $data['IsActive'] = $checkData->ppsIsActive;
             $data['PsychologicalReviewParam'] = array();
 
             //Assistance organization data
@@ -5510,6 +5519,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $checkData->psrId;
             $data['IsPatientExamined'] = $checkData->IsOkay;
             $data['Description'] = $checkData->psrDescription;
+            $data['IsActive'] = $checkData->psrIsActive;
             $data['SocialReviewParam'] = array();
 
             //Assistance organization data
@@ -5518,6 +5528,34 @@ class CcmPlanController extends Controller
             $data['SocialReviewParam']['Description'] = $checkData->srpDescription;
 
             return response()->json(['data' => $data, 'message' => 'Patient social review found'], 200);
+        }
+    }
+
+    static public function GetAllHealthParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('ccm_health_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Health param found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Health param not found'], 200);
         }
     }
 }
