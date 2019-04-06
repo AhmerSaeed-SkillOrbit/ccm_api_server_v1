@@ -5520,4 +5520,32 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $data, 'message' => 'Patient social review found'], 200);
         }
     }
+
+    static public function GetAllHealthParam()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('ccm_health_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+        }
+
+        if (count($dataList) > 0) {
+            return response()->json(['data' => $finalData, 'message' => 'Health param found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Health param not found'], 200);
+        }
+    }
 }
