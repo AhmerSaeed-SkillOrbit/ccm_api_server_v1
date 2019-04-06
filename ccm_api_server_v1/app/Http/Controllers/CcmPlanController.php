@@ -481,7 +481,7 @@ class CcmPlanController extends Controller
                 'StartDate' => $request->get('StartDate'),
                 'StartBy' => $request->get('StartBy'),
                 'WhyComments' => $request->get('WhyComments'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -732,7 +732,7 @@ class CcmPlanController extends Controller
                 'MedicineReaction' => $request->get('MedicineReaction'),
                 'ReactionDate' => $request->get('ReactionDate'),
                 'IsReactionSevere' => $request->get('IsReactionSevere'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -979,7 +979,7 @@ class CcmPlanController extends Controller
                 'SubstanceReaction' => $request->get('SubstanceReaction'),
                 'ReactionDate' => $request->get('ReactionDate'),
                 'IsReactionSevere' => $request->get('IsReactionSevere'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -1221,7 +1221,7 @@ class CcmPlanController extends Controller
             $dataToUpdate = array(
                 'Vaccine' => $request->get('Vaccine'),
                 'VaccineDate' => $request->get('VaccineDate'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -1461,7 +1461,7 @@ class CcmPlanController extends Controller
                 'Provider' => $request->get('Provider'),
                 'LastVisitDate' => $request->get('LastVisitDate'),
                 'VisitReason' => $request->get('VisitReason'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -1795,7 +1795,7 @@ class CcmPlanController extends Controller
                 'ContactPerson' => $request->get('ContactPerson'),
                 'Description' => $request->get('Description'),
                 'IsPatientRefused' => $request->get('IsPatientRefused'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -2078,7 +2078,7 @@ class CcmPlanController extends Controller
                 'HospitalizedDate' => $request->get('HospitalizedDate'),
                 'HospitalName' => $request->get('HospitalName'),
                 'PatientComments' => $request->get('PatientComments'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -2324,7 +2324,7 @@ class CcmPlanController extends Controller
                 'DiagnoseDate' => $request->get('DiagnoseDate'),
                 'CurrentProblem' => $request->get('CurrentProblem'),
                 'NeedAttention' => $request->get('NeedAttention'),
-                'IsActive' => (bool) $request->get('IsActive'),
+                'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
             );
@@ -2828,7 +2828,11 @@ class CcmPlanController extends Controller
                     'CanUseInternet' => (bool)$request->get('CanUseInternet'),
                     'WantToChange' => $request->get('WantToChange'),
                     'EffortToChange' => $request->get('EffortToChange'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
+                    'CanCallOnDayTimePhone' => (bool)$request->get('CanCallOnDayTimePhone'),
+                    'CanMsgOnDayTimePhone' => (bool)$request->get('CanMsgOnDayTimePhone'),
+                    'CanCallOnNightTimePhone' => (bool)$request->get('CanCallOnNightTimePhone'),
+                    'CanMsgOnNightTimePhone' => (bool)$request->get('CanMsgOnNightTimePhone'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -2865,7 +2869,11 @@ class CcmPlanController extends Controller
                     'CanUseInternet' => (bool)$request->get('CanUseInternet'),
                     'WantToChange' => $request->get('WantToChange'),
                     'EffortToChange' => $request->get('EffortToChange'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
+                    'CanCallOnDayTimePhone' => (bool)$request->get('CanCallOnDayTimePhone'),
+                    'CanMsgOnDayTimePhone' => (bool)$request->get('CanMsgOnDayTimePhone'),
+                    'CanCallOnNightTimePhone' => (bool)$request->get('CanCallOnNightTimePhone'),
+                    'CanMsgOnNightTimePhone' => (bool)$request->get('CanMsgOnNightTimePhone'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -2943,7 +2951,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'PatientId',(int) $patientId);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'PatientId', (int)$patientId);
         if ($checkData == null) {
             error_log('data not found');
             return response()->json(['data' => null, 'message' => 'Patient assessment not found'], 400);
@@ -2962,7 +2970,11 @@ class CcmPlanController extends Controller
                 'IsInternetHelper' => $checkData->IsInternetHelper,
                 'CanUseInternet' => $checkData->CanUseInternet,
                 'WantToChange' => $checkData->WantToChange,
-                'EffortToChange' => $checkData->EffortToChange
+                'EffortToChange' => $checkData->EffortToChange,
+                'CanCallOnDayTimePhone' => $checkData->CanCallOnDayTimePhone,
+                'CanMsgOnDayTimePhone' => $checkData->CanMsgOnDayTimePhone,
+                'CanCallOnNightTimePhone' => $checkData->CanCallOnNightTimePhone,
+                'CanMsgOnNightTimePhone' => $checkData->CanMsgOnNightTimePhone
             );
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment found'], 200);
@@ -3196,7 +3208,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_ability_concern', 'PatientId', (int) $patientId);
+        $checkData = GenericModel::simpleFetchGenericById('patient_assessment_ability_concern', 'PatientId', (int)$patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -3321,7 +3333,7 @@ class CcmPlanController extends Controller
                     'HealthCarerName' => $request->get('HealthCarerName'),
                     'HealthCarerPhoneNumber' => $request->get('HealthCarerPhoneNumber'),
                     'Comment' => $request->get('Comment'),
-                    'IsActive' =>(bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -3356,7 +3368,7 @@ class CcmPlanController extends Controller
                     'HealthCarerName' => $request->get('HealthCarerName'),
                     'HealthCarerPhoneNumber' => $request->get('HealthCarerPhoneNumber'),
                     'Comment' => $request->get('Comment'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -3543,7 +3555,7 @@ class CcmPlanController extends Controller
                     'CoverageOtherType' => $request->get('CoverageOtherType'),
                     'CoveragePolicyNumber' => $request->get('CoveragePolicyNumber'),
                     'Comment' => $request->get('Comment'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -3576,7 +3588,7 @@ class CcmPlanController extends Controller
                     'CoverageOtherType' => $request->get('CoverageOtherType'),
                     'CoveragePolicyNumber' => $request->get('CoveragePolicyNumber'),
                     'Comment' => $request->get('Comment'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -3816,7 +3828,7 @@ class CcmPlanController extends Controller
                     'IsFrequentlySadComment' => $request->get('IsFrequentlySadComment'),
                     'HardToTakeBath' => (bool)$request->get('HardToTakeBath'),
                     'HardToTakeBathComment' => $request->get('HardToTakeBathComment'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -4022,7 +4034,7 @@ class CcmPlanController extends Controller
                     'IsDietaryRequire' => (bool)$request->get('IsDietaryRequire'),
                     'DietaryRequireDescription' => $request->get('DietaryRequireDescription'),
                     'AssistanceAvailable' => $request->get('AssistanceAvailable'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -4065,7 +4077,7 @@ class CcmPlanController extends Controller
                     'IsDietaryRequire' => (bool)$request->get('IsDietaryRequire'),
                     'DietaryRequireDescription' => $request->get('DietaryRequireDescription'),
                     'AssistanceAvailable' => $request->get('AssistanceAvailable'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -4265,7 +4277,7 @@ class CcmPlanController extends Controller
                     'DiabeticMeasureParamId' => (int)$request->get('DiabeticMeasureParamId'),
                     'IsPatientMeasure' => (bool)$request->get('IsPatientMeasure'),
                     'Description' => $request->get('Description'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -4294,7 +4306,7 @@ class CcmPlanController extends Controller
                     'DiabeticMeasureParamId' => (int)$request->get('DiabeticMeasureParamId'),
                     'IsPatientMeasure' => (bool)$request->get('IsPatientMeasure'),
                     'Description' => $request->get('Description'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -4484,7 +4496,7 @@ class CcmPlanController extends Controller
                     'FunctionalReviewParamId' => (int)$request->get('FunctionalReviewParamId'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
                     'Description' => $request->get('Description'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -4513,7 +4525,7 @@ class CcmPlanController extends Controller
                     'FunctionalReviewParamId' => (int)$request->get('FunctionalReviewParamId'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
                     'Description' => $request->get('Description'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -4707,7 +4719,7 @@ class CcmPlanController extends Controller
                     'ContactPerson' => $request->get('ContactPerson'),
                     'Description' => $request->get('Description'),
                     'IsPatientRefused' => (bool)$request->get('IsPatientRefused'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -4740,7 +4752,7 @@ class CcmPlanController extends Controller
                     'ContactPerson' => $request->get('ContactPerson'),
                     'Description' => $request->get('Description'),
                     'IsPatientRefused' => (bool)$request->get('IsPatientRefused'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -4943,7 +4955,7 @@ class CcmPlanController extends Controller
                     'PreventScreeningParamId' => (int)$request->get('PreventScreeningParamId'),
                     'Description' => $request->get('Description'),
                     'IsPatientExamined' => (bool)$request->get('IsPatientExamined'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -4972,7 +4984,7 @@ class CcmPlanController extends Controller
                     'PreventScreeningParamId' => (int)$request->get('PreventScreeningParamId'),
                     'Description' => $request->get('Description'),
                     'IsPatientExamined' => (bool)$request->get('IsPatientExamined'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -5162,7 +5174,7 @@ class CcmPlanController extends Controller
                     'PsychologicalReviewParamId' => (int)$request->get('PsychologicalReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -5191,7 +5203,7 @@ class CcmPlanController extends Controller
                     'PsychologicalReviewParamId' => (int)$request->get('PsychologicalReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
@@ -5380,7 +5392,7 @@ class CcmPlanController extends Controller
                     'SocialReviewParamId' => (int)$request->get('SocialReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
@@ -5409,7 +5421,7 @@ class CcmPlanController extends Controller
                     'SocialReviewParamId' => (int)$request->get('SocialReviewParamId'),
                     'Description' => $request->get('Description'),
                     'IsOkay' => (bool)$request->get('IsOkay'),
-                    'IsActive' => (bool) $request->get('IsActive'),
+                    'IsActive' => (bool)$request->get('IsActive'),
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
