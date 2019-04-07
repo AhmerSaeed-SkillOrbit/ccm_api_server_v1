@@ -424,4 +424,50 @@ class CcmModel
 
         return $query;
     }
+
+    static public function GetSinglePatientCcmPlanViaId($id)
+    {
+        $query = DB::table('ccm_plan')
+            ->select('ccm_plan.*')
+            ->where('ccm_plan.IsActive', '=', true)
+            ->where('ccm_plan.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetCcmPlanGoalsViaCcmPLanId($ccmPlanId)
+    {
+        $query = DB::table('ccm_plan_goal')
+            ->where('IsActive', '=', true)
+            ->where('CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
+
+
+    static public function CheckIfCcmPlanAlreadyExists($patientId, $startDate)
+    {
+        $query = DB::table('ccm_plan')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $patientId)
+            ->where('StartDate', '=', $startDate)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetPatientCcmPlanHealthParamViaCcmPlanId($ccmPlanId)
+    {
+        $query = DB::table('ccm_plan_initial_health')
+            ->leftjoin('ccm_health_param as ccm_health_param', 'ccm_plan_initial_health.CcmHealthParamId', 'ccm_health_param.Id')
+            ->select('ccm_plan_initial_health.Id as cpihId', 'ccm_plan_initial_health.ReadingValue', 'ccm_plan_initial_health.ReadingDate',
+                'ccm_health_param.Id as chpId', 'ccm_health_param.Name', 'ccm_health_param.Description')
+            ->where('ccm_plan_initial_health.IsActive', '=', true)
+            ->where('ccm_plan_initial_health.CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
 }

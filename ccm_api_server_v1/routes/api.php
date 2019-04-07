@@ -367,6 +367,8 @@ Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
 
 //Save CCM plan APIS
 Route::post('/patient/ccm/plan/add', 'CcmPlanController@SavePatientCCMPlan');
+//get single CCM plan
+Route::get('/patient/ccm/plan/single', 'CcmPlanController@GetCCMPlanViaId');
 
 
 Route::get('/', function () {
