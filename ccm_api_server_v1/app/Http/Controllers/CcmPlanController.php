@@ -6120,6 +6120,7 @@ class CcmPlanController extends Controller
 
         //Now check if Ccm plan of this patient with the same start data already exists or not
 
+        DB::beginTransaction();
 
         $ccmPlanData = CcmModel::GetSinglePatientCcmPlanViaId($id);
         if ($ccmPlanData == null) {
@@ -6151,7 +6152,122 @@ class CcmPlanController extends Controller
                 }
             }
 
+            if ($request->get('StartDate') != $ccmPlanData->StartDate) {
+                $checkCcmPlanExistence = CcmModel::CheckIfCcmPlanAlreadyExists($patientId, $request->get('StartDate'));
+                if ($checkCcmPlanExistence != null) {
+                    DB::rollBack();
+                    return response()->json(['data' => null, 'message' => 'Ccm plan for this patient on the same data already exists'], 400);
+                }
+            }
+
             error_log('Now making data to update in ccm plan ');
+
+            $date = HelperModel::getDate();
+
+            $ccmPlanData = array(
+                'StartDate' => $request->get('StartDate'),
+                'EndDate' => $request->get('EndDate'),
+                'CreatedBy' => $userId,
+                'IsActive' => true,
+                'UpdatedOn' => $date["timestamp"]
+            );
+
+            $insertCcmPlanData = GenericModel::updateGeneric('ccm_plan', 'Id', $id, $ccmPlanData);
+            if ($insertCcmPlanData == 0 || $insertCcmPlanData == null) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in updating CCM plan'], 400);
+            }
+            error_log('ccm plan inserted');
+            //Now we will make data to upload CCM plan items and it's goals
+            //Outer loop will be on item
+            //inner loop will be on goals
+
+            $ccmPlanGoals = array();
+
+            //Checking if item exists
+            if (count($request->input('Item')) > 0) {
+                foreach ($request->input('Item') as $item) {
+                    //Checking if goal exists
+                    if (count($item['Goal']) > 0) {
+                        error_log('Goals are there : ' . count($item['Goal']));
+                        foreach ($item['Goal'] as $item2) {
+
+                            $data = array(
+                                'CcmPlanId' => $id,
+                                'ItemName' => $item['ItemName'],
+                                'Goal' => $item2['Name'],
+                                'Intervention' => (string)$item2['Intervention'],
+                                'IsActive' => true
+                            );
+
+                            array_push($ccmPlanGoals, $data);
+                        }
+                    } else {
+                        //Only item name is given,
+                        //Goal needs to be given
+                        $data = array(
+                            'CcmPlanId' => $id,
+                            'ItemName' => $item['ItemName'],
+                            'IsActive' => true
+                        );
+
+                        array_push($ccmPlanGoals, $data);
+                    }
+                }
+            }
+
+            error_log('now inserting ccm plan goals');
+
+            $insertCcmPlanGoalData = GenericModel::insertGeneric('ccm_plan_goal', $ccmPlanGoals);
+
+            if ($insertCcmPlanGoalData == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in adding CCM plan goals'], 400);
+            }
+
+            error_log('ccm plan goal inserted');
+
+            $ccmPlanHealthParams = array();
+
+            //Now we will be adding health params
+            if (count($request->input('HealthParams')) > 0) {
+                foreach ($request->input('HealthParams') as $item) {
+                    //We will check if parameter is valid or not
+                    if ((int)$item['Id'] != null || (int)$item['Id'] != "null") {
+                        $checkHealthParams = GenericModel::simpleFetchGenericById('ccm_health_param', 'Id', (int)$item['Id']);
+                        if ($checkHealthParams == null) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Invalid health params'], 400);
+                        } else {
+                            error_log('all checks clear.');
+                            error_log('Now making data to insert ccm plan health param');
+
+                            $data = array(
+                                'CcmPlanId' => $id,
+                                'CcmHealthParamId' => $item['Id'],
+                                'ReadingValue' => $item['ReadingValue'],
+                                'ReadingDate' => $item['ReadingDate'],
+                                'IsActive' => true
+                            );
+
+                            array_push($ccmPlanHealthParams, $data);
+                        }
+                    }
+                }
+            }
+
+            $insertedData = GenericModel::insertGeneric('ccm_plan_initial_health', $ccmPlanHealthParams);
+
+
+            if ($insertedData == false) {
+                error_log('data not update');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in updating patient Ccm plan'], 400);
+            } else {
+                error_log('data inserted');
+                DB::commit();
+                return response()->json(['data' => $insertCcmPlanData, 'message' => 'Ccm plan successfully updated'], 200);
+            }
 
 
         }
