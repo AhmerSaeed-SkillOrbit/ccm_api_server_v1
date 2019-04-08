@@ -2495,7 +2495,6 @@ class CcmPlanController extends Controller
         if ($data == null) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
-
         //Binding data to variable.
 
         $firstName = $request->post('FirstName');
@@ -6153,7 +6152,7 @@ class CcmPlanController extends Controller
             }
 
             error_log('Now making data to update in ccm plan ');
-            
+
 
         }
     }
