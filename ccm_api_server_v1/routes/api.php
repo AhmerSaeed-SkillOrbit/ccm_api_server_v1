@@ -72,6 +72,8 @@ Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
 //Test file upload
 Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
+Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
+
 //Adding schedule of doctor
 Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
 //Updating schedule of doctor

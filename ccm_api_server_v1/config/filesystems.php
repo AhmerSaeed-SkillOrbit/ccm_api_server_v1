@@ -65,10 +65,10 @@ return [
         ],
         'ftp' => [
             'driver' => 'ftp',
-            'host' => env('ftp://13.229.102.246:21'),
-            'username' => env('ftpuser'),
-            'password' => env('skillorbit1'),
-            'root' => 'test_dir' // for example: /var/www/html/dev/images
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USER'),
+            'password' => env('FTP_PASSWORD'),
+            'root' => env('FTP_DIR') // for example: /var/www/html/dev/images
         ],
 
     ],
