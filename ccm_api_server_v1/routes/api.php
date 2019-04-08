@@ -310,7 +310,9 @@ Route::get('/insurance/type/list', 'CcmPlanController@GetInsuranceType');
 Route::get('/insurance/coverage/type/list', 'CcmPlanController@GetInsuranceCoverageType');
 Route::get('/patient/live/type/list', 'CcmPlanController@GetPatientLiveType');
 Route::get('/patient/challenge/type/list', 'CcmPlanController@GetPatientChallengeType');
+Route::get('/patient/primary/language/list', 'CcmPlanController@GetPatientPrimaryLanguage');
 Route::get('/patient/learn/by/type/list', 'CcmPlanController@GetPatientLearningType');
+Route::get('/patient/things/impact/list', 'CcmPlanController@GetThingsImpactOnHealth');
 Route::get('/patient/assistance/available/type/list', 'CcmPlanController@GetPatientAssistanceAvailabilityType');
 
 
@@ -362,6 +364,19 @@ Route::get('/patient/psychological/review/single', 'CcmPlanController@GetPatient
 Route::post('/save/patient/social/review', 'CcmPlanController@SavePatientSocialReview');
 Route::get('/patient/social/review/single', 'CcmPlanController@GetPatientSocialReview');
 
+//Get diabetic measure param
+Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
+
+//Save CCM plan APIS
+Route::post('/patient/ccm/plan/add', 'CcmPlanController@SavePatientCCMPlan');
+//get single CCM plan
+Route::get('/patient/ccm/plan/single', 'CcmPlanController@GetCCMPlanViaId');
+
+//get all CCM plan
+Route::get('/patient/ccm/plan/all', 'CcmPlanController@GetCCMPlanViaPatientId');
+
+//get update CCM plan
+Route::post('/patient/ccm/plan/update', 'CcmPlanController@UpdateCcmPlan');
 
 Route::get('/', function () {
     return 'Hello';
