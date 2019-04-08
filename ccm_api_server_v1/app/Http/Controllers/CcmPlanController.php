@@ -2495,7 +2495,6 @@ class CcmPlanController extends Controller
         if ($data == null) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
-
         //Binding data to variable.
 
         $firstName = $request->post('FirstName');
@@ -6055,6 +6054,222 @@ class CcmPlanController extends Controller
                 array_push($ccmPlanFinalData, $data);
             }
             return response()->json(['data' => $ccmPlanFinalData, 'message' => 'Ccm plan found'], 200);
+        }
+    }
+
+    static public function UpdateCcmPlan(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Now check if Ccm plan of this patient with the same start data already exists or not
+
+        DB::beginTransaction();
+
+        $ccmPlanData = CcmModel::GetSinglePatientCcmPlanViaId($id);
+        if ($ccmPlanData == null) {
+            return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
+        } else {
+            error_log('ccm plan found');
+            error_log('Now making data');
+
+            $ccmPlanGoals = CcmModel::GetCcmPlanGoalsViaCcmPLanId($ccmPlanData->Id);
+
+            if (count($ccmPlanGoals) > 0) {
+                //then delete it from ccm goals
+                error_log('Removing ccm plan goals');
+                $result = GenericModel::deleteGeneric('ccm_plan_goal', 'CcmPlanId', $ccmPlanData->Id);
+                if ($result == false) {
+                    DB::rollBack();
+                    return response()->json(['data' => $id, 'message' => 'Error in removing ccm plan goals'], 200);
+                }
+            }
+
+            $ccmPlanHealthParamData = CcmModel::GetPatientCcmPlanHealthParamViaCcmPlanId($ccmPlanData->Id);
+
+            if (count($ccmPlanHealthParamData) > 0) {
+                error_log('Removing ccm health plan');
+                $result = GenericModel::deleteGeneric('ccm_plan_initial_health', 'CcmPlanId', $ccmPlanData->Id);
+                if ($result == false) {
+                    DB::rollBack();
+                    return response()->json(['data' => $id, 'message' => 'Error in removing ccm plan health data'], 200);
+                }
+            }
+
+            if ($request->get('StartDate') != $ccmPlanData->StartDate) {
+                $checkCcmPlanExistence = CcmModel::CheckIfCcmPlanAlreadyExists($patientId, $request->get('StartDate'));
+                if ($checkCcmPlanExistence != null) {
+                    DB::rollBack();
+                    return response()->json(['data' => null, 'message' => 'Ccm plan for this patient on the same data already exists'], 400);
+                }
+            }
+
+            error_log('Now making data to update in ccm plan ');
+
+            $date = HelperModel::getDate();
+
+            $ccmPlanData = array(
+                'StartDate' => $request->get('StartDate'),
+                'EndDate' => $request->get('EndDate'),
+                'CreatedBy' => $userId,
+                'IsActive' => true,
+                'UpdatedOn' => $date["timestamp"]
+            );
+
+            $insertCcmPlanData = GenericModel::updateGeneric('ccm_plan', 'Id', $id, $ccmPlanData);
+            if ($insertCcmPlanData == 0 || $insertCcmPlanData == null) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in updating CCM plan'], 400);
+            }
+            error_log('ccm plan inserted');
+            //Now we will make data to upload CCM plan items and it's goals
+            //Outer loop will be on item
+            //inner loop will be on goals
+
+            $ccmPlanGoals = array();
+
+            //Checking if item exists
+            if (count($request->input('Item')) > 0) {
+                foreach ($request->input('Item') as $item) {
+                    //Checking if goal exists
+                    if (count($item['Goal']) > 0) {
+                        error_log('Goals are there : ' . count($item['Goal']));
+                        foreach ($item['Goal'] as $item2) {
+
+                            $data = array(
+                                'CcmPlanId' => $id,
+                                'ItemName' => $item['ItemName'],
+                                'Goal' => $item2['Name'],
+                                'Intervention' => (string)$item2['Intervention'],
+                                'IsActive' => true
+                            );
+
+                            array_push($ccmPlanGoals, $data);
+                        }
+                    } else {
+                        //Only item name is given,
+                        //Goal needs to be given
+                        $data = array(
+                            'CcmPlanId' => $id,
+                            'ItemName' => $item['ItemName'],
+                            'IsActive' => true
+                        );
+
+                        array_push($ccmPlanGoals, $data);
+                    }
+                }
+            }
+
+            error_log('now inserting ccm plan goals');
+
+            $insertCcmPlanGoalData = GenericModel::insertGeneric('ccm_plan_goal', $ccmPlanGoals);
+
+            if ($insertCcmPlanGoalData == false) {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in adding CCM plan goals'], 400);
+            }
+
+            error_log('ccm plan goal inserted');
+
+            $ccmPlanHealthParams = array();
+
+            //Now we will be adding health params
+            if (count($request->input('HealthParams')) > 0) {
+                foreach ($request->input('HealthParams') as $item) {
+                    //We will check if parameter is valid or not
+                    if ((int)$item['Id'] != null || (int)$item['Id'] != "null") {
+                        $checkHealthParams = GenericModel::simpleFetchGenericById('ccm_health_param', 'Id', (int)$item['Id']);
+                        if ($checkHealthParams == null) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Invalid health params'], 400);
+                        } else {
+                            error_log('all checks clear.');
+                            error_log('Now making data to insert ccm plan health param');
+
+                            $data = array(
+                                'CcmPlanId' => $id,
+                                'CcmHealthParamId' => $item['Id'],
+                                'ReadingValue' => $item['ReadingValue'],
+                                'ReadingDate' => $item['ReadingDate'],
+                                'IsActive' => true
+                            );
+
+                            array_push($ccmPlanHealthParams, $data);
+                        }
+                    }
+                }
+            }
+
+            $insertedData = GenericModel::insertGeneric('ccm_plan_initial_health', $ccmPlanHealthParams);
+
+
+            if ($insertedData == false) {
+                error_log('data not update');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in updating patient Ccm plan'], 400);
+            } else {
+                error_log('data inserted');
+                DB::commit();
+                return response()->json(['data' => $insertCcmPlanData, 'message' => 'Ccm plan successfully updated'], 200);
+            }
+
+
         }
     }
 }
