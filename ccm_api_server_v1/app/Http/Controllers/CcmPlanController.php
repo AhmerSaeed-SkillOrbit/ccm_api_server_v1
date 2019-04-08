@@ -2495,15 +2495,6 @@ class CcmPlanController extends Controller
         if ($data == null) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
-
-        //Getting users count to generate unique id for patient
-
-        $uniqueIdCounter = 1;
-
-        $getUsersCount = CcmModel::GetUsersCount();
-
-        $uniqueIdCounter += $getUsersCount;
-
         //Binding data to variable.
 
         $firstName = $request->post('FirstName');
@@ -2514,29 +2505,15 @@ class CcmPlanController extends Controller
         $gender = $request->post('Gender');
         $age = $request->post('Age');
 
-        if ($data->PatientUniqueId == null) {
-
-            $dataToUpdate = array(
-                "FirstName" => $firstName,
-                "MiddleName" => $middleName,
-                "LastName" => $lastName,
-                "MobileNumber" => $mobileNumber,
-                "TelephoneNumber" => $telephoneNumber,
-                "PatientUniqueId" => $uniqueIdCounter,
-                "Gender" => $gender,
-                "Age" => $age
-            );
-        } else {
-            $dataToUpdate = array(
-                "FirstName" => $firstName,
-                "MiddleName" => $middleName,
-                "LastName" => $lastName,
-                "MobileNumber" => $mobileNumber,
-                "TelephoneNumber" => $telephoneNumber,
-                "Gender" => $gender,
-                "Age" => $age
-            );
-        }
+        $dataToUpdate = array(
+            "FirstName" => $firstName,
+            "MiddleName" => $middleName,
+            "LastName" => $lastName,
+            "MobileNumber" => $mobileNumber,
+            "TelephoneNumber" => $telephoneNumber,
+            "Gender" => $gender,
+            "Age" => $age
+        );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 

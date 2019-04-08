@@ -481,12 +481,4 @@ class CcmModel
 
         return $query;
     }
-
-    static public function GetUsersCount()
-    {
-        $query = DB::table('user')
-            ->count();
-
-        return $query;
-    }
 }
