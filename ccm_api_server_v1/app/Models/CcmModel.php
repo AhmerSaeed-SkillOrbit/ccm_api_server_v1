@@ -436,6 +436,17 @@ class CcmModel
         return $query;
     }
 
+    static public function GetSinglePatientCcmPlanViaPatientId($patientId)
+    {
+        $query = DB::table('ccm_plan')
+            ->select('ccm_plan.*')
+            ->where('ccm_plan.IsActive', '=', true)
+            ->where('ccm_plan.PatientId', '=', $patientId)
+            ->get();
+
+        return $query;
+    }
+
     static public function GetCcmPlanGoalsViaCcmPLanId($ccmPlanId)
     {
         $query = DB::table('ccm_plan_goal')

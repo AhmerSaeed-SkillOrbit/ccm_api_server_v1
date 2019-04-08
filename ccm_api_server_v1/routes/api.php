@@ -370,6 +370,9 @@ Route::post('/patient/ccm/plan/add', 'CcmPlanController@SavePatientCCMPlan');
 //get single CCM plan
 Route::get('/patient/ccm/plan/single', 'CcmPlanController@GetCCMPlanViaId');
 
+//get all CCM plan
+Route::get('/patient/ccm/plan/all', 'CcmPlanController@GetCCMPlanViaPatientId');
+
 
 Route::get('/', function () {
     return 'Hello';
