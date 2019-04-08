@@ -317,6 +317,7 @@ class CcmModel
         $query = DB::table('patient_diabetic_measure')
             ->leftjoin('diabetic_measure_param as diabetic_measure_param', 'patient_diabetic_measure.DiabeticMeasureParamId', 'diabetic_measure_param.Id')
             ->select('patient_diabetic_measure.Id as pdmId', 'patient_diabetic_measure.IsPatientMeasure', 'patient_diabetic_measure.Description as pdmDescription',
+                'patient_diabetic_measure.IsActive as pdmIsActive',
                 'diabetic_measure_param.Id as dmpId', 'diabetic_measure_param.Name', 'diabetic_measure_param.Description as dmpDescription'
             )
             ->where('patient_diabetic_measure.IsActive', '=', true)
@@ -411,6 +412,72 @@ class CcmModel
             ->where('patient_social_review.IsActive', '=', true)
             ->where('patient_social_review.PatientId', '=', $patientId)
             ->first();
+
+        return $query;
+    }
+
+
+    static public function GetTotalCcmPlans()
+    {
+        $query = DB::table('ccm_plan')
+            ->count();
+
+        return $query;
+    }
+
+    static public function GetSinglePatientCcmPlanViaId($id)
+    {
+        $query = DB::table('ccm_plan')
+            ->select('ccm_plan.*')
+            ->where('ccm_plan.IsActive', '=', true)
+            ->where('ccm_plan.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetSinglePatientCcmPlanViaPatientId($patientId)
+    {
+        $query = DB::table('ccm_plan')
+            ->select('ccm_plan.*')
+            ->where('ccm_plan.IsActive', '=', true)
+            ->where('ccm_plan.PatientId', '=', $patientId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetCcmPlanGoalsViaCcmPLanId($ccmPlanId)
+    {
+        $query = DB::table('ccm_plan_goal')
+            ->where('IsActive', '=', true)
+            ->where('CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
+
+
+    static public function CheckIfCcmPlanAlreadyExists($patientId, $startDate)
+    {
+        $query = DB::table('ccm_plan')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $patientId)
+            ->where('StartDate', '=', $startDate)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetPatientCcmPlanHealthParamViaCcmPlanId($ccmPlanId)
+    {
+        $query = DB::table('ccm_plan_initial_health')
+            ->leftjoin('ccm_health_param as ccm_health_param', 'ccm_plan_initial_health.CcmHealthParamId', 'ccm_health_param.Id')
+            ->select('ccm_plan_initial_health.Id as cpihId', 'ccm_plan_initial_health.ReadingValue', 'ccm_plan_initial_health.ReadingDate',
+                'ccm_health_param.Id as chpId', 'ccm_health_param.Name', 'ccm_health_param.Description')
+            ->where('ccm_plan_initial_health.IsActive', '=', true)
+            ->where('ccm_plan_initial_health.CcmPlanId', '=', $ccmPlanId)
+            ->get();
 
         return $query;
     }

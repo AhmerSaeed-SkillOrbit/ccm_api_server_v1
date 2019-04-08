@@ -2716,6 +2716,30 @@ class CcmPlanController extends Controller
         }
     }
 
+    function GetPatientPrimaryLanguage()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'PrimaryLanguage');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Primary language not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Primary language found'], 200);
+        }
+    }
+
+    function GetThingsImpactOnHealth()
+    {
+        error_log('in controller');
+
+        $ticketPriorities = TicketModel::getEnumValues('patient_assessment_self', 'ThingImpactHealth');
+        if ($ticketPriorities == null) {
+            return response()->json(['data' => null, 'message' => 'Things impact not found'], 200);
+        } else {
+            return response()->json(['data' => $ticketPriorities, 'message' => 'Things impact found'], 200);
+        }
+    }
+
     function GetPatientLearningType()
     {
         error_log('in controller');
@@ -4036,6 +4060,7 @@ class CcmPlanController extends Controller
                     'LearnBestByComment' => $request->get('LearnBestByComment'),
                     'ThingImpactHealth' => $request->get('ThingImpactHealth'),
                     'ThingImpactHealthOther' => $request->get('ThingImpactHealthOther'),
+                    'ThingImpactHealthComment' => $request->get('ThingImpactHealthComment'),
                     'IsDietaryRequire' => (bool)$request->get('IsDietaryRequire'),
                     'DietaryRequireDescription' => $request->get('DietaryRequireDescription'),
                     'AssistanceAvailable' => $request->get('AssistanceAvailable'),
@@ -4079,6 +4104,7 @@ class CcmPlanController extends Controller
                     'LearnBestByComment' => $request->get('LearnBestByComment'),
                     'ThingImpactHealth' => $request->get('ThingImpactHealth'),
                     'ThingImpactHealthOther' => $request->get('ThingImpactHealthOther'),
+                    'ThingImpactHealthComment' => $request->get('ThingImpactHealthComment'),
                     'IsDietaryRequire' => (bool)$request->get('IsDietaryRequire'),
                     'DietaryRequireDescription' => $request->get('DietaryRequireDescription'),
                     'AssistanceAvailable' => $request->get('AssistanceAvailable'),
@@ -4184,6 +4210,7 @@ class CcmPlanController extends Controller
                 'LearnBestByComment' => $checkData->LearnBestByComment,
                 'ThingImpactHealth' => $checkData->ThingImpactHealth,
                 'ThingImpactHealthOther' => $checkData->ThingImpactHealthOther,
+                'ThingImpactHealthComment' => $checkData->ThingImpactHealthComment,
                 'IsDietaryRequire' => $checkData->IsDietaryRequire,
                 'DietaryRequireDescription' => $checkData->DietaryRequireDescription,
                 'AssistanceAvailable' => $checkData->AssistanceAvailable,
@@ -4402,6 +4429,7 @@ class CcmPlanController extends Controller
                 'Id' => $checkData->pdmId,
                 'IsPatientMeasure' => $checkData->IsPatientMeasure,
                 'Description' => $checkData->pdmDescription,
+                'IsActive' => $checkData->pdmIsActive,
                 'DiabeticMeasureParam' => array()
             );
 
@@ -4621,6 +4649,7 @@ class CcmPlanController extends Controller
                 'Id' => $checkData->ptrId,
                 'IsOkay' => $checkData->IsOkay,
                 'Description' => $checkData->ptrDescription,
+                'IsActive' => $checkData->ptrIsActive,
                 'FunctionalReviewParam' => array()
             );
 
@@ -5556,6 +5585,476 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $finalData, 'message' => 'Health param found'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Health param not found'], 200);
+        }
+    }
+
+    static public function SavePatientCCMPlan(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Now check if Ccm plan of this patient with the same start data already exists or not
+
+        $checkCcmPlanExistence = CcmModel::CheckIfCcmPlanAlreadyExists($patientId, $request->get('StartDate'));
+        if ($checkCcmPlanExistence != null) {
+            return response()->json(['data' => null, 'message' => 'Ccm plan for this patient on the same data already exists'], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        $ccmPlanCount = CcmModel::GetTotalCcmPlans();
+
+        $totalCountForCcmPlans = $ccmPlanCount + 1;
+
+        //Making data for ccm plan table
+
+        $ccmPlanData = array(
+            'PatientId' => $patientId,
+            'PlanNumber' => 'P-' . $totalCountForCcmPlans,
+            'StartDate' => $request->get('StartDate'),
+            'EndDate' => $request->get('EndDate'),
+            'CreatedBy' => $userId,
+            'IsActive' => true,
+            'CreatedOn' => $date["timestamp"]
+        );
+
+        DB::beginTransaction();
+
+        $insertCcmPlanData = GenericModel::insertGenericAndReturnID('ccm_plan', $ccmPlanData);
+        if ($insertCcmPlanData == 0 || $insertCcmPlanData == null) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in adding CCM plan'], 400);
+        }
+        error_log('ccm plan inserted');
+        //Now we will make data to upload CCM plan items and it's goals
+        //Outer loop will be on item
+        //inner loop will be on goals
+
+        $ccmPlanGoals = array();
+
+        //Checking if item exists
+        if (count($request->input('Item')) > 0) {
+            foreach ($request->input('Item') as $item) {
+                //Checking if goal exists
+                if (count($item['Goal']) > 0) {
+                    error_log('Goals are there : ' . count($item['Goal']));
+                    foreach ($item['Goal'] as $item2) {
+
+                        $data = array(
+                            'CcmPlanId' => $insertCcmPlanData,
+                            'ItemName' => $item['ItemName'],
+                            'Goal' => $item2['Name'],
+                            'Intervention' => (string)$item2['Intervention'],
+                            'IsActive' => true
+                        );
+
+                        array_push($ccmPlanGoals, $data);
+                    }
+                } else {
+                    //Only item name is given,
+                    //Goal needs to be given
+                    $data = array(
+                        'CcmPlanId' => $insertCcmPlanData,
+                        'ItemName' => $item['ItemName'],
+                        'IsActive' => true
+                    );
+
+                    array_push($ccmPlanGoals, $data);
+                }
+            }
+        }
+
+        error_log('now inserting ccm plan goals');
+
+        $insertCcmPlanGoalData = GenericModel::insertGeneric('ccm_plan_goal', $ccmPlanGoals);
+
+        if ($insertCcmPlanGoalData == false) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in adding CCM plan goals'], 400);
+        }
+
+        error_log('ccm plan goal inserted');
+
+        $ccmPlanHealthParams = array();
+
+        //Now we will be adding health params
+        if (count($request->input('HealthParams')) > 0) {
+            foreach ($request->input('HealthParams') as $item) {
+                //We will check if parameter is valid or not
+                if ((int)$item['Id'] != null || (int)$item['Id'] != "null") {
+                    $checkHealthParams = GenericModel::simpleFetchGenericById('ccm_health_param', 'Id', (int)$item['Id']);
+                    if ($checkHealthParams == null) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Invalid health params'], 400);
+                    } else {
+                        error_log('all checks clear.');
+                        error_log('Now making data to insert ccm plan health param');
+
+                        $data = array(
+                            'CcmPlanId' => $insertCcmPlanData,
+                            'CcmHealthParamId' => $item['Id'],
+                            'ReadingValue' => $item['ReadingValue'],
+                            'ReadingDate' => $item['ReadingDate'],
+                            'IsActive' => true
+                        );
+
+                        array_push($ccmPlanHealthParams, $data);
+                    }
+                }
+            }
+        }
+
+        $insertedData = GenericModel::insertGeneric('ccm_plan_initial_health', $ccmPlanHealthParams);
+
+
+        if ($insertedData == false) {
+            error_log('data not inserted');
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'Error in inserting patient Ccm plan'], 400);
+        } else {
+            error_log('data inserted');
+            DB::commit();
+            return response()->json(['data' => $insertCcmPlanData, 'message' => 'Ccm plan successfully added'], 200);
+        }
+    }
+
+    static public function GetCCMPlanViaId(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Now check if Ccm plan of this patient with the same start data already exists or not
+
+
+        $ccmPlanData = CcmModel::GetSinglePatientCcmPlanViaId($request->get('id'));
+        if ($ccmPlanData == null) {
+            return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
+        } else {
+            error_log('ccm plan found');
+            error_log('Now making data');
+
+            $data = array(
+                'Id' => $ccmPlanData->Id,
+                'PlanNumber' => $ccmPlanData->PlanNumber,
+                'StartDate' => $ccmPlanData->StartDate,
+                'EndDate' => $ccmPlanData->EndDate,
+                'IsActive' => $ccmPlanData->IsActive,
+                'Item' => array(),
+                'HealthParams' => array()
+            );
+
+            //Now fetching items
+
+            $ccmPlanGoalsData = array();
+
+            $previousCcmItemName = null;
+
+            $ccmPlanGoals = CcmModel::GetCcmPlanGoalsViaCcmPLanId($ccmPlanData->Id);
+            if (count($ccmPlanGoals) > 0) {
+                error_log('CCM plan goal data found');
+                foreach ($ccmPlanGoals as $item) {
+
+                    $ccmGoalData = array(
+                        'Id' => $item->Id,
+                        'ItemName' => $item->ItemName,
+                        'Goal' => $item->Goal,
+                        'Intervention' => $item->Intervention,
+                        'Result' => $item->Result,
+                        'PatientComment' => $item->PatientComment,
+                        'ReviewerComment' => $item->ReviewerComment,
+                        'ReviewDate' => $item->ReviewDate
+                    );
+
+                    array_push($ccmPlanGoalsData, $ccmGoalData);
+                }
+
+
+                $data['Item'] = $ccmPlanGoalsData;
+
+                // Now fetching CCM health param data
+
+                $ccmPlanHealthParam = array();
+
+                $ccmPlanHealthParamData = CcmModel::GetPatientCcmPlanHealthParamViaCcmPlanId($ccmPlanData->Id);
+
+                if (count($ccmPlanHealthParamData) > 0) {
+                    foreach ($ccmPlanHealthParamData as $item) {
+                        error_log('CCM plan health params data found');
+
+                        $ccmHealthParamData = array(
+                            'Id' => $item->cpihId,
+                            'ReadingValue' => $item->ReadingValue,
+                            'ReadingDate' => $item->ReadingDate,
+                            'HealthParam' => array()
+                        );
+
+                        $ccmHealthParamData['HealthParam']['Id'] = $item->chpId;
+                        $ccmHealthParamData['HealthParam']['Name'] = $item->Name;
+                        $ccmHealthParamData['HealthParam']['Description'] = $item->Description;
+
+                        array_push($ccmPlanHealthParam, $ccmHealthParamData);
+                    }
+
+                    $data['HealthParams'] = $ccmPlanHealthParam;
+                }
+
+                return response()->json(['data' => $data, 'message' => 'Ccm plan found'], 200);
+            }
+        }
+    }
+
+    static public function GetCCMPlanViaPatientId(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Now check if Ccm plan of this patient with the same start data already exists or not
+
+        $ccmPlanFinalData = array();
+
+
+        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId);
+        if (count($CheckCcmPlanData) == 0) {
+            return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
+        } else {
+            error_log('ccm plan found');
+            error_log('Now making data');
+
+            foreach ($CheckCcmPlanData as $ccmPlanData) {
+                $data = array(
+                    'Id' => $ccmPlanData->Id,
+                    'PlanNumber' => $ccmPlanData->PlanNumber,
+                    'StartDate' => $ccmPlanData->StartDate,
+                    'EndDate' => $ccmPlanData->EndDate,
+                    'IsActive' => $ccmPlanData->IsActive,
+                    'Item' => array(),
+                    'HealthParams' => array()
+                );
+
+                //Now fetching items
+
+                $ccmPlanGoalsData = array();
+
+                $previousCcmItemName = null;
+
+                $ccmPlanGoals = CcmModel::GetCcmPlanGoalsViaCcmPLanId($ccmPlanData->Id);
+                if (count($ccmPlanGoals) > 0) {
+                    error_log('CCM plan goal data found');
+                    foreach ($ccmPlanGoals as $item) {
+
+                        $ccmGoalData = array(
+                            'Id' => $item->Id,
+                            'ItemName' => $item->ItemName,
+                            'Goal' => $item->Goal,
+                            'Intervention' => $item->Intervention,
+                            'Result' => $item->Result,
+                            'PatientComment' => $item->PatientComment,
+                            'ReviewerComment' => $item->ReviewerComment,
+                            'ReviewDate' => $item->ReviewDate
+                        );
+
+                        array_push($ccmPlanGoalsData, $ccmGoalData);
+                    }
+
+
+                    $data['Item'] = $ccmPlanGoalsData;
+
+                    // Now fetching CCM health param data
+
+                    $ccmPlanHealthParam = array();
+
+                    $ccmPlanHealthParamData = CcmModel::GetPatientCcmPlanHealthParamViaCcmPlanId($ccmPlanData->Id);
+
+                    if (count($ccmPlanHealthParamData) > 0) {
+                        foreach ($ccmPlanHealthParamData as $item) {
+                            error_log('CCM plan health params data found');
+
+                            $ccmHealthParamData = array(
+                                'Id' => $item->cpihId,
+                                'ReadingValue' => $item->ReadingValue,
+                                'ReadingDate' => $item->ReadingDate,
+                                'HealthParam' => array()
+                            );
+
+                            $ccmHealthParamData['HealthParam']['Id'] = $item->chpId;
+                            $ccmHealthParamData['HealthParam']['Name'] = $item->Name;
+                            $ccmHealthParamData['HealthParam']['Description'] = $item->Description;
+
+                            array_push($ccmPlanHealthParam, $ccmHealthParamData);
+                        }
+
+                        $data['HealthParams'] = $ccmPlanHealthParam;
+                    }
+                }
+
+                array_push($ccmPlanFinalData, $data);
+            }
+            return response()->json(['data' => $ccmPlanFinalData, 'message' => 'Ccm plan found'], 200);
         }
     }
 }
