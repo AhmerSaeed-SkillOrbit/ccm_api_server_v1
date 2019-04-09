@@ -687,11 +687,10 @@ class TicketController extends Controller
                                         $emailMessage = "Dear Patient, please check the response from Support Staff on your Ticket. Remember Your Ticket Number is " . $ticketNumber . "";
 
                                         $toNumber = array();
-                                        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
                                         //pushing mobile number
                                         //in array for use in sending sms
-                                        array_push($toNumber, $phoneCode . $patientUserData->MobileNumber);
+                                        array_push($toNumber, $patientUserData->CountryPhoneCode . $patientUserData->MobileNumber);
 
                                         UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
 
@@ -776,11 +775,10 @@ class TicketController extends Controller
                                         $emailMessage = "Dear Patient, please check the response from Support Staff on your Ticket. Remember Your Ticket Number is " . $ticketNumber . "";
 
                                         $toNumber = array();
-                                        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
 
                                         //pushing mobile number
                                         //in array for use in sending sms
-                                        array_push($toNumber, $phoneCode . $patientUserData->MobileNumber);
+                                        array_push($toNumber, $patientUserData->CountryPhoneCode . $patientUserData->MobileNumber);
 
                                         UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
 
@@ -959,11 +957,9 @@ class TicketController extends Controller
                             Please check the details in the following";
 
                                 $toNumber = array();
-                                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-
                                 //pushing mobile number
                                 //in array for use in sending sms
-                                array_push($toNumber, $phoneCode . $assignedToData->MobileNumber);
+                                array_push($toNumber, $assignedToData->CountryPhoneCode . $assignedToData->MobileNumber);
 
                                 UserModel::sendEmail($assignedToData->EmailAddress, $emailMessage, null);
 

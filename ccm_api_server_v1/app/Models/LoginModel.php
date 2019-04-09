@@ -86,9 +86,6 @@ class LoginModel
 
                     $date = HelperModel::getDate();
 
-                    // return array("status" => "failed", "data" => $date, "message" => "Failed to insert the Token");
-                    // return array("status" => "success", "data" => $date, "message" => "Failed to insert the Token");
-
                     $insertData = array(
                         "UserId" => $checkLogin[0]['Id'],
                         "AccessToken" => $token,
@@ -125,8 +122,6 @@ class LoginModel
                             error_log("Get token data failed");
                             return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                         }
-
-
                     } else {
                         // return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                         DB::rollBack();
@@ -223,7 +218,6 @@ class LoginModel
 
     static public function getRegisterTrans(Request $request)
     {
-        $belongTo = "";
         $data = $request->all();
 
         $inviteCode = Input::get('InviteCode');
@@ -231,12 +225,13 @@ class LoginModel
         $password = Input::get('Password');
         $hashedPassword = md5($password);
         $date = HelperModel::getDate();
+        $patientUniqueId = 0;
 
         DB::beginTransaction();
         try {
 
             $inviteCode = DB::table('account_invitation')
-                ->select('Id', 'Token', 'BelongTo', 'ByUserId')
+                ->select('Id', 'Token', 'BelongTo', 'ByUserId', 'ToMobileNumber', 'CountryPhoneCode')
                 ->where('Token', '=', $inviteCode)
                 ->where('ToEmailAddress', '=', $email)
                 ->where('Status_', '=', "ignored")
@@ -249,6 +244,10 @@ class LoginModel
 
                 $belongTo = $checkInviteCode[0]['BelongTo'];
                 $byUserId = $checkInviteCode[0]['ByUserId'];
+                $countryPhoneCode = $checkInviteCode[0]['CountryPhoneCode'];
+                $mobileNumber = $checkInviteCode[0]['ToMobileNumber'];
+
+                error_log($belongTo);
 
                 $inviteUpdateData = array(
                     "Status_" => "accepted",
@@ -260,12 +259,37 @@ class LoginModel
                     ->update($inviteUpdateData);
 
                 if ($inviteUpdate > 0) {
+                    if ($belongTo == "doctor_patient") {
+
+                        error_log("YES");
+                        //means patient is registering
+                        //so generate Patient unique id here
+                        //calling table view
+                        try {
+                            $getPatientCountResult = DB::table('get_patient_count_view')
+                                ->select('TotalPatient')
+                                ->take(1)
+                                ->get();
+                            if (count($getPatientCountResult) == 1) {
+                                $getPatientCountResult = $getPatientCountResult[0]->TotalPatient;
+                                if ($getPatientCountResult > 0) {
+                                    $patientUniqueId = $getPatientCountResult + 1;
+                                }
+                            }
+                        } catch (Exception $exception) {
+                            error_log("exception in fetching totalpatient count");
+                            error_log($exception);
+                            return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
+                        }
+                    }
 
                     $insertData = array(
+                        "PatientUniqueId" => $patientUniqueId,
                         "FirstName" => $data["FirstName"],
                         "LastName" => $data["LastName"],
                         "EmailAddress" => $data["EmailAddress"],
-                        "MobileNumber" => $data["MobileNumber"],
+                        "CountryPhoneCode" => $countryPhoneCode,
+                        "MobileNumber" => $mobileNumber,
                         "TelephoneNumber" => $data["TelephoneNumber"],
                         "OfficeAddress" => $data["OfficeAddress"],
                         "ResidentialAddress" => $data["ResidentialAddress"],
@@ -320,12 +344,11 @@ class LoginModel
 
                             if ($checkInsertUserId) {
 
-                                Mail::raw('Welcome to CCM', function ($message) use ($email) {
-                                    $message->to($email)->subject("Invitation");
+                                Mail::raw('Welcome, You are successfully registered to CCM', function ($message) use ($email) {
+                                    $message->to($email)->subject("Registration Successful");
                                 });
 
                                 DB::commit();
-                                // return array("status" => true, "data" => $data);
                                 return array("status" => "success", "data" => $checkInsertUserId, "message" => "You have successfully Signed up");
 
                             } else {
@@ -344,8 +367,6 @@ class LoginModel
                 } else {
                     return array("status" => "failed", "data" => null, "message" => "Something went wrong");
                 }
-
-
             } else {
                 DB::rollBack();
                 return array("status" => "failed", "data" => null, "message" => "Code not found or it is expired");
