@@ -70,7 +70,6 @@ Route::get('/permission/via/role/id', 'UserController@PermissionViaRoleId');
 //Get permission via user Id
 Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
 
-Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
 
 //Adding schedule of doctor
 Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
@@ -413,6 +412,8 @@ Route::get('/format/time/', 'DoctorScheduleController@FormatTime');
 
 //Test file upload
 Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
+
+Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
 
 
 
