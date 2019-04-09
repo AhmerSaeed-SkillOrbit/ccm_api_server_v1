@@ -97,6 +97,8 @@ class LoginController extends Controller
     {
         try {
 
+            error_log("register function");
+
             $invite = $request->input('InviteCode');
             $data = $request->all();
 
