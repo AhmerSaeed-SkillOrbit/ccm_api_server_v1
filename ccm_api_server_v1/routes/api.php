@@ -69,8 +69,6 @@ Route::post('/role/permission/assign', 'PageController@RolePermissionAssign');
 Route::get('/permission/via/role/id', 'UserController@PermissionViaRoleId');
 //Get permission via user Id
 Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
-//Test file upload
-Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
 //Adding schedule of doctor
 Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
@@ -409,6 +407,10 @@ Route::get('/format/time/', 'DoctorScheduleController@FormatTime');
 
 //$time = strtotime($dateInUTC.' UTC');
 //$dateInLocal = date("Y-m-d H:i:s", $time);
+
+
+//Test file upload
+Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
 
 
