@@ -115,13 +115,13 @@ class CcmPlanController extends Controller
             'CreatedOn' => $date["timestamp"]
         );
 
-        $insertedData = GenericModel::insertGeneric('ccm_answer', $data);
-        if ($insertedData == false) {
+        $insertedData = GenericModel::insertGenericAndReturnID('ccm_answer', $data);
+        if ($insertedData == 0) {
             error_log('data not inserted');
             return response()->json(['data' => null, 'message' => 'Error in inserting answers'], 400);
         } else {
             error_log('data inserted');
-            return response()->json(['data' => (int)$userId, 'message' => 'Answer successfully added'], 200);
+            return response()->json(['data' => $insertedData, 'message' => 'Answer successfully added'], 200);
         }
     }
 
