@@ -167,4 +167,118 @@ class DocumentUploadController extends Controller
 //            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
 //        }
     }
+
+
+    function UploadProfilePicture(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $byUserId = $request->get('byUserId');
+
+        $profileDirectory = env('PROFILE_PICTURE');
+
+        error_log('Checking if user record exists or not');
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'User record not found'], 400);
+        }
+
+        error_log('user record found');
+
+        //get filename with extension
+        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        error_log(' File with extension ' . $filenamewithextension);
+
+        //get filename without extension
+        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+        error_log(' Only file name is:  ' . $filename);
+
+        //get file extension
+        $extension = $request->file('file')->getClientOriginalExtension();
+        error_log(' File extension is:  ' . $extension);
+
+        //filename to store
+        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenametostore);
+
+        $fileSize = $request->file('file')->getSize();
+        error_log(' File size is : ' . $fileSize);
+
+        $dirPath = $byUserId . '/' . $profileDirectory;
+
+        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+        error_log("createDir");
+
+        error_log($createDir);
+
+        try {
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            error_log('$upload_success');
+            error_log($upload_success);
+
+        } catch (Exception $ex) {
+
+            error_log('exception');
+            error_log($ex);
+            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        DB::beginTransaction();
+
+        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+        if ($upload_success == true) {
+
+            error_log('upload successfully done');
+            error_log('Now insert data in file upload table');
+
+            $fileUpload = array(
+                'ByUserId' => $byUserId,
+                'RelativePath' => $dirPath,
+                'FileOriginalName' => $filename,
+                'FileName' => $filenametostore,
+                'FileExtension' => $extension,
+                'FileSize' => $fileSize,
+                'BelongTo' => 'profile',
+                'CreatedOn' => $date["timestamp"],
+                'IsActive' => true
+            );
+            //Now inserting data in file_upload table
+
+            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+            if ($insertedData == 0) {
+                error_log('data not inserted');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
+            } else {
+                error_log('data inserted in file upload');
+                error_log('File upload id is : ' . $insertedData);
+
+                $dataToUpdate = array(
+                    'UpdatedBy' => $userId,
+                    'UpdatedOn' => $date["timestamp"],
+                    'ProfilePictureId' => $insertedData
+                );
+
+                $updatedData = GenericModel::updateGeneric('user', 'Id', $userId, $dataToUpdate);
+
+                if ($updatedData == false) {
+                    error_log('user data not updated');
+                    DB::rollBack();
+                    return response()->json(['data' => null, 'message' => 'Error in updating user profile picture information'], 400);
+                } else {
+                    error_log('user profile picture data updated ');
+                    DB::commit();
+                    return response()->json(['data' => $insertedData, 'message' => 'User profile picture uploaded successfully'], 200);
+                }
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
+        }
+    }
 }
