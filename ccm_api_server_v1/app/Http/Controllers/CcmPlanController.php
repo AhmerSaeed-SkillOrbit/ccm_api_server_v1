@@ -195,7 +195,7 @@ class CcmPlanController extends Controller
                 return response()->json(['data' => null, 'message' => 'Error in updating answer'], 400);
             } else {
                 error_log('data updated');
-                return response()->json(['data' => (int)$userId, 'message' => 'Answer successfully updated'], 200);
+                return response()->json(['data' => $answerId, 'message' => 'Answer successfully updated'], 200);
             }
         }
     }
