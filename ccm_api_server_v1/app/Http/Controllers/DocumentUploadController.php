@@ -176,7 +176,7 @@ class DocumentUploadController extends Controller
         $userId = $request->get('userId');
         $byUserId = $request->get('byUserId');
 
-        $profileDirectory = env('PROFILE_PICTURE');
+        $profileDirectory = env('PROFILE_PICTURE_DIR');
 
         error_log('Checking if user record exists or not');
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
@@ -197,6 +197,8 @@ class DocumentUploadController extends Controller
         //get file extension
         $extension = $request->file('file')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
+
+        $filenameWithoutExtension = $filename . '_' . uniqid();
 
         //filename to store
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
@@ -238,10 +240,10 @@ class DocumentUploadController extends Controller
             $fileUpload = array(
                 'ByUserId' => $byUserId,
                 'RelativePath' => $dirPath,
-                'FileOriginalName' => $filename,
-                'FileName' => $filenametostore,
-                'FileExtension' => $extension,
-                'FileSize' => $fileSize,
+                'FileOriginalName' => $filename . '.' . $extension,
+                'FileName' => $filenameWithoutExtension,
+                'FileExtension' => '.' . $extension,
+                'FileSizeByte' => $fileSize,
                 'BelongTo' => 'profile',
                 'CreatedOn' => $date["timestamp"],
                 'IsActive' => true
