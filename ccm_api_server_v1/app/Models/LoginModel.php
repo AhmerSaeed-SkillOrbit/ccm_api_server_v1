@@ -320,6 +320,8 @@ class LoginModel
                             $roleCode = "doctor";
                         } else if ($belongTo == "doctor_patient") {
                             $roleCode = "patient";
+                        } else if ($belongTo == "doctor_facilitator") {
+                            $roleCode = "facilitator";
                         } else {
                             $roleCode = "noRole";
                         }
