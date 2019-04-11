@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserModel;
+use App\Models\ForumModel;
 use App\Models\GenericModel;
 use App\Models\HelperModel;
 use Carbon\Carbon;
@@ -276,6 +277,122 @@ class DocumentUploadController extends Controller
                     error_log('user profile picture data updated ');
                     DB::commit();
                     return response()->json(['data' => $insertedData, 'message' => 'User profile picture uploaded successfully'], 200);
+                }
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
+        }
+    }
+
+    function UploadForumTopicFile(Request $request)
+    {
+        error_log('in controller');
+
+        $forumTopicId = $request->get('forumTopicId');
+        $byUserId = $request->get('byUserId');
+
+        $forumTopicDir = env('PROFILE_FORUM_TOPIC_DIR');
+
+        //Now check if this forum exists or not
+        $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
+
+        if ($getForumTopicData == null) {
+            return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
+        }
+
+        error_log('user record found');
+
+        //get filename with extension
+        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        error_log(' File with extension ' . $filenamewithextension);
+
+        //get filename without extension
+        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+        error_log(' Only file name is:  ' . $filename);
+
+        //get file extension
+        $extension = $request->file('file')->getClientOriginalExtension();
+        error_log(' File extension is:  ' . $extension);
+
+        $filenameWithoutExtension = $filename . '_' . uniqid();
+
+        //filename to store
+        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenametostore);
+
+        $fileSize = $request->file('file')->getSize();
+        error_log(' File size is : ' . $fileSize);
+
+        $dirPath = $byUserId . '/' . $forumTopicDir;
+
+        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+        error_log("createDir");
+
+        error_log($createDir);
+
+        try {
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            error_log('$upload_success');
+            error_log($upload_success);
+
+        } catch (Exception $ex) {
+
+            error_log('exception');
+            error_log($ex);
+            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        DB::beginTransaction();
+
+        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+        if ($upload_success == true) {
+
+            error_log('upload successfully done');
+            error_log('Now insert data in file upload table');
+
+            $fileUpload = array(
+                'ByUserId' => $byUserId,
+                'RelativePath' => $dirPath,
+                'FileOriginalName' => $filename . '.' . $extension,
+                'FileName' => $filenameWithoutExtension,
+                'FileExtension' => '.' . $extension,
+                'FileSizeByte' => $fileSize,
+                'BelongTo' => 'forum',
+                'CreatedOn' => $date["timestamp"],
+                'IsActive' => true
+            );
+            //Now inserting data in file_upload table
+
+            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+            if ($insertedData == 0) {
+                error_log('data not inserted');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
+            } else {
+                error_log('data inserted in file upload');
+                error_log('File upload id is : ' . $insertedData);
+
+                $dataToInsert = array(
+                    'ForumTopicId' => $forumTopicId,
+                    'IsActive' => true,
+                    'FileUploadId' => $insertedData
+                );
+
+                $insertingDataInForumTopicFile = GenericModel::insertGeneric('forum_topic_file', $dataToInsert);
+
+                if ($insertingDataInForumTopicFile == false) {
+                    error_log('forum topic file data not inserted');
+                    DB::rollBack();
+                    return response()->json(['data' => null, 'message' => 'Error in uploading forum topic file'], 400);
+                } else {
+                    error_log('File and data uploaded ');
+                    DB::commit();
+                    return response()->json(['data' => $insertedData, 'message' => 'Forum topic file uploaded successfully'], 200);
                 }
             }
 

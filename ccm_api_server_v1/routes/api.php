@@ -421,6 +421,7 @@ Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
 
 Route::post('/upload/profile/picture', 'DocumentUploadController@UploadProfilePicture');
+Route::post('/upload/forum/topic/file', 'DocumentUploadController@UploadForumTopicFile');
 
 
 
