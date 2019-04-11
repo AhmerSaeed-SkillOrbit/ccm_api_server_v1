@@ -312,7 +312,22 @@ class CcmModel
         return $query;
     }
 
-    static public function GetSinglePatientDiabeticMeasure($patientId)
+    static public function GetSinglePatientDiabeticMeasure($id)
+    {
+        $query = DB::table('patient_diabetic_measure')
+            ->leftjoin('diabetic_measure_param as diabetic_measure_param', 'patient_diabetic_measure.DiabeticMeasureParamId', 'diabetic_measure_param.Id')
+            ->select('patient_diabetic_measure.Id as pdmId', 'patient_diabetic_measure.IsPatientMeasure', 'patient_diabetic_measure.Description as pdmDescription',
+                'patient_diabetic_measure.IsActive as pdmIsActive',
+                'diabetic_measure_param.Id as dmpId', 'diabetic_measure_param.Name', 'diabetic_measure_param.Description as dmpDescription'
+            )
+            ->where('patient_diabetic_measure.IsActive', '=', true)
+            ->where('patient_diabetic_measure.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetPatientDiabeticMeasureAll($paramId, $patientId)
     {
         $query = DB::table('patient_diabetic_measure')
             ->leftjoin('diabetic_measure_param as diabetic_measure_param', 'patient_diabetic_measure.DiabeticMeasureParamId', 'diabetic_measure_param.Id')
@@ -322,6 +337,7 @@ class CcmModel
             )
             ->where('patient_diabetic_measure.IsActive', '=', true)
             ->where('patient_diabetic_measure.PatientId', '=', $patientId)
+            ->where('patient_diabetic_measure.DiabeticMeasureParamId', '=', $paramId)
             ->first();
 
         return $query;
@@ -368,7 +384,7 @@ class CcmModel
         return $query;
     }
 
-    static public function GetSinglePatientScreenExamination($patientId)
+    static public function GetSinglePatientScreenExamination($id, $patientId)
     {
         $query = DB::table('patient_prevent_screening_examination')
             ->leftjoin('prevent_screening_examination_param as prevent_screening_examination_param', 'patient_prevent_screening_examination.PreventScreeningParamId', 'prevent_screening_examination_param.Id')
@@ -378,6 +394,24 @@ class CcmModel
                 'prevent_screening_examination_param.Description as psepDescription'
             )
             ->where('patient_prevent_screening_examination.IsActive', '=', true)
+            ->where('patient_prevent_screening_examination.Id', '=', $id)
+            ->where('patient_prevent_screening_examination.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetSinglePatientScreenExaminationViaParamId($paramId, $patientId)
+    {
+        $query = DB::table('patient_prevent_screening_examination')
+            ->leftjoin('prevent_screening_examination_param as prevent_screening_examination_param', 'patient_prevent_screening_examination.PreventScreeningParamId', 'prevent_screening_examination_param.Id')
+            ->select('patient_prevent_screening_examination.Id as ppseId', 'patient_prevent_screening_examination.IsPatientExamined',
+                'patient_prevent_screening_examination.Description as ppseDescription', 'patient_prevent_screening_examination.IsActive as ppseIsActive',
+                'prevent_screening_examination_param.Id as psepId', 'prevent_screening_examination_param.Name',
+                'prevent_screening_examination_param.Description as psepDescription'
+            )
+            ->where('patient_prevent_screening_examination.IsActive', '=', true)
+            ->where('patient_prevent_screening_examination.PreventScreeningParamId', '=', $paramId)
             ->where('patient_prevent_screening_examination.PatientId', '=', $patientId)
             ->first();
 

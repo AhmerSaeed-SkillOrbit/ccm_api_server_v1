@@ -4356,7 +4356,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetPatientPatientDiabeticMeasure(Request $request)
+    static public function GetPatientDiabeticMeasureAll(Request $request)
     {
         error_log('in controller');
 
@@ -4416,7 +4416,103 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = CcmModel::GetSinglePatientDiabeticMeasure($patientId);
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('diabetic_measure_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description,
+                    'Answer' => array()
+                );
+
+                $checkData = CcmModel::GetPatientDiabeticMeasureAll($item->Id, $patientId);
+
+                if ($checkData == null) {
+                    $data['Answer'] = null;
+                } else {
+                    error_log('data found. Now update');
+
+                    $data['Answer']['Id'] = $checkData->pdmId;
+                    $data['Answer']['IsPatientMeasure'] = $checkData->IsPatientMeasure;
+                    $data['Answer']['Description'] = $checkData->pdmDescription;
+                    $data['Answer']['IsActive'] = $checkData->pdmIsActive;
+                }
+                array_push($finalData, $data);
+            }
+
+            return response()->json(['data' => $finalData, 'message' => 'Patient all diabetic measure found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Diabetic measures not found'], 200);
+        }
+    }
+
+    static public function GetSinglePatientDiabeticMeasure(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = CcmModel::GetSinglePatientDiabeticMeasure($id, $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -5043,6 +5139,7 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
+        $id = $request->get('id');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -5097,7 +5194,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = CcmModel::GetSinglePatientScreenExamination($patientId);
+        $checkData = CcmModel::GetSinglePatientScreenExamination($id, $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -5117,6 +5214,105 @@ class CcmPlanController extends Controller
             $data['PreventScreeningParam']['Description'] = $checkData->psepDescription;
 
             return response()->json(['data' => $data, 'message' => 'Patient screen examination found'], 200);
+        }
+    }
+
+    static public function GetPatientScreenExaminationAll(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //First get all screen params
+        $dataList = GenericModel::simpleFetchGenericAll('prevent_screening_examination_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            error_log('exam params found');
+            foreach ($dataList as $item) {
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description,
+                    'Answer' => array()
+                );
+
+                $checkData = CcmModel::GetSinglePatientScreenExaminationViaParamId($item->Id, $patientId);
+
+                if ($checkData == null) {
+                    $data['Answer'] = null;
+                } else {
+                    error_log('data found  ');
+
+                    $data['Answer']['Id'] = $checkData->ppseId;
+                    $data['Answer']['IsPatientExamined'] = $checkData->IsPatientExamined;
+                    $data['Answer']['Description'] = $checkData->ppseDescription;
+                    $data['Answer']['IsActive'] = $checkData->ppseIsActive;
+                }
+
+                array_push($finalData, $data);
+            }
+
+            return response()->json(['data' => $finalData, 'message' => 'Preventative Screen examination found'], 200);
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Preventative screen params not found'], 400);
         }
     }
 
