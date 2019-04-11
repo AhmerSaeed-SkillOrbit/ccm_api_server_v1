@@ -4299,7 +4299,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_diabetic_measure', 'Id', $request->get('Id'));
+//            $checkData = GenericModel::simpleFetchGenericById('patient_diabetic_measure', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetPatientDiabeticMeasureAll((int)$request->get('DiabeticMeasureParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -4323,7 +4324,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient diabetic measure cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'This diabetic answer alredy exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -4615,7 +4616,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_functional_review', 'Id', $request->get('Id'));
+//            $checkData = GenericModel::simpleFetchGenericById('patient_functional_review', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetPatientFunctionalReviewAll((int)$request->get('FunctionalReviewParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -4639,7 +4641,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient functional review cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'Patient functional review answer is already given'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -5172,7 +5174,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_prevent_screening_examination', 'Id', $request->get('Id'));
+//            $checkData = GenericModel::simpleFetchGenericById('patient_prevent_screening_examination', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetSinglePatientScreenExaminationViaParamId((int)$request->get('PreventScreeningParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -5196,7 +5199,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient screen examination cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'This screen examination answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -5492,7 +5495,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_psychological_review', 'Id', $request->get('Id'));
+//            $checkData = GenericModel::simpleFetchGenericById('patient_psychological_review', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetPatientPsychologicalReviewAll((int)$request->get('PsychologicalReviewParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -5516,7 +5520,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient psychological review cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'Patient psychological review answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -5813,7 +5817,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_social_review', 'Id', $request->get('Id'));
+//            $checkData = GenericModel::simpleFetchGenericById('patient_social_review', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetSinglePatientSocialReviewAll((int)$request->get('SocialReviewParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -5837,7 +5842,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient social review cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'This patient social answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
