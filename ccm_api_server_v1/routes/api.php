@@ -344,7 +344,8 @@ Route::get('/patient/diabetic/measure/all', 'CcmPlanController@GetPatientDiabeti
 
 //Save patient functional review APIS
 Route::post('/save/patient/functional/review', 'CcmPlanController@SavePatientFunctionalReview');
-Route::get('/patient/functional/review/single', 'CcmPlanController@GetPatientPatientFunctionalReview');
+Route::get('/patient/functional/review/single', 'CcmPlanController@GetPatientFunctionalReview');
+Route::get('/patient/functional/review/all', 'CcmPlanController@GetPatientFunctionalReviewAll');
 
 //Save patient organization assistance APIS
 Route::post('/save/patient/organization/assistance', 'CcmPlanController@SavePatientOrganizationAssistance');
@@ -358,10 +359,12 @@ Route::get('/patient/screen/examination/all', 'CcmPlanController@GetPatientScree
 //Save patient psychological review APIS
 Route::post('/save/patient/psychological/review', 'CcmPlanController@SavePatientPsychologicalReview');
 Route::get('/patient/psychological/review/single', 'CcmPlanController@GetPatientPsychologicalReview');
+Route::get('/patient/psychological/review/all', 'CcmPlanController@GetPatientPsychologicalReviewAll');
 
 //Save patient social review APIS
 Route::post('/save/patient/social/review', 'CcmPlanController@SavePatientSocialReview');
 Route::get('/patient/social/review/single', 'CcmPlanController@GetPatientSocialReview');
+Route::get('/patient/social/review/all', 'CcmPlanController@GetPatientSocialReviewAll');
 
 //Get diabetic measure param
 Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
