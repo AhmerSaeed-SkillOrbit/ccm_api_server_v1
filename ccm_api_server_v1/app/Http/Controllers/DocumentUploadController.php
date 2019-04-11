@@ -208,7 +208,7 @@ class DocumentUploadController extends Controller
         $fileSize = $request->file('file')->getSize();
         error_log(' File size is : ' . $fileSize);
 
-        $dirPath = $byUserId . '/' . $profileDirectory;
+        $dirPath = $byUserId . '/' . $profileDirectory . '/';
 
         $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
 
@@ -324,7 +324,7 @@ class DocumentUploadController extends Controller
         $fileSize = $request->file('file')->getSize();
         error_log(' File size is : ' . $fileSize);
 
-        $dirPath = $byUserId . '/' . $forumTopicDir;
+        $dirPath = $byUserId . '/' . $forumTopicDir . '/';
 
         $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
 
@@ -441,7 +441,7 @@ class DocumentUploadController extends Controller
         $fileSize = $request->file('file')->getSize();
         error_log(' File size is : ' . $fileSize);
 
-        $dirPath = $byUserId . '/' . $forumTopicDir . '/' . $forumTopicCommentDir;
+        $dirPath = $byUserId . '/' . $forumTopicDir . '/' . $forumTopicCommentDir . '/';
 
         $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
 
