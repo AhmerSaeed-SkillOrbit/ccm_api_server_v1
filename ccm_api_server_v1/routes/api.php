@@ -69,10 +69,7 @@ Route::post('/role/permission/assign', 'PageController@RolePermissionAssign');
 Route::get('/permission/via/role/id', 'UserController@PermissionViaRoleId');
 //Get permission via user Id
 Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
-//Test file upload
-Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
-Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
 
 //Adding schedule of doctor
 Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
@@ -342,11 +339,13 @@ Route::get('/patient/assessment/self/single', 'CcmPlanController@GetPatientAsses
 
 //Save patient diabetic measure APIS
 Route::post('/save/patient/diabetic/measure', 'CcmPlanController@SavePatientDiabeticMeasure');
-Route::get('/patient/diabetic/measure/single', 'CcmPlanController@GetPatientPatientDiabeticMeasure');
+Route::get('/patient/diabetic/measure/single', 'CcmPlanController@GetSinglePatientDiabeticMeasure');
+Route::get('/patient/diabetic/measure/all', 'CcmPlanController@GetPatientDiabeticMeasureAll');
 
 //Save patient functional review APIS
 Route::post('/save/patient/functional/review', 'CcmPlanController@SavePatientFunctionalReview');
-Route::get('/patient/functional/review/single', 'CcmPlanController@GetPatientPatientFunctionalReview');
+Route::get('/patient/functional/review/single', 'CcmPlanController@GetPatientFunctionalReview');
+Route::get('/patient/functional/review/all', 'CcmPlanController@GetPatientFunctionalReviewAll');
 
 //Save patient organization assistance APIS
 Route::post('/save/patient/organization/assistance', 'CcmPlanController@SavePatientOrganizationAssistance');
@@ -355,14 +354,17 @@ Route::get('/patient/organization/assistance/single', 'CcmPlanController@GetPati
 //Save patient screen examination APIS
 Route::post('/save/patient/screen/examination', 'CcmPlanController@SavePatientScreenExamination');
 Route::get('/patient/screen/examination/single', 'CcmPlanController@GetPatientScreenExamination');
+Route::get('/patient/screen/examination/all', 'CcmPlanController@GetPatientScreenExaminationAll');
 
 //Save patient psychological review APIS
 Route::post('/save/patient/psychological/review', 'CcmPlanController@SavePatientPsychologicalReview');
 Route::get('/patient/psychological/review/single', 'CcmPlanController@GetPatientPsychologicalReview');
+Route::get('/patient/psychological/review/all', 'CcmPlanController@GetPatientPsychologicalReviewAll');
 
 //Save patient social review APIS
 Route::post('/save/patient/social/review', 'CcmPlanController@SavePatientSocialReview');
 Route::get('/patient/social/review/single', 'CcmPlanController@GetPatientSocialReview');
+Route::get('/patient/social/review/all', 'CcmPlanController@GetPatientSocialReviewAll');
 
 //Get diabetic measure param
 Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
@@ -411,6 +413,14 @@ Route::get('/format/time/', 'DoctorScheduleController@FormatTime');
 
 //$time = strtotime($dateInUTC.' UTC');
 //$dateInLocal = date("Y-m-d H:i:s", $time);
+
+
+//Test file upload
+Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
+
+Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
+
+Route::post('/upload/profile/picture', 'DocumentUploadController@UploadProfilePicture');
 
 
 

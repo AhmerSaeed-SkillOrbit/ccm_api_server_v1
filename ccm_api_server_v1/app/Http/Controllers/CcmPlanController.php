@@ -115,13 +115,13 @@ class CcmPlanController extends Controller
             'CreatedOn' => $date["timestamp"]
         );
 
-        $insertedData = GenericModel::insertGeneric('ccm_answer', $data);
-        if ($insertedData == false) {
+        $insertedData = GenericModel::insertGenericAndReturnID('ccm_answer', $data);
+        if ($insertedData == 0) {
             error_log('data not inserted');
             return response()->json(['data' => null, 'message' => 'Error in inserting answers'], 400);
         } else {
             error_log('data inserted');
-            return response()->json(['data' => (int)$userId, 'message' => 'Answer successfully added'], 200);
+            return response()->json(['data' => $insertedData, 'message' => 'Answer successfully added'], 200);
         }
     }
 
@@ -195,7 +195,7 @@ class CcmPlanController extends Controller
                 return response()->json(['data' => null, 'message' => 'Error in updating answer'], 400);
             } else {
                 error_log('data updated');
-                return response()->json(['data' => (int)$userId, 'message' => 'Answer successfully updated'], 200);
+                return response()->json(['data' => $answerId, 'message' => 'Answer successfully updated'], 200);
             }
         }
     }
@@ -4299,7 +4299,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_diabetic_measure', 'PatientId', $patientId);
+//            $checkData = GenericModel::simpleFetchGenericById('patient_diabetic_measure', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetPatientDiabeticMeasureAll((int)$request->get('DiabeticMeasureParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -4323,7 +4324,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient diabetic measure cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'This diabetic answer alredy exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -4356,7 +4357,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetPatientPatientDiabeticMeasure(Request $request)
+    static public function GetPatientDiabeticMeasureAll(Request $request)
     {
         error_log('in controller');
 
@@ -4416,7 +4417,103 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = CcmModel::GetSinglePatientDiabeticMeasure($patientId);
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('diabetic_measure_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description,
+                    'Answer' => array()
+                );
+
+                $checkData = CcmModel::GetPatientDiabeticMeasureAll($item->Id, $patientId);
+
+                if ($checkData == null) {
+                    $data['Answer'] = null;
+                } else {
+                    error_log('data found. Now update');
+
+                    $data['Answer']['Id'] = $checkData->pdmId;
+                    $data['Answer']['IsPatientMeasure'] = $checkData->IsPatientMeasure;
+                    $data['Answer']['Description'] = $checkData->pdmDescription;
+                    $data['Answer']['IsActive'] = $checkData->pdmIsActive;
+                }
+                array_push($finalData, $data);
+            }
+
+            return response()->json(['data' => $finalData, 'message' => 'Patient all diabetic measure found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Diabetic measures not found'], 200);
+        }
+    }
+
+    static public function GetSinglePatientDiabeticMeasure(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = CcmModel::GetSinglePatientDiabeticMeasure($id, $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
@@ -4519,7 +4616,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_functional_review', 'PatientId', $patientId);
+//            $checkData = GenericModel::simpleFetchGenericById('patient_functional_review', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetPatientFunctionalReviewAll((int)$request->get('FunctionalReviewParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -4543,7 +4641,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient functional review cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'Patient functional review answer is already given'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -4576,7 +4674,92 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetPatientPatientFunctionalReview(Request $request)
+    static public function GetPatientFunctionalReview(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = CcmModel::GetSinglePatientFunctionalReview($id, $patientId);
+
+        if ($checkData == null) {
+            error_log('data not found');
+            return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 400);
+        } else {
+            error_log('data found. Now update');
+
+            $data = array(
+                'Id' => $checkData->ptrId,
+                'IsOkay' => $checkData->IsOkay,
+                'Description' => $checkData->ptrDescription,
+                'IsActive' => $checkData->ptrIsActive,
+                'FunctionalReviewParam' => array()
+            );
+
+            $data['FunctionalReviewParam']['Id'] = $checkData->frpId;
+            $data['FunctionalReviewParam']['Name'] = $checkData->Name;
+            $data['FunctionalReviewParam']['Description'] = $checkData->frpDescription;
+
+            return response()->json(['data' => $data, 'message' => 'Patient functional review found'], 200);
+        }
+    }
+
+    static public function GetPatientFunctionalReviewAll(Request $request)
     {
         error_log('in controller');
 
@@ -4636,27 +4819,38 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = CcmModel::GetSinglePatientFunctionalReview($patientId);
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('functional_review_param');
 
-        if ($checkData == null) {
-            error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 400);
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description,
+                    'Answer' => array()
+                );
+
+                $checkData = CcmModel::GetPatientFunctionalReviewAll($item->Id, $patientId);
+
+                if ($checkData == null) {
+                    error_log('data not found');
+                    $data['Answer'] = null;
+                } else {
+                    error_log('data found. Now update');
+
+                    $data['Answer']['Id'] = $checkData->ptrId;
+                    $data['Answer']['IsOkay'] = $checkData->IsOkay;
+                    $data['Answer']['Description'] = $checkData->ptrDescription;
+                    $data['Answer']['IsActive'] = $checkData->ptrIsActive;
+                }
+                array_push($finalData, $data);
+            }
+            return response()->json(['data' => $finalData, 'message' => 'Patient functional reviews found'], 200);
         } else {
-            error_log('data found. Now update');
-
-            $data = array(
-                'Id' => $checkData->ptrId,
-                'IsOkay' => $checkData->IsOkay,
-                'Description' => $checkData->ptrDescription,
-                'IsActive' => $checkData->ptrIsActive,
-                'FunctionalReviewParam' => array()
-            );
-
-            $data['FunctionalReviewParam']['Id'] = $checkData->frpId;
-            $data['FunctionalReviewParam']['Name'] = $checkData->Name;
-            $data['FunctionalReviewParam']['Description'] = $checkData->frpDescription;
-
-            return response()->json(['data' => $data, 'message' => 'Patient functional review found'], 200);
+            return response()->json(['data' => null, 'message' => 'Functional reviews not found'], 200);
         }
     }
 
@@ -4980,7 +5174,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_prevent_screening_examination', 'PatientId', $patientId);
+//            $checkData = GenericModel::simpleFetchGenericById('patient_prevent_screening_examination', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetSinglePatientScreenExaminationViaParamId((int)$request->get('PreventScreeningParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -5004,7 +5199,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient screen examination cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'This screen examination answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -5038,6 +5233,90 @@ class CcmPlanController extends Controller
     }
 
     static public function GetPatientScreenExamination(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = CcmModel::GetSinglePatientScreenExamination($id, $patientId);
+
+        if ($checkData == null) {
+            error_log('data not found');
+            return response()->json(['data' => null, 'message' => 'Patient screen examination not found'], 400);
+        } else {
+            error_log('data found ');
+
+            $data['Id'] = $checkData->ppseId;
+            $data['IsPatientExamined'] = $checkData->IsPatientExamined;
+            $data['Description'] = $checkData->ppseDescription;
+            $data['IsActive'] = $checkData->ppseIsActive;
+            $data['PreventScreeningParam'] = array();
+
+            //Assistance organization data
+            $data['PreventScreeningParam']['Id'] = $checkData->psepId;
+            $data['PreventScreeningParam']['Name'] = $checkData->Name;
+            $data['PreventScreeningParam']['Description'] = $checkData->psepDescription;
+
+            return response()->json(['data' => $data, 'message' => 'Patient screen examination found'], 200);
+        }
+    }
+
+    static public function GetPatientScreenExaminationAll(Request $request)
     {
         error_log('in controller');
 
@@ -5097,26 +5376,42 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = CcmModel::GetSinglePatientScreenExamination($patientId);
+        //First get all screen params
+        $dataList = GenericModel::simpleFetchGenericAll('prevent_screening_examination_param');
 
-        if ($checkData == null) {
-            error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient screen examination not found'], 400);
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            error_log('exam params found');
+            foreach ($dataList as $item) {
+
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description,
+                    'Answer' => array()
+                );
+
+                $checkData = CcmModel::GetSinglePatientScreenExaminationViaParamId($item->Id, $patientId);
+
+                if ($checkData == null) {
+                    $data['Answer'] = null;
+                } else {
+                    error_log('data found  ');
+
+                    $data['Answer']['Id'] = $checkData->ppseId;
+                    $data['Answer']['IsPatientExamined'] = $checkData->IsPatientExamined;
+                    $data['Answer']['Description'] = $checkData->ppseDescription;
+                    $data['Answer']['IsActive'] = $checkData->ppseIsActive;
+                }
+
+                array_push($finalData, $data);
+            }
+
+            return response()->json(['data' => $finalData, 'message' => 'Preventative Screen examination found'], 200);
+
         } else {
-            error_log('data found ');
-
-            $data['Id'] = $checkData->ppseId;
-            $data['IsPatientExamined'] = $checkData->IsPatientExamined;
-            $data['Description'] = $checkData->ppseDescription;
-            $data['IsActive'] = $checkData->ppseIsActive;
-            $data['PreventScreeningParam'] = array();
-
-            //Assistance organization data
-            $data['PreventScreeningParam']['Id'] = $checkData->psepId;
-            $data['PreventScreeningParam']['Name'] = $checkData->Name;
-            $data['PreventScreeningParam']['Description'] = $checkData->psepDescription;
-
-            return response()->json(['data' => $data, 'message' => 'Patient screen examination found'], 200);
+            return response()->json(['data' => null, 'message' => 'Preventative screen params not found'], 400);
         }
     }
 
@@ -5200,7 +5495,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_psychological_review', 'PatientId', $patientId);
+//            $checkData = GenericModel::simpleFetchGenericById('patient_psychological_review', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetPatientPsychologicalReviewAll((int)$request->get('PsychologicalReviewParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -5224,7 +5520,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient psychological review cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'Patient psychological review answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -5258,6 +5554,92 @@ class CcmPlanController extends Controller
     }
 
     static public function GetPatientPsychologicalReview(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        error_log('$id is ' . $id);
+
+        $checkData = CcmModel::GetSinglePatientPsychologicalReview($id, $patientId);
+
+        if ($checkData == null) {
+            error_log('data not found');
+            return response()->json(['data' => null, 'message' => 'Patient psychological review not found'], 400);
+        } else {
+            error_log('data found ');
+
+            $data['Id'] = $checkData->ppsId;
+            $data['IsPatientExamined'] = $checkData->IsOkay;
+            $data['Description'] = $checkData->ppsDescription;
+            $data['IsActive'] = $checkData->ppsIsActive;
+            $data['PsychologicalReviewParam'] = array();
+
+            //Assistance organization data
+            $data['PsychologicalReviewParam']['Id'] = $checkData->prpId;
+            $data['PsychologicalReviewParam']['Name'] = $checkData->Name;
+            $data['PsychologicalReviewParam']['Description'] = $checkData->prpDescription;
+
+            return response()->json(['data' => $data, 'message' => 'Patient psychological review found'], 200);
+        }
+    }
+
+    static public function GetPatientPsychologicalReviewAll(Request $request)
     {
         error_log('in controller');
 
@@ -5317,28 +5699,44 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = CcmModel::GetSinglePatientPsychologicalReview($patientId);
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('psychological_review_param');
 
-        if ($checkData == null) {
-            error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient psychological review not found'], 400);
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description,
+                    'Answer' => array()
+                );
+
+                $checkData = CcmModel::GetPatientPsychologicalReviewAll($item->Id, $patientId);
+
+                if ($checkData == null) {
+                    $data['Answer'] = null;
+                } else {
+                    error_log('data found ');
+
+                    $data['Answer']['Id'] = $checkData->ppsId;
+                    $data['Answer']['IsPatientExamined'] = $checkData->IsOkay;
+                    $data['Answer']['Description'] = $checkData->ppsDescription;
+                    $data['Answer']['IsActive'] = $checkData->ppsIsActive;
+
+                }
+
+                array_push($finalData, $data);
+            }
+
+
+            return response()->json(['data' => $finalData, 'message' => 'Patient psychological review found'], 200);
         } else {
-            error_log('data found ');
-
-            $data['Id'] = $checkData->ppsId;
-            $data['IsPatientExamined'] = $checkData->IsOkay;
-            $data['Description'] = $checkData->ppsDescription;
-            $data['IsActive'] = $checkData->ppsIsActive;
-            $data['PsychologicalReviewParam'] = array();
-
-            //Assistance organization data
-            $data['PsychologicalReviewParam']['Id'] = $checkData->prpId;
-            $data['PsychologicalReviewParam']['Name'] = $checkData->Name;
-            $data['PsychologicalReviewParam']['Description'] = $checkData->prpDescription;
-
-            return response()->json(['data' => $data, 'message' => 'Patient psychological review found'], 200);
+            return response()->json(['data' => null, 'message' => 'Psychological reviews not found'], 200);
         }
     }
+
 
     static public function SavePatientSocialReview(Request $request)
     {
@@ -5419,7 +5817,8 @@ class CcmPlanController extends Controller
                 }
             }
 
-            $checkData = GenericModel::simpleFetchGenericById('patient_social_review', 'PatientId', $patientId);
+//            $checkData = GenericModel::simpleFetchGenericById('patient_social_review', 'Id', $request->get('Id'));
+            $checkData = CcmModel::GetSinglePatientSocialReviewAll((int)$request->get('SocialReviewParamId'), $patientId);
 
             if ($checkData == null) {
                 error_log('data not found, so INSERTING');
@@ -5443,7 +5842,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'Patient social review cannot be updated because id is NULL'], 200);
+                return response()->json(['data' => null, 'message' => 'This patient social answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -5476,7 +5875,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetPatientSocialReview(Request $request)
+    static public function GetPatientSocialReviewAll(Request $request)
     {
         error_log('in controller');
 
@@ -5536,7 +5935,104 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
-        $checkData = CcmModel::GetSinglePatientSocialReview($patientId);
+        $dataList = GenericModel::simpleFetchGenericAll('social_review_param');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Description' => $item->Description,
+                    'Answer' => array()
+                );
+
+                $checkData = CcmModel::GetSinglePatientSocialReviewAll($item->Id, $patientId);
+
+                if ($checkData == null) {
+                    error_log('data not found');
+                    $data['Answer'] = null;
+                } else {
+                    error_log('data found ');
+
+                    $data['Answer']['Id'] = $checkData->psrId;
+                    $data['Answer']['IsPatientExamined'] = $checkData->IsOkay;
+                    $data['Answer']['Description'] = $checkData->psrDescription;
+                    $data['Answer']['IsActive'] = $checkData->psrIsActive;
+                }
+
+                array_push($finalData, $data);
+            }
+
+            return response()->json(['data' => $finalData, 'message' => 'Patient social review found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Social reviews not found'], 200);
+        }
+    }
+
+    static public function GetPatientSocialReview(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $id = $request->get('id');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        $checkData = CcmModel::GetSinglePatientSocialReview($id, $patientId);
 
         if ($checkData == null) {
             error_log('data not found');
