@@ -422,6 +422,7 @@ Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
 
 Route::post('/upload/profile/picture', 'DocumentUploadController@UploadProfilePicture');
 Route::post('/upload/forum/topic/file', 'DocumentUploadController@UploadForumTopicFile');
+Route::post('/upload/forum/topic/comment/file', 'DocumentUploadController@UploadForumCommentFile');
 
 
 
