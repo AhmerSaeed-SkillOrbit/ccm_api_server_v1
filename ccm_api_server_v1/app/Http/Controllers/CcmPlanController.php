@@ -4656,6 +4656,14 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 400);
             } else {
+
+                if ($checkData->FunctionalReviewParamId != (int)$request->get('FunctionalReviewParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetPatientFunctionalReviewAll((int)$request->get('FunctionalReviewParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'Patient functional review answer is already given'], 400);
+                    }
+                }
+
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
