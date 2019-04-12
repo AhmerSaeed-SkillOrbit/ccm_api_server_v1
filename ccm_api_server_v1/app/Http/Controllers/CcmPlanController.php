@@ -5222,6 +5222,12 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient screen examination not found'], 400);
             } else {
+                if ($checkData->PreventScreeningParamId != (int)$request->get('PreventScreeningParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetSinglePatientScreenExaminationViaParamId((int)$request->get('PreventScreeningParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This answer is already given'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
@@ -5543,6 +5549,12 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient psychological review not found'], 400);
             } else {
+                if ($checkData->PsychologicalReviewParamId != (int)$request->get('PsychologicalReviewParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetPatientPsychologicalReviewAll((int)$request->get('PsychologicalReviewParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This answer is already given'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
@@ -5865,6 +5877,13 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient social review not found'], 400);
             } else {
+
+                if ($checkData->SocialReviewParamId != (int)$request->get('SocialReviewParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetSinglePatientSocialReviewAll((int)$request->get('SocialReviewParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This answer is already given'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
