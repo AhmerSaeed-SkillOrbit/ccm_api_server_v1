@@ -5881,7 +5881,7 @@ class CcmPlanController extends Controller
                 if ($checkData->SocialReviewParamId != (int)$request->get('SocialReviewParamId')) {
                     $checkDataWithRespectToParam = CcmModel::GetSinglePatientSocialReviewAll((int)$request->get('SocialReviewParamId'), $patientId);
                     if ($checkDataWithRespectToParam != null) {
-                        return response()->json(['data' => null, 'message' => 'This answer is already given'], 400);
+                        return response()->json(['data' => null, 'message' => 'This patient social answer already exists'], 400);
                     }
                 }
                 error_log('data found. Now update');
