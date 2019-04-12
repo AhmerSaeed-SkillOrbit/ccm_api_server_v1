@@ -4324,7 +4324,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'This diabetic answer alredy exists'], 200);
+                return response()->json(['data' => null, 'message' => 'This diabetic answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -4333,6 +4333,12 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient diabetic measure not found'], 400);
             } else {
+                if ($checkData->DiabeticMeasureParamId != (int)$request->get('DiabeticMeasureParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetPatientDiabeticMeasureAll((int)$request->get('DiabeticMeasureParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This diabetic answer already exists'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
