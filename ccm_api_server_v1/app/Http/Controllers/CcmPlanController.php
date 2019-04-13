@@ -6447,6 +6447,9 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $searchDate = $request->get('searchDate');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -6506,7 +6509,7 @@ class CcmPlanController extends Controller
         $ccmPlanFinalData = array();
 
 
-        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId);
+        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $searchDate);
         if (count($CheckCcmPlanData) == 0) {
             return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
         } else {
