@@ -6449,7 +6449,8 @@ class CcmPlanController extends Controller
         $patientId = $request->get('patientId');
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
-        $searchDate = $request->get('searchDate');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -6508,8 +6509,12 @@ class CcmPlanController extends Controller
 
         $ccmPlanFinalData = array();
 
+        if($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null"){
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
 
-        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $searchDate);
+
+        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $startDate, $endDate);
         if (count($CheckCcmPlanData) == 0) {
             return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
         } else {
