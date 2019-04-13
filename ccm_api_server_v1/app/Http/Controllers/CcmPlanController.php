@@ -2168,7 +2168,7 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'IsHospitalized' => $item->IsHospitalized,
-                    'HospitalizedDate' => Carbon::createFromTimestamp($item->HospitalizedDate),
+                    'HospitalizedDate' => $item->HospitalizedDate,
                     'HospitalName' => $item->HospitalName,
                     'PatientComments' => $item->PatientComments
                 );
@@ -2198,7 +2198,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $medicineData->Id;
             $data['IsHospitalized'] = $medicineData->IsHospitalized;
             $data['HospitalName'] = $medicineData->HospitalName;
-            $data['HospitalizedDate'] = Carbon::createFromTimestamp($medicineData->HospitalizedDate);
+            $data['HospitalizedDate'] = $medicineData->HospitalizedDate;
             $data['PatientComments'] = $medicineData->PatientComments;
 
             return response()->json(['data' => $data, 'message' => 'Hospitalization history found'], 200);
@@ -2414,7 +2414,7 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'DiagnoseDescription' => $item->DiagnoseDescription,
-                    'DiagnoseDate' => Carbon::createFromTimestamp($item->DiagnoseDate),
+                    'DiagnoseDate' => $item->DiagnoseDate,
                     'CurrentProblem' => $item->CurrentProblem,
                     'NeedAttention' => $item->NeedAttention
                 );
@@ -2443,7 +2443,7 @@ class CcmPlanController extends Controller
 
             $data['Id'] = $medicineData->Id;
             $data['DiagnoseDescription'] = $medicineData->DiagnoseDescription;
-            $data['DiagnoseDate'] = Carbon::createFromTimestamp($medicineData->DiagnoseDate);
+            $data['DiagnoseDate'] = $medicineData->DiagnoseDate;
             $data['CurrentProblem'] = $medicineData->CurrentProblem;
             $data['NeedAttention'] = $medicineData->NeedAttention;
 
