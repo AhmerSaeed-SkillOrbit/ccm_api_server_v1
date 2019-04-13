@@ -376,6 +376,8 @@ Route::get('/patient/ccm/plan/single', 'CcmPlanController@GetCCMPlanViaId');
 
 //get all CCM plan
 Route::get('/patient/ccm/plan/all', 'CcmPlanController@GetCCMPlanViaPatientId');
+//get all CCM plan count
+Route::get('/patient/ccm/plan/all/count', 'CcmPlanController@GetCCMPlanViaPatientIdCount');
 
 //get update CCM plan
 Route::post('/patient/ccm/plan/update', 'CcmPlanController@UpdateCcmPlan');
