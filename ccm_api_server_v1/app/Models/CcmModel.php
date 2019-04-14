@@ -523,15 +523,33 @@ class CcmModel
         return $query;
     }
 
-    static public function GetSinglePatientCcmPlanViaPatientId($patientId)
+    static public function GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $searchDate)
     {
-        $query = DB::table('ccm_plan')
-            ->select('ccm_plan.*')
-            ->where('ccm_plan.IsActive', '=', true)
-            ->where('ccm_plan.PatientId', '=', $patientId)
-            ->get();
+        if ($searchDate == "null") {
+            error_log('search key is NULL');
+            $queryResult = DB::table('ccm_plan')
+                ->select('ccm_plan.*')
+                ->where('ccm_plan.IsActive', '=', true)
+                ->where('ccm_plan.PatientId', '=', $patientId)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+        } else {
+            error_log('search key is NOT NULL');
 
-        return $query;
+
+            $queryResult = DB::table('ccm_plan')
+                ->select('ccm_plan.*')
+                ->where('ccm_plan.IsActive', '=', true)
+                ->where('ccm_plan.PatientId', '=', $patientId)
+                ->where('.ccm_plan.StartDate', 'like', '%' . $searchDate . '%')
+                ->orWhere('.ccm_plan.EndDate', 'like', '%' . $searchDate . '%')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+        }
+
+        return $queryResult;
     }
 
     static public function GetCcmPlanGoalsViaCcmPLanId($ccmPlanId)

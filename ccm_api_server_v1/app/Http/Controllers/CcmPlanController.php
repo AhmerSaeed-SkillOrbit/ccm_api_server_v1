@@ -4324,7 +4324,7 @@ class CcmPlanController extends Controller
                 }
             } else {
                 error_log('data found. But id is null so we cannot update');
-                return response()->json(['data' => null, 'message' => 'This diabetic answer alredy exists'], 200);
+                return response()->json(['data' => null, 'message' => 'This diabetic answer already exists'], 200);
             }
         } else {
             error_log('fetching single data');
@@ -4333,6 +4333,12 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient diabetic measure not found'], 400);
             } else {
+                if ($checkData->DiabeticMeasureParamId != (int)$request->get('DiabeticMeasureParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetPatientDiabeticMeasureAll((int)$request->get('DiabeticMeasureParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This diabetic answer already exists'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
@@ -4650,6 +4656,14 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 400);
             } else {
+
+                if ($checkData->FunctionalReviewParamId != (int)$request->get('FunctionalReviewParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetPatientFunctionalReviewAll((int)$request->get('FunctionalReviewParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'Patient functional review answer is already given'], 400);
+                    }
+                }
+
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
@@ -5208,6 +5222,12 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient screen examination not found'], 400);
             } else {
+                if ($checkData->PreventScreeningParamId != (int)$request->get('PreventScreeningParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetSinglePatientScreenExaminationViaParamId((int)$request->get('PreventScreeningParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This answer is already given'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
@@ -5529,6 +5549,12 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient psychological review not found'], 400);
             } else {
+                if ($checkData->PsychologicalReviewParamId != (int)$request->get('PsychologicalReviewParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetPatientPsychologicalReviewAll((int)$request->get('PsychologicalReviewParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This answer is already given'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
@@ -5851,6 +5877,13 @@ class CcmPlanController extends Controller
                 error_log('data not found');
                 return response()->json(['data' => null, 'message' => 'Patient social review not found'], 400);
             } else {
+
+                if ($checkData->SocialReviewParamId != (int)$request->get('SocialReviewParamId')) {
+                    $checkDataWithRespectToParam = CcmModel::GetSinglePatientSocialReviewAll((int)$request->get('SocialReviewParamId'), $patientId);
+                    if ($checkDataWithRespectToParam != null) {
+                        return response()->json(['data' => null, 'message' => 'This patient social answer already exists'], 400);
+                    }
+                }
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
@@ -6414,6 +6447,9 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $searchDate = $request->get('searchDate');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -6473,7 +6509,7 @@ class CcmPlanController extends Controller
         $ccmPlanFinalData = array();
 
 
-        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId);
+        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $searchDate);
         if (count($CheckCcmPlanData) == 0) {
             return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
         } else {
