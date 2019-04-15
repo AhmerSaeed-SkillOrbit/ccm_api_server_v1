@@ -380,18 +380,10 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-        $forumCommentId = $request->get('forumCommentId');
         $byUserId = $request->get('byUserId');
 
         $forumTopicDir = env('FORUM_TOPIC_DIR');
         $forumTopicCommentDir = env('FORUM_COMMENT_DIR');
-
-        //Now check if this forum exists or not
-        $getForumTopicData = ForumModel::getSingleCommentViaCommentId($forumCommentId);
-
-        if ($getForumTopicData == null) {
-            return response()->json(['data' => null, 'message' => 'Forum comment not found'], 400);
-        }
 
         error_log('user record found');
 
@@ -466,26 +458,9 @@ class DocumentUploadController extends Controller
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
             } else {
-                error_log('data inserted in file upload');
-                error_log('File upload id is : ' . $insertedData);
-
-                $dataToInsert = array(
-                    'ForumTopicCommentId' => $forumCommentId,
-                    'IsActive' => true,
-                    'FileUploadId' => $insertedData
-                );
-
-                $insertingDataInForumTopicFile = GenericModel::insertGeneric('forum_topic_comment_file', $dataToInsert);
-
-                if ($insertingDataInForumTopicFile == false) {
-                    error_log('forum topic file data not inserted');
-                    DB::rollBack();
-                    return response()->json(['data' => null, 'message' => 'Error in uploading forum topic comment file'], 400);
-                } else {
-                    error_log('File and data uploaded ');
-                    DB::commit();
-                    return response()->json(['data' => $insertedData, 'message' => 'Forum topic comment file uploaded successfully'], 200);
-                }
+                error_log('File and data uploaded ');
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Forum topic comment file uploaded successfully'], 200);
             }
 
         } else {
