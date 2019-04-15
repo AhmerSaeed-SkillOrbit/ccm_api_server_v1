@@ -2168,7 +2168,7 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'IsHospitalized' => $item->IsHospitalized,
-                    'HospitalizedDate' => Carbon::createFromTimestamp($item->HospitalizedDate),
+                    'HospitalizedDate' => $item->HospitalizedDate,
                     'HospitalName' => $item->HospitalName,
                     'PatientComments' => $item->PatientComments
                 );
@@ -2198,7 +2198,7 @@ class CcmPlanController extends Controller
             $data['Id'] = $medicineData->Id;
             $data['IsHospitalized'] = $medicineData->IsHospitalized;
             $data['HospitalName'] = $medicineData->HospitalName;
-            $data['HospitalizedDate'] = Carbon::createFromTimestamp($medicineData->HospitalizedDate);
+            $data['HospitalizedDate'] = $medicineData->HospitalizedDate;
             $data['PatientComments'] = $medicineData->PatientComments;
 
             return response()->json(['data' => $data, 'message' => 'Hospitalization history found'], 200);
@@ -2414,7 +2414,7 @@ class CcmPlanController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'DiagnoseDescription' => $item->DiagnoseDescription,
-                    'DiagnoseDate' => Carbon::createFromTimestamp($item->DiagnoseDate),
+                    'DiagnoseDate' => $item->DiagnoseDate,
                     'CurrentProblem' => $item->CurrentProblem,
                     'NeedAttention' => $item->NeedAttention
                 );
@@ -2443,7 +2443,7 @@ class CcmPlanController extends Controller
 
             $data['Id'] = $medicineData->Id;
             $data['DiagnoseDescription'] = $medicineData->DiagnoseDescription;
-            $data['DiagnoseDate'] = Carbon::createFromTimestamp($medicineData->DiagnoseDate);
+            $data['DiagnoseDate'] = $medicineData->DiagnoseDate;
             $data['CurrentProblem'] = $medicineData->CurrentProblem;
             $data['NeedAttention'] = $medicineData->NeedAttention;
 
@@ -2977,7 +2977,7 @@ class CcmPlanController extends Controller
         $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'PatientId', (int)$patientId);
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient assessment not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient assessment not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -3236,7 +3236,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient assessment ability concern not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient assessment ability concern not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -3475,7 +3475,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient assessment alternate contact not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient assessment alternate contact not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -3696,7 +3696,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient assessment insurance not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient assessment insurance not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -3937,7 +3937,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient assessment resource not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient assessment resource not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -4189,7 +4189,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient assessment self not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient assessment self not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -4523,7 +4523,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient diabetic measure not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient diabetic measure not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -4753,7 +4753,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient functional review not found'], 200);
         } else {
             error_log('data found. Now update');
 
@@ -5076,7 +5076,7 @@ class CcmPlanController extends Controller
 
         if ($patientOrganizationData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient organization assistance not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient organization assistance not found'], 200);
         } else {
             error_log('patient organization assistance found ');
 
@@ -5317,7 +5317,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient screen examination not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient screen examination not found'], 200);
         } else {
             error_log('data found ');
 
@@ -5431,7 +5431,7 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $finalData, 'message' => 'Preventative Screen examination found'], 200);
 
         } else {
-            return response()->json(['data' => null, 'message' => 'Preventative screen params not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Preventative screen params not found'], 200);
         }
     }
 
@@ -5646,7 +5646,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient psychological review not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient psychological review not found'], 200);
         } else {
             error_log('data found ');
 
@@ -6069,7 +6069,7 @@ class CcmPlanController extends Controller
 
         if ($checkData == null) {
             error_log('data not found');
-            return response()->json(['data' => null, 'message' => 'Patient social review not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Patient social review not found'], 200);
         } else {
             error_log('data found ');
 
@@ -6449,7 +6449,8 @@ class CcmPlanController extends Controller
         $patientId = $request->get('patientId');
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
-        $searchDate = $request->get('searchDate');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -6508,8 +6509,12 @@ class CcmPlanController extends Controller
 
         $ccmPlanFinalData = array();
 
+        if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
 
-        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $searchDate);
+
+        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $startDate, $endDate);
         if (count($CheckCcmPlanData) == 0) {
             return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
         } else {
@@ -6587,6 +6592,84 @@ class CcmPlanController extends Controller
             }
             return response()->json(['data' => $ccmPlanFinalData, 'message' => 'Ccm plan found'], 200);
         }
+    }
+
+    static public function GetCCMPlanViaPatientIdCount(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Now check if Ccm plan of this patient with the same start data already exists or not
+
+        $ccmPlanFinalData = array();
+
+        if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+
+
+        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientIdCount($patientId, $pageNo, $limit, $startDate, $endDate);
+
+        return response()->json(['data' => $CheckCcmPlanData, 'message' => 'Total count'], 200);
     }
 
     static public function UpdateCcmPlan(Request $request)

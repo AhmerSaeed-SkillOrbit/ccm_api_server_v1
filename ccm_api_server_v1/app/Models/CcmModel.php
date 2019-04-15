@@ -523,9 +523,9 @@ class CcmModel
         return $query;
     }
 
-    static public function GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $searchDate)
+    static public function GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $startDate, $endDate)
     {
-        if ($searchDate == "null") {
+        if ($startDate == "null" && $endDate == "null") {
             error_log('search key is NULL');
             $queryResult = DB::table('ccm_plan')
                 ->select('ccm_plan.*')
@@ -542,11 +542,40 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->where('.ccm_plan.StartDate', 'like', '%' . $searchDate . '%')
-                ->orWhere('.ccm_plan.EndDate', 'like', '%' . $searchDate . '%')
+                ->where('.ccm_plan.StartDate', '>=',  $startDate)
+                ->where('.ccm_plan.EndDate', '<=',  $endDate)
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
+        }
+
+        return $queryResult;
+    }
+
+    static public function GetSinglePatientCcmPlanViaPatientIdCount($patientId, $pageNo, $limit, $startDate, $endDate)
+    {
+        if ($startDate == "null" && $endDate == "null") {
+            error_log('search key is NULL');
+            $queryResult = DB::table('ccm_plan')
+                ->select('ccm_plan.*')
+                ->where('ccm_plan.IsActive', '=', true)
+                ->where('ccm_plan.PatientId', '=', $patientId)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->count();
+        } else {
+            error_log('search key is NOT NULL');
+
+
+            $queryResult = DB::table('ccm_plan')
+                ->select('ccm_plan.*')
+                ->where('ccm_plan.IsActive', '=', true)
+                ->where('ccm_plan.PatientId', '=', $patientId)
+                ->where('.ccm_plan.StartDate', '>=',  $startDate)
+                ->where('.ccm_plan.EndDate', '<=',  $endDate)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->count();
         }
 
         return $queryResult;

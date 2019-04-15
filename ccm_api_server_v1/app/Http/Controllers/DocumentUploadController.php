@@ -378,7 +378,7 @@ class DocumentUploadController extends Controller
                 error_log('File upload id is : ' . $insertedData);
 
                 $dataToInsert = array(
-                    'ForumTopicId' => $forumTopicId,
+//                    'ForumTopicId' => $forumTopicId,
                     'IsActive' => true,
                     'FileUploadId' => $insertedData
                 );
