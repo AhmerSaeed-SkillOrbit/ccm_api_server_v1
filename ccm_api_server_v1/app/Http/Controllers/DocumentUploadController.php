@@ -738,4 +738,94 @@ class DocumentUploadController extends Controller
             return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
+
+    function UploadCcmFile(Request $request)
+    {
+        error_log('in controller');
+
+        $byUserId = $request->get('byUserId');
+
+        $ccmPlanDir = env('CCM_PLAN_DIR');
+
+        error_log('record found');
+
+        //get filename with extension
+        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        error_log(' File with extension ' . $filenamewithextension);
+
+        //get filename without extension
+        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+        error_log(' Only file name is:  ' . $filename);
+
+        //get file extension
+        $extension = $request->file('file')->getClientOriginalExtension();
+        error_log(' File extension is:  ' . $extension);
+
+        $filenameWithoutExtension = $filename . '_' . uniqid();
+
+        //filename to store
+        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenametostore);
+
+        $fileSize = $request->file('file')->getSize();
+        error_log(' File size is : ' . $fileSize);
+
+        $dirPath = $byUserId . '/' . $ccmPlanDir . '/';
+
+        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+        error_log("createDir");
+
+        error_log($createDir);
+
+        try {
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            error_log('$upload_success');
+            error_log($upload_success);
+
+        } catch (Exception $ex) {
+
+            error_log('exception');
+            error_log($ex);
+            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        DB::beginTransaction();
+
+        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+        if ($upload_success == true) {
+
+            error_log('upload successfully done');
+            error_log('Now insert data in file upload table');
+
+            $fileUpload = array(
+                'ByUserId' => $byUserId,
+                'RelativePath' => $dirPath,
+                'FileOriginalName' => $filename . '.' . $extension,
+                'FileName' => $filenameWithoutExtension,
+                'FileExtension' => '.' . $extension,
+                'FileSizeByte' => $fileSize,
+                'BelongTo' => 'ccm_plan',
+                'CreatedOn' => $date["timestamp"],
+                'IsActive' => true
+            );
+            //Now inserting data in file_upload table
+
+            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+            if ($insertedData == 0) {
+                error_log('data not inserted');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting ccm plan file information'], 400);
+            } else {
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Ccm plan file uploaded successfully'], 200);
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
+        }
+    }
 }
