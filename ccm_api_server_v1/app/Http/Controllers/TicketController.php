@@ -58,10 +58,12 @@ class TicketController extends Controller
         $requestType = $request->get('requestType');
         $fromNum = $request->get('From');
         $messageBody = $request->get('Body');
+        $fileUpload = $request->get('FileUpload');
         $defaultTicketNumber = env('DEFAULT_TICKET_NUMBER');
         $smsRequestType = env('REQUEST_TYPE_SMS');
         $portalRequestType = env('REQUEST_TYPE_PORTAL');
 
+        DB::beginTransaction();
         //check request status type
         if ($requestType == $smsRequestType) {
             error_log('Request type is of SMS');
@@ -176,10 +178,35 @@ class TicketController extends Controller
                 $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
 
                 if ($insertedDataId == 0) {
+                    DB::rollBack();
                     error_log('Dear Patient, Problem in creating Ticket. Sorry for inconvenience, Please can you try again Thanks CCM - Support Staff !!!');
                     $response->message('Dear Patient, Problem in creating Ticket. Sorry for inconvenience, Please can you try again Thanks CCM - Support Staff !!!');
                     return $response;
                 } else {
+
+                    if (count($fileUpload) > 0) {
+
+                        $fileUploadData = array();
+
+                        foreach ($fileUpload as $item) {
+
+                            array_push($fileUploadData,
+                                array(
+                                    "TicketId" => $insertedDataId,
+                                    "FileUploadId" => $item['Id'],
+                                    "IsActive" => true
+                                )
+                            );
+                        }
+
+                        $insertForumTopicFileUpload = GenericModel::insertGeneric('ticket_file', $fileUploadData);
+                        if ($insertForumTopicFileUpload == 0) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in inserting ticket file'], 400);
+                        }
+                    }
+
+                    DB::commit();
                     error_log('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
                     $response->message('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
                     return $response;
@@ -223,8 +250,31 @@ class TicketController extends Controller
 
                 $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
                 if ($insertedDataId == 0) {
+                    DB::rollBack();
                     return response()->json(['data' => null, 'message' => 'Error in inserting ticket'], 400);
                 } else {
+                    if (count($fileUpload) > 0) {
+
+                        $fileUploadData = array();
+
+                        foreach ($fileUpload as $item) {
+
+                            array_push($fileUploadData,
+                                array(
+                                    "TicketId" => $insertedDataId,
+                                    "FileUploadId" => $item['Id'],
+                                    "IsActive" => true
+                                )
+                            );
+                        }
+
+                        $insertForumTopicFileUpload = GenericModel::insertGeneric('ticket_file', $fileUploadData);
+                        if ($insertForumTopicFileUpload == 0) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in inserting ticket file'], 400);
+                        }
+                    }
+                    DB::commit();
                     return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully created'], 200);
                 }
             }
@@ -564,6 +614,7 @@ class TicketController extends Controller
 
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
+        $fileUpload = $request->get('FileUpload');
         $openTrackStatus = env('TICKET_TRACK_STATUS_OPEN');
 
         $date = HelperModel::getDate();
@@ -585,6 +636,9 @@ class TicketController extends Controller
                 if ($getSingleTicket->TrackStatus != $openTrackStatus) {
                     return response()->json(['data' => null, 'message' => 'Only open tickets can be updated'], 400);
                 } else {
+
+                    DB::beginTransaction();
+
                     error_log('User record found');
                     //Now we will make data and will insert it
                     $ticketData = array(
@@ -600,8 +654,48 @@ class TicketController extends Controller
 
                     $insertedDataId = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketData);
                     if ($insertedDataId == false) {
+                        DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in updating ticket'], 400);
                     } else {
+
+                        $getForumTopicFilesData = TicketModel::GetTicketFile($ticketId);
+
+                        if (count($getForumTopicFilesData) > 0) {
+
+                            error_log('forum ticket file exists');
+                            error_log('deleting them');
+
+                            $deleteTags = GenericModel::deleteGeneric('ticket_file', 'TicketId', $ticketId);
+                            if ($deleteTags == false) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in deleting ticket files'], 400);
+                            }
+                        }
+
+                        if (count($fileUpload) > 0) {
+
+                            $fileUploadData = array();
+
+                            foreach ($fileUpload as $item) {
+
+                                array_push($fileUploadData,
+                                    array(
+                                        "TicketId" => $insertedDataId,
+                                        "FileUploadId" => $item['Id'],
+                                        "IsActive" => true
+                                    )
+                                );
+                            }
+
+                            $insertForumTopicFileUpload = GenericModel::insertGeneric('ticket_file', $fileUploadData);
+                            if ($insertForumTopicFileUpload == 0) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in inserting ticket file'], 400);
+                            }
+                        }
+
+                        DB::commit();
+
                         return response()->json(['data' => $ticketId, 'message' => 'ticket successfully updated'], 200);
                     }
                 }
@@ -615,6 +709,7 @@ class TicketController extends Controller
 
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
+        $fileUpload = $request->get('FileUpload');
         $patientRole = env('ROLE_PATIENT');
         $supportStaffRole = env('ROLE_SUPPORT_STAFF');
 
@@ -672,6 +767,29 @@ class TicketController extends Controller
                                 DB::rollBack();
                                 return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                             } else {
+
+                                if (count($fileUpload) > 0) {
+
+                                    $fileUploadData = array();
+
+                                    foreach ($fileUpload as $item) {
+
+                                        array_push($fileUploadData,
+                                            array(
+                                                "TicketReplyId" => $insertedDataId,
+                                                "FileUploadId" => $item['Id'],
+                                                "IsActive" => true
+                                            )
+                                        );
+                                    }
+
+                                    $insertForumTopicFileUpload = GenericModel::insertGeneric('ticket_reply_file', $fileUploadData);
+                                    if ($insertForumTopicFileUpload == 0) {
+                                        DB::rollBack();
+                                        return response()->json(['data' => null, 'message' => 'Error in inserting ticket reply file'], 400);
+                                    }
+                                }
+
                                 DB::commit();
                                 if ($checkUserData->RoleCodeName == $supportStaffRole) {
                                     //emailing to patient who created ticket
@@ -760,6 +878,29 @@ class TicketController extends Controller
                                 DB::rollBack();
                                 return response()->json(['data' => null, 'message' => 'Error in replying to ticket'], 400);
                             } else {
+
+                                if (count($fileUpload) > 0) {
+
+                                    $fileUploadData = array();
+
+                                    foreach ($fileUpload as $item) {
+
+                                        array_push($fileUploadData,
+                                            array(
+                                                "TicketReplyId" => $ticketReplyInsertedId,
+                                                "FileUploadId" => $item['Id'],
+                                                "IsActive" => true
+                                            )
+                                        );
+                                    }
+
+                                    $insertForumTopicFileUpload = GenericModel::insertGeneric('ticket_reply_file', $fileUploadData);
+                                    if ($insertForumTopicFileUpload == 0) {
+                                        DB::rollBack();
+                                        return response()->json(['data' => null, 'message' => 'Error in inserting ticket reply file'], 400);
+                                    }
+                                }
+
                                 DB::commit();
 
                                 if ($checkUserData->RoleCodeName == $supportStaffRole) {
@@ -851,6 +992,7 @@ class TicketController extends Controller
 
         $userId = $request->get('userId');
         $ticketReplyId = $request->get('ticketReplyId');
+        $fileUpload = $request->get('FileUpload');
 
         $date = HelperModel::getDate();
 
@@ -883,10 +1025,51 @@ class TicketController extends Controller
                         "UpdatedOn" => $date["timestamp"]
                     );
 
+                    DB::beginTransaction();
+
                     $insertedDataId = GenericModel::updateGeneric('ticket_reply', 'Id', $ticketReplyId, $ticketReplyData);
                     if ($insertedDataId == false) {
+                        DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in updating ticket reply'], 400);
                     } else {
+
+                        $getForumTopicFilesData = TicketModel::GetTicketReplyFile($ticketReplyId);
+
+                        if (count($getForumTopicFilesData) > 0) {
+
+                            error_log('forum ticket file exists');
+                            error_log('deleting them');
+
+                            $deleteTags = GenericModel::deleteGeneric('ticket_reply_file', 'TicketReplyId', $ticketReplyId);
+                            if ($deleteTags == false) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in deleting ticket reply files'], 400);
+                            }
+                        }
+
+                        if (count($fileUpload) > 0) {
+
+                            $fileUploadData = array();
+
+                            foreach ($fileUpload as $item) {
+
+                                array_push($fileUploadData,
+                                    array(
+                                        "TicketReplyId" => $ticketReplyId,
+                                        "FileUploadId" => $item['Id'],
+                                        "IsActive" => true
+                                    )
+                                );
+                            }
+
+                            $insertForumTopicFileUpload = GenericModel::insertGeneric('ticket_reply_file', $fileUploadData);
+                            if ($insertForumTopicFileUpload == 0) {
+                                DB::rollBack();
+                                return response()->json(['data' => null, 'message' => 'Error in inserting ticket reply file'], 400);
+                            }
+                        }
+
+                        DB::commit();
                         return response()->json(['data' => $ticketReplyId, 'message' => 'Ticket reply successfully updated'], 200);
                     }
                 }

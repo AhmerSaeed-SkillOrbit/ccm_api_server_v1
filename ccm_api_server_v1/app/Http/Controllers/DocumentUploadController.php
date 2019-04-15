@@ -372,7 +372,7 @@ class DocumentUploadController extends Controller
                 return response()->json(['data' => $insertedData, 'message' => 'Forum topic file uploaded successfully'], 200);
             }
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
+            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
 
@@ -464,7 +464,7 @@ class DocumentUploadController extends Controller
             }
 
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
+            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
 
@@ -472,17 +472,9 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-        $patientAssessmentId = $request->get('patientAssessmentId');
         $byUserId = $request->get('byUserId');
 
         $patientAssessmentDir = env('PATIENT_RECORD_DIR');
-
-        //Now check if this assessment record exists
-        $checkData = GenericModel::simpleFetchGenericById('patient_assessment', 'Id', $patientAssessmentId);
-
-        if ($checkData == null) {
-            return response()->json(['data' => null, 'message' => 'Patient assessment not found'], 400);
-        }
 
         error_log('record found');
 
@@ -557,30 +549,193 @@ class DocumentUploadController extends Controller
                 DB::rollBack();
                 return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
             } else {
-                error_log('data inserted in file upload');
-                error_log('File upload id is : ' . $insertedData);
-
-                $dataToInsert = array(
-                    'PatientAssessmentId' => $patientAssessmentId,
-                    'IsActive' => true,
-                    'FileUploadId' => $insertedData
-                );
-
-                $insertingDataInForumTopicFile = GenericModel::insertGeneric('patient_assessment_file', $dataToInsert);
-
-                if ($insertingDataInForumTopicFile == false) {
-                    error_log('forum topic file data not inserted');
-                    DB::rollBack();
-                    return response()->json(['data' => null, 'message' => 'Error in uploading patient assessment file'], 400);
-                } else {
-                    error_log('File and data uploaded ');
-                    DB::commit();
-                    return response()->json(['data' => $insertedData, 'message' => 'Patient assessment file uploaded successfully'], 200);
-                }
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Patient assessment file uploaded successfully'], 200);
             }
 
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
+            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
+        }
+    }
+
+    function UploadTicketFile(Request $request)
+    {
+        error_log('in controller');
+
+        $byUserId = $request->get('byUserId');
+
+        $ticketDir = env('TICKET_DIR');
+
+        error_log('record found');
+
+        //get filename with extension
+        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        error_log(' File with extension ' . $filenamewithextension);
+
+        //get filename without extension
+        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+        error_log(' Only file name is:  ' . $filename);
+
+        //get file extension
+        $extension = $request->file('file')->getClientOriginalExtension();
+        error_log(' File extension is:  ' . $extension);
+
+        $filenameWithoutExtension = $filename . '_' . uniqid();
+
+        //filename to store
+        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenametostore);
+
+        $fileSize = $request->file('file')->getSize();
+        error_log(' File size is : ' . $fileSize);
+
+        $dirPath = $byUserId . '/' . $ticketDir . '/';
+
+        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+        error_log("createDir");
+
+        error_log($createDir);
+
+        try {
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            error_log('$upload_success');
+            error_log($upload_success);
+
+        } catch (Exception $ex) {
+
+            error_log('exception');
+            error_log($ex);
+            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        DB::beginTransaction();
+
+        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+        if ($upload_success == true) {
+
+            error_log('upload successfully done');
+            error_log('Now insert data in file upload table');
+
+            $fileUpload = array(
+                'ByUserId' => $byUserId,
+                'RelativePath' => $dirPath,
+                'FileOriginalName' => $filename . '.' . $extension,
+                'FileName' => $filenameWithoutExtension,
+                'FileExtension' => '.' . $extension,
+                'FileSizeByte' => $fileSize,
+                'BelongTo' => 'ticket',
+                'CreatedOn' => $date["timestamp"],
+                'IsActive' => true
+            );
+            //Now inserting data in file_upload table
+
+            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+            if ($insertedData == 0) {
+                error_log('data not inserted');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
+            } else {
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Ticket file uploaded successfully'], 200);
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
+        }
+    }
+
+    function UploadTicketReplyFile(Request $request)
+    {
+        error_log('in controller');
+
+        $byUserId = $request->get('byUserId');
+
+        $ticketDir = env('TICKET_DIR');
+        $ticketReplyDir = env('TICKET_REPLY_DIR');
+
+        error_log('record found');
+
+        //get filename with extension
+        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        error_log(' File with extension ' . $filenamewithextension);
+
+        //get filename without extension
+        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+        error_log(' Only file name is:  ' . $filename);
+
+        //get file extension
+        $extension = $request->file('file')->getClientOriginalExtension();
+        error_log(' File extension is:  ' . $extension);
+
+        $filenameWithoutExtension = $filename . '_' . uniqid();
+
+        //filename to store
+        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenametostore);
+
+        $fileSize = $request->file('file')->getSize();
+        error_log(' File size is : ' . $fileSize);
+
+        $dirPath = $byUserId . '/' . $ticketDir . '/' . $ticketReplyDir . '/';
+
+        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+        error_log("createDir");
+
+        error_log($createDir);
+
+        try {
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            error_log('$upload_success');
+            error_log($upload_success);
+
+        } catch (Exception $ex) {
+
+            error_log('exception');
+            error_log($ex);
+            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        DB::beginTransaction();
+
+        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+        if ($upload_success == true) {
+
+            error_log('upload successfully done');
+            error_log('Now insert data in file upload table');
+
+            $fileUpload = array(
+                'ByUserId' => $byUserId,
+                'RelativePath' => $dirPath,
+                'FileOriginalName' => $filename . '.' . $extension,
+                'FileName' => $filenameWithoutExtension,
+                'FileExtension' => '.' . $extension,
+                'FileSizeByte' => $fileSize,
+                'BelongTo' => 'ticket_reply',
+                'CreatedOn' => $date["timestamp"],
+                'IsActive' => true
+            );
+            //Now inserting data in file_upload table
+
+            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+            if ($insertedData == 0) {
+                error_log('data not inserted');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
+            } else {
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Ticket reply file uploaded successfully'], 200);
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
 }

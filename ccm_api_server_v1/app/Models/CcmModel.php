@@ -615,4 +615,17 @@ class CcmModel
 
         return $query;
     }
+
+
+    static public function getFilesViaPatientAssessmentId($patientAssessmnetId)
+    {
+        error_log('in model, fetching files via id');
+
+        $query = DB::table('patient_assessment_file')
+            ->where('patient_assessment_file.PatientAssessmentId', '=', $patientAssessmnetId)
+            ->where('patient_assessment_file.IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
 }
