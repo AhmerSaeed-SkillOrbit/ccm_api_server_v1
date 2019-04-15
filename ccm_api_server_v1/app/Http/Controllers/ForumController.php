@@ -75,6 +75,7 @@ class ForumController extends Controller
         $title = $request->input('Title');
         $description = $request->input('Description');
         $tags = $request->input('Tag');
+        $fileUpload = $request->input('FileUpload');
 
         //First check if logged if user id is valid or not
 
@@ -126,15 +127,33 @@ class ForumController extends Controller
                     if ($insertForumTopicTagData == 0) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in inserting forum topic'], 400);
-                    } else {
-                        error_log('Forum topic tag inserted id ');
-                        DB::commit();
-                        return response()->json(['data' => $insertedData, 'message' => 'Forum topic started successfully'], 200);
                     }
-                } else {
-                    DB::commit();
-                    return response()->json(['data' => $insertedData, 'message' => 'Forum topic started successfully'], 200);
                 }
+
+                if (count($fileUpload) > 0) {
+
+                    $fileUploadData = array();
+
+                    foreach ($fileUpload as $item) {
+
+                        array_push($fileUploadData,
+                            array(
+                                "ForumTopicId" => $insertedData,
+                                "FileUploadId" => $item['Id'],
+                                "IsActive" => true
+                            )
+                        );
+                    }
+
+                    $insertForumTopicFileUpload = GenericModel::insertGeneric('forum_topic_file', $fileUploadData);
+                    if ($insertForumTopicFileUpload == 0) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in inserting forum topic file'], 400);
+                    }
+                }
+
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Forum topic started successfully'], 200);
             }
         }
     }
@@ -148,6 +167,7 @@ class ForumController extends Controller
         $title = $request->input('Title');
         $description = $request->input('Description');
         $tags = $request->input('Tag');
+        $fileUpload = $request->input('FileUpload');
 
         //First check if logged if user id is valid or not
 
@@ -198,38 +218,68 @@ class ForumController extends Controller
                 if ($update == false) {
                     DB::rollBack();
                     return response()->json(['data' => null, 'message' => 'Error in updating forum topic'], 400);
-                } else {
+                }
+                //Now we will make data for inserting forum tags
 
-                    //Now we will make data for inserting forum tags
+                if (count($tags) > 0) {
 
-                    if (count($tags) > 0) {
+                    $forumTopicTagData = array();
 
-                        $forumTopicTagData = array();
+                    foreach ($tags as $item) {
 
-                        foreach ($tags as $item) {
+                        array_push($forumTopicTagData,
+                            array(
+                                "ForumTopicId" => $forumTopicId,
+                                "TagId" => $item['Id']
+                            )
+                        );
+                    }
 
-                            array_push($forumTopicTagData,
-                                array(
-                                    "ForumTopicId" => $forumTopicId,
-                                    "TagId" => $item['Id']
-                                )
-                            );
-                        }
-
-                        $insertForumTopicTagData = GenericModel::insertGeneric('forum_topic_tag', $forumTopicTagData);
-                        if ($insertForumTopicTagData == 0) {
-                            DB::rollBack();
-                            return response()->json(['data' => null, 'message' => 'Error in updating forum topic'], 400);
-                        } else {
-                            error_log('Forum topic tag inserted id ');
-                            DB::commit();
-                            return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic updated successfully'], 200);
-                        }
-                    } else {
-                        DB::commit();
-                        return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic updated successfully'], 200);
+                    $insertForumTopicTagData = GenericModel::insertGeneric('forum_topic_tag', $forumTopicTagData);
+                    if ($insertForumTopicTagData == 0) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in updating forum topic'], 400);
                     }
                 }
+
+                $getForumTopicFilesData = ForumModel::getFilesViaForumId($forumTopicId);
+                if (count($getForumTopicFilesData) > 0) {
+
+                    error_log('forum topic file already exists');
+                    error_log('deleting them');
+
+                    $deleteTags = GenericModel::deleteGeneric('forum_topic_file', 'ForumTopicId', $forumTopicId);
+                    if ($deleteTags == false) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in deleting forum topic files'], 400);
+                    }
+                }
+
+                if (count($fileUpload) > 0) {
+
+                    $fileUploadData = array();
+
+                    foreach ($fileUpload as $item) {
+
+                        array_push($fileUploadData,
+                            array(
+                                "ForumTopicId" => $forumTopicId,
+                                "FileUploadId" => $item['Id'],
+                                "IsActive" => true
+                            )
+                        );
+                    }
+
+                    $insertForumTopicFileUpload = GenericModel::insertGeneric('forum_topic_file', $fileUploadData);
+                    if ($insertForumTopicFileUpload == 0) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in inserting forum topic file'], 400);
+                    }
+                }
+
+                DB::commit();
+                return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic updated successfully'], 200);
+
             }
         }
     }

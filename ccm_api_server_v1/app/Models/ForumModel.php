@@ -46,6 +46,18 @@ class ForumModel
         return $query;
     }
 
+    static public function getFilesViaForumId($topicForumId)
+    {
+        error_log('in model, fetching files via id');
+
+        $query = DB::table('forum_topic_file')
+            ->where('forum_topic_file.ForumTopicId', '=', $topicForumId)
+            ->where('forum_topic_file.IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
     static public function getForumTopicViaId($forumTopicId)
     {
         error_log('in model , fetching forum topic');

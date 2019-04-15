@@ -289,18 +289,9 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-        $forumTopicId = $request->get('forumTopicId');
         $byUserId = $request->get('byUserId');
 
         $forumTopicDir = env('FORUM_TOPIC_DIR');
-
-        //Now check if this forum exists or not
-        $getForumTopicData = ForumModel::getForumTopicViaId($forumTopicId);
-
-        if ($getForumTopicData == null) {
-            return response()->json(['data' => null, 'message' => 'Forum topic not found'], 400);
-        }
-
         error_log('user record found');
 
         //get filename with extension
@@ -377,25 +368,9 @@ class DocumentUploadController extends Controller
                 error_log('data inserted in file upload');
                 error_log('File upload id is : ' . $insertedData);
 
-                $dataToInsert = array(
-//                    'ForumTopicId' => $forumTopicId,
-                    'IsActive' => true,
-                    'FileUploadId' => $insertedData
-                );
-
-                $insertingDataInForumTopicFile = GenericModel::insertGeneric('forum_topic_file', $dataToInsert);
-
-                if ($insertingDataInForumTopicFile == false) {
-                    error_log('forum topic file data not inserted');
-                    DB::rollBack();
-                    return response()->json(['data' => null, 'message' => 'Error in uploading forum topic file'], 400);
-                } else {
-                    error_log('File and data uploaded ');
-                    DB::commit();
-                    return response()->json(['data' => $insertedData, 'message' => 'Forum topic file uploaded successfully'], 200);
-                }
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Forum topic file uploaded successfully'], 200);
             }
-
         } else {
             return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
         }
