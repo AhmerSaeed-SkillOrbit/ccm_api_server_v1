@@ -6581,7 +6581,7 @@ class CcmPlanController extends Controller
 
         $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientId($patientId, $pageNo, $limit, $startDate, $endDate);
         if (count($CheckCcmPlanData) == 0) {
-            return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
+            return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 200);
         } else {
             error_log('ccm plan found');
             error_log('Now making data');
