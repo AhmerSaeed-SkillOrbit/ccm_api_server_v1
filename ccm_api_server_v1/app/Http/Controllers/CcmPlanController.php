@@ -23,6 +23,7 @@ use App\Models\HelperModel;
 use App\Models\ForumModel;
 use App\Models\TicketModel;
 use App\Models\CcmModel;
+use Symfony\Component\Translation\Tests\Writer\BackupDumper;
 use Twilio\Twiml;
 use Carbon\Carbon;
 
@@ -2770,6 +2771,8 @@ class CcmPlanController extends Controller
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
 
+        $fileUpload = $request->get('FileUpload');
+
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
         $superAdminRole = env('ROLE_SUPER_ADMIN');
@@ -2859,12 +2862,37 @@ class CcmPlanController extends Controller
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
                 );
+                DB::beginTransaction();
                 $insertedData = GenericModel::insertGenericAndReturnID('patient_assessment', $dataToAdd);
                 if ($insertedData == false) {
+                    DB::rollBack();
                     error_log('data not inserted');
                     return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment'], 400);
                 } else {
                     error_log('data inserted');
+                    if (count($fileUpload) > 0) {
+
+                        $fileUploadData = array();
+
+                        foreach ($fileUpload as $item) {
+
+                            array_push($fileUploadData,
+                                array(
+                                    "PatientAssessmentId" => $insertedData,
+                                    "FileUploadId" => $item['Id'],
+                                    "IsActive" => true
+                                )
+                            );
+                        }
+
+                        $insertForumTopicFileUpload = GenericModel::insertGeneric('patient_assessment_file', $fileUploadData);
+                        if ($insertForumTopicFileUpload == 0) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment file'], 400);
+                        }
+                    }
+
+                    DB::commit();
                     return response()->json(['data' => $insertedData, 'message' => 'Patient assessment successfully added'], 200);
                 }
             } else {
@@ -2900,14 +2928,51 @@ class CcmPlanController extends Controller
                     'UpdatedBy' => $userId,
                     'UpdatedOn' => $date["timestamp"]
                 );
-
+                DB::beginTransaction();
                 $updatedData = GenericModel::updateGeneric('patient_assessment', 'Id', (int)$request->get('Id'), $dataToUpdate);
 
                 if ($updatedData == false) {
                     error_log('data not updated');
+                    DB::rollBack();
                     return response()->json(['data' => null, 'message' => 'Error in updating patient assessment'], 400);
                 } else {
                     error_log('data updated');
+
+                    $getForumTopicFilesData = CcmModel::getFilesViaPatientAssessmentId((int)$request->get('Id'));
+
+                    if (count($getForumTopicFilesData) > 0) {
+
+                        error_log('patient assessment file already exists');
+                        error_log('deleting them');
+
+                        $deleteTags = GenericModel::deleteGeneric('patient_assessment_file', 'PatientAssessmentId', (int)$request->get('Id'));
+                        if ($deleteTags == false) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in deleting assessment files'], 400);
+                        }
+                    }
+                    if (count($fileUpload) > 0) {
+
+                        $fileUploadData = array();
+
+                        foreach ($fileUpload as $item) {
+
+                            array_push($fileUploadData,
+                                array(
+                                    "PatientAssessmentId" => (int)$request->get('Id'),
+                                    "FileUploadId" => $item['Id'],
+                                    "IsActive" => true
+                                )
+                            );
+                        }
+
+                        $insertForumTopicFileUpload = GenericModel::insertGeneric('patient_assessment_file', $fileUploadData);
+                        if ($insertForumTopicFileUpload == 0) {
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment file'], 400);
+                        }
+                    }
+                    DB::commit();
                     return response()->json(['data' => (int)$request->get('Id'), 'message' => 'Patient assessment successfully updated'], 200);
                 }
             }

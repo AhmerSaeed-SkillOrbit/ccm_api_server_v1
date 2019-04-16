@@ -426,6 +426,9 @@ Route::post('/upload/profile/picture', 'DocumentUploadController@UploadProfilePi
 Route::post('/upload/forum/topic/file', 'DocumentUploadController@UploadForumTopicFile');
 Route::post('/upload/forum/topic/comment/file', 'DocumentUploadController@UploadForumCommentFile');
 Route::post('/upload/patient/assessment/file', 'DocumentUploadController@UploadPatientAssessmentFile');
+Route::post('/upload/ticket/file', 'DocumentUploadController@UploadTicketFile');
+Route::post('/upload/ticket/reply/file', 'DocumentUploadController@UploadTicketReplyFile');
+Route::post('/upload/ccm/plan/file', 'DocumentUploadController@UploadCcmFile');
 
 
 

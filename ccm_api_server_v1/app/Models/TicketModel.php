@@ -1217,6 +1217,30 @@ class TicketModel
         return $query;
     }
 
+    public static function GetTicketFile($ticketId)
+    {
+        error_log('in model, fetching ticket files');
+
+        $query = DB::table('ticket_file')
+            ->where('ticket_file.IsActive', '=', true)
+            ->where('ticket_file.TicketId', '=', $ticketId)
+            ->get();
+
+        return $query;
+    }
+
+    public static function GetTicketReplyFile($ticketReplyId)
+    {
+        error_log('in model, fetching ticket reply files');
+
+        $query = DB::table('ticket_reply_file')
+            ->where('ticket_reply_file.IsActive', '=', true)
+            ->where('ticket_reply_file.TicketReplyId', '=', $ticketReplyId)
+            ->get();
+
+        return $query;
+    }
+
     public static function GetTicketReplySingle($ticketReplyId)
     {
         error_log('in model, fetching ticket reply single');
