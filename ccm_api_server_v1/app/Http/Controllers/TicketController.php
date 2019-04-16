@@ -1047,7 +1047,7 @@ class TicketController extends Controller
                             }
                         }
 
-                        if (count($fileUpload) > 0) {
+                        if (isset($fileUpload) && count($fileUpload) > 0) {
 
                             $fileUploadData = array();
 
