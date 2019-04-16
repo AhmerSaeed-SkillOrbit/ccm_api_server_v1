@@ -6920,7 +6920,7 @@ class CcmPlanController extends Controller
                             error_log('all checks clear.');
                             error_log('Now making data to insert ccm plan health param');
 
-                            $data = array(
+                            $healthParamData = array(
                                 'CcmPlanId' => $id,
                                 'CcmHealthParamId' => $item['Id'],
                                 'ReadingValue' => $item['ReadingValue'],
@@ -6928,7 +6928,7 @@ class CcmPlanController extends Controller
                                 'IsActive' => true
                             );
 
-                            array_push($ccmPlanHealthParams, $data);
+                            array_push($ccmPlanHealthParams, $healthParamData);
                         }
                     }
                 }
