@@ -552,7 +552,7 @@ class CcmModel
         return $queryResult;
     }
 
-    static public function GetSinglePatientCcmPlanViaPatientIdCount($patientId, $pageNo, $limit, $startDate, $endDate)
+    static public function GetSinglePatientCcmPlanViaPatientIdCount($patientId, $startDate, $endDate)
     {
         if ($startDate == "null" && $endDate == "null") {
             error_log('search key is NULL');
@@ -560,8 +560,6 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->skip($pageNo * $limit)
-                ->take($limit)
                 ->count();
         } else {
             error_log('search key is NOT NULL');
@@ -573,8 +571,6 @@ class CcmModel
                 ->where('ccm_plan.PatientId', '=', $patientId)
                 ->where('.ccm_plan.StartDate', '>=',  $startDate)
                 ->where('.ccm_plan.EndDate', '<=',  $endDate)
-                ->skip($pageNo * $limit)
-                ->take($limit)
                 ->count();
         }
 
@@ -611,6 +607,19 @@ class CcmModel
                 'ccm_health_param.Id as chpId', 'ccm_health_param.Name', 'ccm_health_param.Description')
             ->where('ccm_plan_initial_health.IsActive', '=', true)
             ->where('ccm_plan_initial_health.CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
+
+
+    static public function getFilesViaPatientAssessmentId($patientAssessmnetId)
+    {
+        error_log('in model, fetching files via id');
+
+        $query = DB::table('patient_assessment_file')
+            ->where('patient_assessment_file.PatientAssessmentId', '=', $patientAssessmnetId)
+            ->where('patient_assessment_file.IsActive', '=', true)
             ->get();
 
         return $query;
