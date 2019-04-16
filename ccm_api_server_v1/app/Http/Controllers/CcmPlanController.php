@@ -2924,6 +2924,7 @@ class CcmPlanController extends Controller
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
         $superAdminRole = env('ROLE_SUPER_ADMIN');
+        $patientRole = env('ROLE_PATIENT');
 
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
@@ -2967,10 +2968,21 @@ class CcmPlanController extends Controller
                 error_log('associated doctor not found');
                 return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
             }
-
-        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+        } else if ($checkUserData->RoleCodeName == $superAdminRole ) {
             error_log('logged in user is super admin');
-        } else {
+        }
+        else if ($checkUserData->RoleCodeName == $patientRole) {
+            error_log('logged in user is patient');
+            //if logged in user and patient id is same then
+            //allow to fetch the record other wise not allow
+            if($userId != $patientId){
+                return response()->json(['data' => null, 'message' => 'Patient can not see the records of other Patient'], 400);
+            }
+            else {
+                error_log('patient can see its own patient record');
+            }
+        }
+        else {
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
