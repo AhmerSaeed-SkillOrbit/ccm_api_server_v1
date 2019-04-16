@@ -6677,8 +6677,6 @@ class CcmPlanController extends Controller
 
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
-        $pageNo = $request->get('pageNo');
-        $limit = $request->get('limit');
         $startDate = $request->get('startDate');
         $endDate = $request->get('endDate');
 
@@ -6744,7 +6742,7 @@ class CcmPlanController extends Controller
         }
 
 
-        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientIdCount($patientId, $pageNo, $limit, $startDate, $endDate);
+        $CheckCcmPlanData = CcmModel::GetSinglePatientCcmPlanViaPatientIdCount($patientId, $startDate, $endDate);
 
         return response()->json(['data' => $CheckCcmPlanData, 'message' => 'Total count'], 200);
     }
