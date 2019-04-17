@@ -290,6 +290,9 @@ class ForumController extends Controller
         $forumTopicId = $request->get('forumTopicId');
         $comment = $request->get('comment');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TOPIC_FILE_API_PREFIX');
+
         //First check logged in user data if it is valid or not
         $checkUserData = UserModel::GetSingleUserViaId($userId);
 
@@ -326,6 +329,8 @@ class ForumController extends Controller
                 $forumTopicData['Role']['Name'] = $getForumTopicData->RoleName;
                 $forumTopicData['Role']['CodeName'] = $getForumTopicData->RoleCodeName;
 
+                $forumTopicData['FileUpload'] = array();
+
                 //After fetching this data
                 //Now we will fetch tags data
 
@@ -350,6 +355,27 @@ class ForumController extends Controller
                 } else {
                     error_log('NO comments');
                     $forumTopicData['Comments'] = array();
+                }
+
+
+                //Now fetching file upload data
+                $fileUpload = array();
+                $fileUploadData = ForumModel::GetForumTopicFile($forumTopicId);
+                if (count($fileUploadData) > 0) {
+                    error_log('files found');
+                    foreach ($fileUploadData as $item) {
+                        $data = array(
+                            'Id' => $item->Id,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                        );
+
+                        array_push($fileUpload, $data);
+                    }
+
+                    $forumTopicData['FileUpload'] = $fileUpload;
+
+                } else {
+                    $forumTopicData['FileUpload'] = null;
                 }
 
                 return response()->json(['data' => $forumTopicData, 'message' => 'Forum topic data found'], 200);
