@@ -179,6 +179,8 @@ class DocumentUploadController extends Controller
         $byUserId = $request->get('byUserId');
 
         $profileDirectory = env('PROFILE_PICTURE_DIR');
+        $baseUrl = env('BASE_URL');
+        $profilePicAPIPrefix = env('PROFILE_PIC_API_PREFIX');
 
         error_log('Checking if user record exists or not');
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
@@ -293,7 +295,8 @@ class DocumentUploadController extends Controller
                         error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
                         //Now checking if document name is same as it is given in parameter
                         error_log('document name is valid');
-                        $fileData['Path'] = $ftp . '/' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                        $fileData['Id'] = $insertedData;
+                        $fileData['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '/' . $insertedData . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
 
                         return response()->json(['data' => $fileData, 'message' => 'User profile picture uploaded successfully'], 200);
                     }
@@ -873,26 +876,235 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadProfilePicture(Request $request)
+    function DownloadProfilePicture($fileUploadId,  $fileName)
     {
         error_log('in controller');
 
-        $documentUploadId = $request->get('documentUploadId');
-        $documentName = $request->get('documentName');
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
 
-        $ftp = env('FTP_HOST');
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $profilePicAPIPrefix = env('PROFILE_PIC_API_PREFIX');
 
         error_log('Checking if user record exists or not');
-        $checkDocument = DocumentUploadModel::GetDocumentData($documentUploadId);
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
         if ($checkDocument == null) {
             return response()->json(['data' => null, 'message' => 'Document not found'], 400);
         } else {
             error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
-            error_log($documentName);
+            error_log($fileName);
             //Now checking if document name is same as it is given in parameter
-            if ($documentName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
                 error_log('document name is valid');
-                $fileData['Path'] = $ftp . '/' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                $fileData['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
+        }
+    }
+
+    function DownloadTopicFile($fileUploadId,  $fileName)
+    {
+        error_log('in controller');
+
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
+
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TOPIC_FILE_API_PREFIX');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($fileName);
+            //Now checking if document name is same as it is given in parameter
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
+        }
+    }
+
+    function DownloadTopicCommentFile($fileUploadId,  $fileName)
+    {
+        error_log('in controller');
+
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
+
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TOPIC_COMMENT_FILE_API_PREFIX');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($fileName);
+            //Now checking if document name is same as it is given in parameter
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
+        }
+    }
+
+    function DownloadPatientAssessmentFile($fileUploadId,  $fileName)
+    {
+        error_log('in controller');
+
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
+
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('PATIENT_ASSESSMENT_FILE_API_PREFIX');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($fileName);
+            //Now checking if document name is same as it is given in parameter
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
+        }
+    }
+
+    function DownloadTicketFile($fileUploadId,  $fileName)
+    {
+        error_log('in controller');
+
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
+
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TICKET_FILE_API_PREFIX');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($fileName);
+            //Now checking if document name is same as it is given in parameter
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
+        }
+    }
+
+    function DownloadTicketReplyFile($fileUploadId,  $fileName)
+    {
+        error_log('in controller');
+
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
+
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TICKET_REPLY_FILE_API_PREFIX');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($fileName);
+            //Now checking if document name is same as it is given in parameter
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
+        }
+    }
+
+    function DownloadCCMPlanFile($fileUploadId,  $fileName)
+    {
+        error_log('in controller');
+
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
+
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('CCM_PLAN_FILE_API_PREFIX');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($fileName);
+            //Now checking if document name is same as it is given in parameter
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
 
                 return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
 
