@@ -765,11 +765,14 @@ class DoctorScheduleController extends Controller
 
                 error_log('loop iterating for : ' . $counter += 1);
 
+                error_log("item->IsOffDay");
+                error_log( (($item->IsOffDay == "0") ? false : true));
+
                 $data = array(
                     'Id' => $item->Id,
                     'ScheduleDate' => $item->ScheduleDate,
                     'NoOfShift' => $item->NoOfShift,
-                    'IsOffDay' => $item->IsOffDay,
+                    'IsOffDay' => (($item->IsOffDay == "0") ? false : true),
                     'ScheduleShifts' => array()
                 );
 
