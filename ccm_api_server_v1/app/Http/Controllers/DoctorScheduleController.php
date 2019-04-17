@@ -768,8 +768,9 @@ class DoctorScheduleController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'ScheduleDate' => $item->ScheduleDate,
-                    'NoOfShift' => $item->NoOfShift,
-                    'IsOffDay' => $item->IsOffDay,
+                    'NoOfShift' => (int) $item->NoOfShift,
+//                    'IsOffDay' => (($item->IsOffDay == "0") ? false : true),
+                    'IsOffDay' => (boolean) $item->IsOffDay,
                     'ScheduleShifts' => array()
                 );
 
