@@ -430,5 +430,7 @@ Route::post('/upload/ticket/file', 'DocumentUploadController@UploadTicketFile');
 Route::post('/upload/ticket/reply/file', 'DocumentUploadController@UploadTicketReplyFile');
 Route::post('/upload/ccm/plan/file', 'DocumentUploadController@UploadCcmFile');
 
+Route::post('/download/profile/picture', 'DocumentUploadController@DownloadProfilePicture');
+
 
 

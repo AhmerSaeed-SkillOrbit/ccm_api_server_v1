@@ -14,6 +14,7 @@ use App\Models\UserModel;
 use App\Models\ForumModel;
 use App\Models\GenericModel;
 use App\Models\HelperModel;
+use App\Models\DocumentUploadModel;
 use Carbon\Carbon;
 use mysql_xdevapi\Exception;
 
@@ -186,6 +187,11 @@ class DocumentUploadController extends Controller
         }
 
         error_log('user record found');
+        $file = $request->file('file');
+
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
 
         //get filename with extension
         $filenamewithextension = $request->file('file')->getClientOriginalName();
@@ -276,7 +282,21 @@ class DocumentUploadController extends Controller
                 } else {
                     error_log('user profile picture data updated ');
                     DB::commit();
-                    return response()->json(['data' => $insertedData, 'message' => 'User profile picture uploaded successfully'], 200);
+
+                    $ftp = env('FTP_HOST');
+
+                    error_log('Checking if user record exists or not');
+                    $checkDocument = DocumentUploadModel::GetDocumentData($insertedData);
+                    if ($checkDocument == null) {
+                        return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+                    } else {
+                        error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+                        //Now checking if document name is same as it is given in parameter
+                        error_log('document name is valid');
+                        $fileData['Path'] = $ftp . '/' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                        return response()->json(['data' => $fileData, 'message' => 'User profile picture uploaded successfully'], 200);
+                    }
                 }
             }
 
@@ -293,6 +313,10 @@ class DocumentUploadController extends Controller
 
         $forumTopicDir = env('FORUM_TOPIC_DIR');
         error_log('user record found');
+
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
 
         //get filename with extension
         $filenamewithextension = $request->file('file')->getClientOriginalName();
@@ -387,6 +411,10 @@ class DocumentUploadController extends Controller
 
         error_log('user record found');
 
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
+
         //get filename with extension
         $filenamewithextension = $request->file('file')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
@@ -476,6 +504,10 @@ class DocumentUploadController extends Controller
 
         $patientAssessmentDir = env('PATIENT_RECORD_DIR');
 
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
+
         error_log('record found');
 
         //get filename with extension
@@ -561,6 +593,10 @@ class DocumentUploadController extends Controller
     function UploadTicketFile(Request $request)
     {
         error_log('in controller');
+
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
 
         $byUserId = $request->get('byUserId');
 
@@ -651,6 +687,10 @@ class DocumentUploadController extends Controller
     function UploadTicketReplyFile(Request $request)
     {
         error_log('in controller');
+
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
 
         $byUserId = $request->get('byUserId');
 
@@ -743,6 +783,10 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
+
         $byUserId = $request->get('byUserId');
 
         $ccmPlanDir = env('CCM_PLAN_DIR');
@@ -826,6 +870,35 @@ class DocumentUploadController extends Controller
 
         } else {
             return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
+        }
+    }
+
+    function DownloadProfilePicture(Request $request)
+    {
+        error_log('in controller');
+
+        $documentUploadId = $request->get('documentUploadId');
+        $documentName = $request->get('documentName');
+
+        $ftp = env('FTP_HOST');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($documentUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($documentName);
+            //Now checking if document name is same as it is given in parameter
+            if ($documentName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $ftp . '/' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
         }
     }
 }

@@ -102,7 +102,7 @@ class DoctorScheduleModel
         error_log('in model');
 
 //        $query = DB::table('doctor_schedule_detail')
-//            ->select('Id', 'ScheduleDate', 'EndTime', 'ShiftType', 'IsOffDay')
+//            ->select('Id', 'ScheduleDate', 'EndTime', 'ShiftTypeloop iterating for', 'IsOffDay')
 //            ->where('DoctorScheduleId', '=', $doctorScheduleId)
 //            ->where('IsActive', '=', true)
 //            ->get();
