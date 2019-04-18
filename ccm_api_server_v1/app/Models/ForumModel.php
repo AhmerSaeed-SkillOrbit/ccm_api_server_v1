@@ -171,6 +171,21 @@ class ForumModel
         return $query;
     }
 
+    static public function GetForumTopicCommentFile($forumTopicCommentId)
+    {
+        error_log('in model, fetching comment via comment id');
+
+        $query = DB::table('forum_topic_comment_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'forum_topic_comment_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('forum_topic_comment_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('forum_topic_comment_file.ForumTopicCommentId', '=', $forumTopicCommentId)
+            ->get();
+
+        return $query;
+    }
+
     static public function getCommentsViaTopicForumId($pageNo, $limit, $topicForumId)
     {
         error_log('in model, fetching comments via forum topic id');
