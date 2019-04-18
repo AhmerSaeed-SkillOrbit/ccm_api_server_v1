@@ -2994,6 +2994,9 @@ class CcmPlanController extends Controller
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('PATIENT_ASSESSMENT_FILE_API_PREFIX');
+
         //First check if logged in user belongs to facilitator
         //if it is facilitator then check it's doctor association
         //And then check if that patient is associated with dr or not
@@ -3075,8 +3078,30 @@ class CcmPlanController extends Controller
                 'CanMsgOnDayTimePhone' => $checkData->CanMsgOnDayTimePhone,
                 'CanCallOnNightTimePhone' => $checkData->CanCallOnNightTimePhone,
                 'CanMsgOnNightTimePhone' => $checkData->CanMsgOnNightTimePhone,
-                'IsActive' => $checkData->IsActive
+                'IsActive' => $checkData->IsActive,
+                'FileUpload' => array()
             );
+
+            //Now fetching file upload data
+            $fileUpload = array();
+            $fileUploadData = CcmModel::GetPatientAssessmentFile($checkData->Id);
+            if (count($fileUploadData) > 0) {
+                error_log('files found');
+                foreach ($fileUploadData as $item) {
+                    $fileData = array(
+                        'Id' => $item->Id,
+                        'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                    );
+
+                    array_push($fileUpload, $fileData);
+                }
+
+                $data['FileUpload'] = $fileUpload;
+
+            } else {
+                error_log('file not found');
+                $data['FileUpload'] = null;
+            }
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment found'], 200);
         }
@@ -6392,6 +6417,9 @@ class CcmPlanController extends Controller
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('CCM_PLAN_FILE_API_PREFIX');
+
         //First check if logged in user belongs to facilitator
         //if it is facilitator then check it's doctor association
         //And then check if that patient is associated with dr or not
@@ -6455,7 +6483,8 @@ class CcmPlanController extends Controller
                 'EndDate' => $ccmPlanData->EndDate,
                 'IsActive' => $ccmPlanData->IsActive,
                 'Item' => array(),
-                'HealthParams' => array()
+                'HealthParams' => array(),
+                'FileUpload' => array()
             );
 
             //Now fetching items
@@ -6474,10 +6503,10 @@ class CcmPlanController extends Controller
                         'ItemName' => $item->ItemName,
                         'Goal' => $item->Goal,
                         'Intervention' => $item->Intervention,
-                        'Result' => $item->Result,
-                        'PatientComment' => $item->PatientComment,
-                        'ReviewerComment' => $item->ReviewerComment,
-                        'ReviewDate' => $item->ReviewDate
+//                        'Result' => $item->Result,
+//                        'PatientComment' => $item->PatientComment,
+//                        'ReviewerComment' => $item->ReviewerComment,
+//                        'ReviewDate' => $item->ReviewDate
                     );
 
                     array_push($ccmPlanGoalsData, $ccmGoalData);
@@ -6511,6 +6540,27 @@ class CcmPlanController extends Controller
                     }
 
                     $data['HealthParams'] = $ccmPlanHealthParam;
+                }
+
+                //Now fetching file upload data
+                $fileUpload = array();
+                $fileUploadData = CcmModel::GetCCMPlanFile($request->get('id'));
+                if (count($fileUploadData) > 0) {
+                    error_log('files found');
+                    foreach ($fileUploadData as $item) {
+                        $fileData = array(
+                            'Id' => $item->Id,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                        );
+
+                        array_push($fileUpload, $fileData);
+                    }
+
+                    $data['FileUpload'] = $fileUpload;
+
+                } else {
+                    error_log('file not found');
+                    $data['FileUpload'] = null;
                 }
 
                 return response()->json(['data' => $data, 'message' => 'Ccm plan found'], 200);
