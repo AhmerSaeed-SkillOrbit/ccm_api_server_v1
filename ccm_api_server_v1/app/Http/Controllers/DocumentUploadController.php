@@ -317,6 +317,8 @@ class DocumentUploadController extends Controller
         $forumTopicDir = env('FORUM_TOPIC_DIR');
         error_log('user record found');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -414,6 +416,8 @@ class DocumentUploadController extends Controller
 
         error_log('user record found');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -507,6 +511,8 @@ class DocumentUploadController extends Controller
 
         $patientAssessmentDir = env('PATIENT_RECORD_DIR');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -596,6 +602,8 @@ class DocumentUploadController extends Controller
     function UploadTicketFile(Request $request)
     {
         error_log('in controller');
+
+        $file = $request->file('file');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -691,6 +699,8 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -785,6 +795,8 @@ class DocumentUploadController extends Controller
     function UploadCcmFile(Request $request)
     {
         error_log('in controller');
+
+        $file = $request->file('file');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -1118,11 +1130,14 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
+        $file = $request->file('file');
+
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
         $patientRole = env('ROLE_PATIENT');
 
-        $enumValue = 'none';
+        //I have taken this variable because enum and dir name is same
+        $dirAndEnumValue = 'none';
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -1135,17 +1150,15 @@ class DocumentUploadController extends Controller
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         } else {
             if ($checkUserData->RoleCodeName != $doctorRole) {
-                $enumValue = 'doctor_attachment';
+                $dirAndEnumValue = 'doctor_attachment';
             } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
-                $enumValue = 'facilitator_attachment';
+                $dirAndEnumValue = 'facilitator_attachment';
             } else if ($checkUserData->RoleCodeName != $patientRole) {
-                $enumValue = 'patient_attachment';
+                $dirAndEnumValue = 'patient_attachment';
             } else {
                 return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
             }
         }
-
-        $ticketDir = env('TICKET_DIR');
 
         error_log('record found');
 
@@ -1170,7 +1183,7 @@ class DocumentUploadController extends Controller
         $fileSize = $request->file('file')->getSize();
         error_log(' File size is : ' . $fileSize);
 
-        $dirPath = $byUserId . '/' . $ticketDir . '/';
+        $dirPath = $dirAndEnumValue . '/';
 
         $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
 
@@ -1207,7 +1220,7 @@ class DocumentUploadController extends Controller
                 'FileName' => $filenameWithoutExtension,
                 'FileExtension' => '.' . $extension,
                 'FileSizeByte' => $fileSize,
-                'BelongTo' => 'ticket',
+                'BelongTo' => $dirAndEnumValue,
                 'CreatedOn' => $date["timestamp"],
                 'IsActive' => true
             );
@@ -1221,7 +1234,7 @@ class DocumentUploadController extends Controller
                 return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
             } else {
                 DB::commit();
-                return response()->json(['data' => $insertedData, 'message' => 'Ticket file uploaded successfully'], 200);
+                return response()->json(['data' => $insertedData, 'message' => 'General file uploaded successfully'], 200);
             }
 
         } else {
