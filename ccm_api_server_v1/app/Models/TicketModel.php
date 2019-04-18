@@ -1258,4 +1258,34 @@ class TicketModel
         return $query;
     }
 
+    static public function GetAllTicketFiles($ticketId)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('ticket_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'ticket_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('ticket_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('ticket_file.TicketId', '=', $ticketId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetAllTicketReplyFiles($ticketReplyId)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('ticket_reply_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'ticket_reply_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('ticket_reply_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('ticket_reply_file.TicketReplyId', '=', $ticketReplyId)
+            ->get();
+
+        return $query;
+    }
+
 }

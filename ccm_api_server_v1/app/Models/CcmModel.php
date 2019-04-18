@@ -624,4 +624,34 @@ class CcmModel
 
         return $query;
     }
+
+    static public function GetPatientAssessmentFile($patientAssessmentFile)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('patient_assessment_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'patient_assessment_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('patient_assessment_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('patient_assessment_file.PatientAssessmentId', '=', $patientAssessmentFile)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetCCMPlanFile($ccmPlanId)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('ccm_plan_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'ccm_plan_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('ccm_plan_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('ccm_plan_file.CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
 }
