@@ -542,8 +542,8 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->where('.ccm_plan.StartDate', '>=',  $startDate)
-                ->where('.ccm_plan.EndDate', '<=',  $endDate)
+                ->where('.ccm_plan.StartDate', '>=', $startDate)
+                ->where('.ccm_plan.EndDate', '<=', $endDate)
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
@@ -569,8 +569,8 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->where('.ccm_plan.StartDate', '>=',  $startDate)
-                ->where('.ccm_plan.EndDate', '<=',  $endDate)
+                ->where('.ccm_plan.StartDate', '>=', $startDate)
+                ->where('.ccm_plan.EndDate', '<=', $endDate)
                 ->count();
         }
 
@@ -621,6 +621,48 @@ class CcmModel
             ->where('patient_assessment_file.PatientAssessmentId', '=', $patientAssessmnetId)
             ->where('patient_assessment_file.IsActive', '=', true)
             ->get();
+
+        return $query;
+    }
+
+    static public function GetPatientAssessmentFile($patientAssessmentFile)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('patient_assessment_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'patient_assessment_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('patient_assessment_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('patient_assessment_file.PatientAssessmentId', '=', $patientAssessmentFile)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetCCMPlanFile($ccmPlanId)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('ccm_plan_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'ccm_plan_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('ccm_plan_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('ccm_plan_file.CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function IsHealthParamDuplicate($ccmHealthParamName)
+    {
+        error_log('in model, checking if parametere exists');
+
+        $query = DB::table('ccm_health_param')
+            ->where('ccm_health_param.IsActive', '=', true)
+            ->where('ccm_health_param.Name', '=', $ccmHealthParamName)
+            ->first();
 
         return $query;
     }

@@ -368,6 +368,7 @@ Route::get('/patient/social/review/all', 'CcmPlanController@GetPatientSocialRevi
 
 //Get diabetic measure param
 Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
+Route::post('/ccm/plan/health/param/add', 'CcmPlanController@SaveCCMHealthParam');
 
 //Save CCM plan APIS
 Route::post('/patient/ccm/plan/add', 'CcmPlanController@SavePatientCCMPlan');
@@ -429,6 +430,17 @@ Route::post('/upload/patient/assessment/file', 'DocumentUploadController@UploadP
 Route::post('/upload/ticket/file', 'DocumentUploadController@UploadTicketFile');
 Route::post('/upload/ticket/reply/file', 'DocumentUploadController@UploadTicketReplyFile');
 Route::post('/upload/ccm/plan/file', 'DocumentUploadController@UploadCcmFile');
+Route::post('/upload/general/file', 'DocumentUploadController@UploadGeneralAttachment');
+
+//Download file routes
+
+Route::get('/download/profile/picture/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadProfilePicture');
+Route::get('/download/forum/topic/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTopicFile');
+Route::get('/download/forum/topic/comment/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTopicCommentFile');
+Route::get('/download/patient/assessment/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadPatientAssessmentFile');
+Route::get('/download/ticket/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketFile');
+Route::get('/download/ticket/reply/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketReplyFile');
+Route::get('/download/ccm/plan/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
 
 
 

@@ -14,6 +14,7 @@ use View;
 use App\Models\UserModel;
 use App\Models\GenericModel;
 use App\Models\HelperModel;
+use App\Models\DocumentUploadModel;
 use Config;
 use Carbon\Carbon;
 
@@ -831,6 +832,9 @@ class UserController extends Controller
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
+        $baseUrl = env('BASE_URL');
+        $profilePicAPIPrefix = env('PROFILE_PIC_API_PREFIX');
+
         $val = UserModel::GetSingleUserViaIdNewFunction($id);
 
         $userDetails = array();
@@ -853,6 +857,8 @@ class UserController extends Controller
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
         $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
+
+        $userDetails['FileUpload'] = array();
 
 //        $data = array();
 //        //Pushing logged in user basic inforamtion
@@ -893,6 +899,22 @@ class UserController extends Controller
 //                    $val['associatedFacilitators'] = $getAssociatedFacilitatorsData;
                     $userDetails['AssociatedFacilitators'] = $getAssociatedFacilitatorsData;
                 }
+            }
+        }
+
+        //Now fetching uploaded file data
+        if ($val->ProfilePictureId != null) {
+
+            $checkDocument = DocumentUploadModel::GetDocumentData($val->ProfilePictureId);
+            if ($checkDocument == null) {
+                return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+            } else {
+                error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+                //Now checking if document name is same as it is given in parameter
+                error_log('document name is valid');
+
+                $userDetails['FileUpload']['Id'] = $checkDocument->Id;
+                $userDetails['FileUpload']['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '/' . $checkDocument->Id . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
             }
         }
 
@@ -998,7 +1020,7 @@ class UserController extends Controller
                 $mobileNumber = $countryPhoneCode . $mobileNumber;
                 array_push($toNumber, $mobileNumber);
                 try {
-                    HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM as "'. $roleName . '", use this password to login ' . $defaultPassword, $url);
+                    HelperModel::sendSms($toNumber, 'Welcome, You are successfully registered to CCM as "' . $roleName . '", use this password to login ' . $defaultPassword, $url);
                 } catch (Exception $ex) {
                     return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
                 }

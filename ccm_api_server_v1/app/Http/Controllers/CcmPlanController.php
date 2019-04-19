@@ -2994,6 +2994,9 @@ class CcmPlanController extends Controller
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('PATIENT_ASSESSMENT_FILE_API_PREFIX');
+
         //First check if logged in user belongs to facilitator
         //if it is facilitator then check it's doctor association
         //And then check if that patient is associated with dr or not
@@ -3033,21 +3036,18 @@ class CcmPlanController extends Controller
                 error_log('associated doctor not found');
                 return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
             }
-        } else if ($checkUserData->RoleCodeName == $superAdminRole ) {
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
             error_log('logged in user is super admin');
-        }
-        else if ($checkUserData->RoleCodeName == $patientRole) {
+        } else if ($checkUserData->RoleCodeName == $patientRole) {
             error_log('logged in user is patient');
             //if logged in user and patient id is same then
             //allow to fetch the record other wise not allow
-            if($userId != $patientId){
+            if ($userId != $patientId) {
                 return response()->json(['data' => null, 'message' => 'Patient can not see the records of other Patient'], 400);
-            }
-            else {
+            } else {
                 error_log('patient can see its own patient record');
             }
-        }
-        else {
+        } else {
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
@@ -3075,8 +3075,30 @@ class CcmPlanController extends Controller
                 'CanMsgOnDayTimePhone' => $checkData->CanMsgOnDayTimePhone,
                 'CanCallOnNightTimePhone' => $checkData->CanCallOnNightTimePhone,
                 'CanMsgOnNightTimePhone' => $checkData->CanMsgOnNightTimePhone,
-                'IsActive' => $checkData->IsActive
+                'IsActive' => $checkData->IsActive,
+                'FileUpload' => array()
             );
+
+            //Now fetching file upload data
+            $fileUpload = array();
+            $fileUploadData = CcmModel::GetPatientAssessmentFile($checkData->Id);
+            if (count($fileUploadData) > 0) {
+                error_log('files found');
+                foreach ($fileUploadData as $item) {
+                    $fileData = array(
+                        'Id' => $item->Id,
+                        'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                    );
+
+                    array_push($fileUpload, $fileData);
+                }
+
+                $data['FileUpload'] = $fileUpload;
+
+            } else {
+                error_log('file not found');
+                $data['FileUpload'] = null;
+            }
 
             return response()->json(['data' => $data, 'message' => 'Patient assessment found'], 200);
         }
@@ -6392,6 +6414,9 @@ class CcmPlanController extends Controller
         $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('CCM_PLAN_FILE_API_PREFIX');
+
         //First check if logged in user belongs to facilitator
         //if it is facilitator then check it's doctor association
         //And then check if that patient is associated with dr or not
@@ -6455,7 +6480,8 @@ class CcmPlanController extends Controller
                 'EndDate' => $ccmPlanData->EndDate,
                 'IsActive' => $ccmPlanData->IsActive,
                 'Item' => array(),
-                'HealthParams' => array()
+                'HealthParams' => array(),
+                'FileUpload' => array()
             );
 
             //Now fetching items
@@ -6511,6 +6537,27 @@ class CcmPlanController extends Controller
                     }
 
                     $data['HealthParams'] = $ccmPlanHealthParam;
+                }
+
+                //Now fetching file upload data
+                $fileUpload = array();
+                $fileUploadData = CcmModel::GetCCMPlanFile($request->get('id'));
+                if (count($fileUploadData) > 0) {
+                    error_log('files found');
+                    foreach ($fileUploadData as $item) {
+                        $fileData = array(
+                            'Id' => $item->Id,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                        );
+
+                        array_push($fileUpload, $fileData);
+                    }
+
+                    $data['FileUpload'] = $fileUpload;
+
+                } else {
+                    error_log('file not found');
+                    $data['FileUpload'] = null;
                 }
 
                 return response()->json(['data' => $data, 'message' => 'Ccm plan found'], 200);
@@ -6958,8 +7005,35 @@ class CcmPlanController extends Controller
                 DB::commit();
                 return response()->json(['data' => $insertCcmPlanData, 'message' => 'Ccm plan successfully updated'], 200);
             }
+        }
+    }
 
+    static public function SaveCCMHealthParam(Request $request)
+    {
+        error_log('in controller');
 
+        //First we will check if name already exists or not
+        $getHealthParam = CcmModel::IsHealthParamDuplicate($request->get('Name'));
+        if ($getHealthParam != null) {
+            return response()->json(['data' => null, 'message' => 'This name already exists'], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        $ccmHealthData = array(
+            'Name' => $request->get('Name'),
+            'Description' => $request->get('Description'),
+            'CreatedBy' => 0,
+            'IsActive' => true,
+            'CreatedOn' => $date["timestamp"]
+        );
+
+        $insertedDataId = GenericModel::insertGenericAndReturnID('ccm_health_param', $ccmHealthData);
+        if ($insertedDataId == 0 || $insertedDataId == null) {
+            return response()->json(['data' => null, 'message' => 'Error in adding CCM health param'], 400);
+        } else {
+            error_log('ccm health param inserted');
+            return response()->json(['data' => $insertedDataId, 'message' => 'CCM Health param added successfully'], 200);
         }
     }
 }
