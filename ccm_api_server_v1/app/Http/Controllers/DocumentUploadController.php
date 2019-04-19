@@ -317,6 +317,8 @@ class DocumentUploadController extends Controller
         $forumTopicDir = env('FORUM_TOPIC_DIR');
         error_log('user record found');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -414,6 +416,8 @@ class DocumentUploadController extends Controller
 
         error_log('user record found');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -507,6 +511,8 @@ class DocumentUploadController extends Controller
 
         $patientAssessmentDir = env('PATIENT_RECORD_DIR');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -596,6 +602,8 @@ class DocumentUploadController extends Controller
     function UploadTicketFile(Request $request)
     {
         error_log('in controller');
+
+        $file = $request->file('file');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -690,6 +698,8 @@ class DocumentUploadController extends Controller
     function UploadTicketReplyFile(Request $request)
     {
         error_log('in controller');
+
+        $file = $request->file('file');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -786,6 +796,8 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
+        $file = $request->file('file');
+
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
@@ -876,7 +888,7 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadProfilePicture($fileUploadId,  $fileName)
+    function DownloadProfilePicture($fileUploadId, $fileName)
     {
         error_log('in controller');
 
@@ -910,7 +922,7 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadTopicFile($fileUploadId,  $fileName)
+    function DownloadTopicFile($fileUploadId, $fileName)
     {
         error_log('in controller');
 
@@ -944,7 +956,7 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadTopicCommentFile($fileUploadId,  $fileName)
+    function DownloadTopicCommentFile($fileUploadId, $fileName)
     {
         error_log('in controller');
 
@@ -978,7 +990,7 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadPatientAssessmentFile($fileUploadId,  $fileName)
+    function DownloadPatientAssessmentFile($fileUploadId, $fileName)
     {
         error_log('in controller');
 
@@ -1012,7 +1024,7 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadTicketFile($fileUploadId,  $fileName)
+    function DownloadTicketFile($fileUploadId, $fileName)
     {
         error_log('in controller');
 
@@ -1046,7 +1058,7 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadTicketReplyFile($fileUploadId,  $fileName)
+    function DownloadTicketReplyFile($fileUploadId, $fileName)
     {
         error_log('in controller');
 
@@ -1080,7 +1092,7 @@ class DocumentUploadController extends Controller
         }
     }
 
-    function DownloadCCMPlanFile($fileUploadId,  $fileName)
+    function DownloadCCMPlanFile($fileUploadId, $fileName)
     {
         error_log('in controller');
 
@@ -1111,6 +1123,122 @@ class DocumentUploadController extends Controller
             } else {
                 return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
             }
+        }
+    }
+
+    function UploadGeneralAttachment(Request $request)
+    {
+        error_log('in controller');
+
+        $file = $request->file('file');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $patientRole = env('ROLE_PATIENT');
+
+        //I have taken this variable because enum and dir name is same
+        $dirAndEnumValue = 'none';
+
+        if (!isset($file)) {
+            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+        }
+
+        $byUserId = $request->get('byUserId');
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($byUserId);
+        if ($checkUserData == null) {
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        } else {
+            if ($checkUserData->RoleCodeName != $doctorRole) {
+                $dirAndEnumValue = 'doctor_attachment';
+            } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+                $dirAndEnumValue = 'facilitator_attachment';
+            } else if ($checkUserData->RoleCodeName != $patientRole) {
+                $dirAndEnumValue = 'patient_attachment';
+            } else {
+                return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+            }
+        }
+
+        error_log('record found');
+
+        //get filename with extension
+        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        error_log(' File with extension ' . $filenamewithextension);
+
+        //get filename without extension
+        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+        error_log(' Only file name is:  ' . $filename);
+
+        //get file extension
+        $extension = $request->file('file')->getClientOriginalExtension();
+        error_log(' File extension is:  ' . $extension);
+
+        $filenameWithoutExtension = $filename . '_' . uniqid();
+
+        //filename to store
+        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenametostore);
+
+        $fileSize = $request->file('file')->getSize();
+        error_log(' File size is : ' . $fileSize);
+
+        $dirPath = $dirAndEnumValue . '/';
+
+        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+        error_log("createDir");
+
+        error_log($createDir);
+
+        try {
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            error_log('$upload_success');
+            error_log($upload_success);
+
+        } catch (Exception $ex) {
+
+            error_log('exception');
+            error_log($ex);
+            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        DB::beginTransaction();
+
+        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+        if ($upload_success == true) {
+
+            error_log('upload successfully done');
+            error_log('Now insert data in file upload table');
+
+            $fileUpload = array(
+                'ByUserId' => $byUserId,
+                'RelativePath' => $dirPath,
+                'FileOriginalName' => $filename . '.' . $extension,
+                'FileName' => $filenameWithoutExtension,
+                'FileExtension' => '.' . $extension,
+                'FileSizeByte' => $fileSize,
+                'BelongTo' => $dirAndEnumValue,
+                'CreatedOn' => $date["timestamp"],
+                'IsActive' => true
+            );
+            //Now inserting data in file_upload table
+
+            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+            if ($insertedData == 0) {
+                error_log('data not inserted');
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
+            } else {
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'General file uploaded successfully'], 200);
+            }
+
+        } else {
+            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
 }

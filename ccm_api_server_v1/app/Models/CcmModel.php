@@ -542,8 +542,8 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->where('.ccm_plan.StartDate', '>=',  $startDate)
-                ->where('.ccm_plan.EndDate', '<=',  $endDate)
+                ->where('.ccm_plan.StartDate', '>=', $startDate)
+                ->where('.ccm_plan.EndDate', '<=', $endDate)
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
@@ -569,8 +569,8 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->where('.ccm_plan.StartDate', '>=',  $startDate)
-                ->where('.ccm_plan.EndDate', '<=',  $endDate)
+                ->where('.ccm_plan.StartDate', '>=', $startDate)
+                ->where('.ccm_plan.EndDate', '<=', $endDate)
                 ->count();
         }
 
@@ -651,6 +651,18 @@ class CcmModel
             ->where('file_upload.IsActive', '=', true)
             ->where('ccm_plan_file.CcmPlanId', '=', $ccmPlanId)
             ->get();
+
+        return $query;
+    }
+
+    static public function IsHealthParamDuplicate($ccmHealthParamName)
+    {
+        error_log('in model, checking if parametere exists');
+
+        $query = DB::table('ccm_health_param')
+            ->where('ccm_health_param.IsActive', '=', true)
+            ->where('ccm_health_param.Name', '=', $ccmHealthParamName)
+            ->first();
 
         return $query;
     }

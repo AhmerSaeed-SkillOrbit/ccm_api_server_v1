@@ -3036,21 +3036,18 @@ class CcmPlanController extends Controller
                 error_log('associated doctor not found');
                 return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
             }
-        } else if ($checkUserData->RoleCodeName == $superAdminRole ) {
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
             error_log('logged in user is super admin');
-        }
-        else if ($checkUserData->RoleCodeName == $patientRole) {
+        } else if ($checkUserData->RoleCodeName == $patientRole) {
             error_log('logged in user is patient');
             //if logged in user and patient id is same then
             //allow to fetch the record other wise not allow
-            if($userId != $patientId){
+            if ($userId != $patientId) {
                 return response()->json(['data' => null, 'message' => 'Patient can not see the records of other Patient'], 400);
-            }
-            else {
+            } else {
                 error_log('patient can see its own patient record');
             }
-        }
-        else {
+        } else {
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
@@ -6503,10 +6500,10 @@ class CcmPlanController extends Controller
                         'ItemName' => $item->ItemName,
                         'Goal' => $item->Goal,
                         'Intervention' => $item->Intervention,
-//                        'Result' => $item->Result,
-//                        'PatientComment' => $item->PatientComment,
-//                        'ReviewerComment' => $item->ReviewerComment,
-//                        'ReviewDate' => $item->ReviewDate
+                        'Result' => $item->Result,
+                        'PatientComment' => $item->PatientComment,
+                        'ReviewerComment' => $item->ReviewerComment,
+                        'ReviewDate' => $item->ReviewDate
                     );
 
                     array_push($ccmPlanGoalsData, $ccmGoalData);
@@ -7008,8 +7005,35 @@ class CcmPlanController extends Controller
                 DB::commit();
                 return response()->json(['data' => $insertCcmPlanData, 'message' => 'Ccm plan successfully updated'], 200);
             }
+        }
+    }
 
+    static public function SaveCCMHealthParam(Request $request)
+    {
+        error_log('in controller');
 
+        //First we will check if name already exists or not
+        $getHealthParam = CcmModel::IsHealthParamDuplicate($request->get('Name'));
+        if ($getHealthParam != null) {
+            return response()->json(['data' => null, 'message' => 'This name already exists'], 400);
+        }
+
+        $date = HelperModel::getDate();
+
+        $ccmHealthData = array(
+            'Name' => $request->get('Name'),
+            'Description' => $request->get('Description'),
+            'CreatedBy' => 0,
+            'IsActive' => true,
+            'CreatedOn' => $date["timestamp"]
+        );
+
+        $insertedDataId = GenericModel::insertGenericAndReturnID('ccm_health_param', $ccmHealthData);
+        if ($insertedDataId == 0 || $insertedDataId == null) {
+            return response()->json(['data' => null, 'message' => 'Error in adding CCM health param'], 400);
+        } else {
+            error_log('ccm health param inserted');
+            return response()->json(['data' => $insertedDataId, 'message' => 'CCM Health param added successfully'], 200);
         }
     }
 }
