@@ -26,7 +26,7 @@ class DocumentUploadController extends Controller
         error_log('in controller');
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
 
         error_log(' $filenamewithextension ' . $filenamewithextension);
 
@@ -36,7 +36,7 @@ class DocumentUploadController extends Controller
         error_log(' $filename ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
 
         //filename to store
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
@@ -50,7 +50,7 @@ class DocumentUploadController extends Controller
         error_log(' $filenametostore ' . $filenametostore);
 
         try {
-            $upload_success = Storage::disk('ftp')->put('/1/forum/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put('/1/forum/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
         } catch (Exception $ex) {
@@ -89,7 +89,7 @@ class DocumentUploadController extends Controller
 //
 //
 //        //get filename with extension
-//        $filenamewithextension = $request->file('file')->getClientOriginalName();
+//        $filenamewithextension = $request->file('File')->getClientOriginalName();
 //
 //        error_log(' $filenamewithextension ' . $filenamewithextension);
 //
@@ -100,7 +100,7 @@ class DocumentUploadController extends Controller
 //
 //
 //        //get file extension
-//        $extension = $request->file('file')->getClientOriginalExtension();
+//        $extension = $request->file('File')->getClientOriginalExtension();
 //
 //        //filename to store
 //        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
@@ -144,7 +144,7 @@ class DocumentUploadController extends Controller
             error_log($ex);
         }
 //
-//        $upload_success = Storage::disk('ftp')->put($filename, fopen($request->file('file'), 'r+'));
+//        $upload_success = Storage::disk('ftp')->put($filename, fopen($request->file('File'), 'r+'));
 //
 //        error_log(' $upload_success ' . $upload_success);
 
@@ -189,14 +189,14 @@ class DocumentUploadController extends Controller
         }
 
         error_log('user record found');
-        $file = $request->file('file');
+        $file = $request->file('File');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -204,7 +204,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -213,7 +213,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $byUserId . '/' . $profileDirectory . '/';
@@ -225,7 +225,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -317,14 +317,14 @@ class DocumentUploadController extends Controller
         $forumTopicDir = env('FORUM_TOPIC_DIR');
         error_log('user record found');
 
-        $file = $request->file('file');
+        $file = $request->file('File');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -332,7 +332,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -341,7 +341,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $byUserId . '/' . $forumTopicDir . '/';
@@ -353,7 +353,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -416,14 +416,14 @@ class DocumentUploadController extends Controller
 
         error_log('user record found');
 
-        $file = $request->file('file');
+        $file = $request->file('File');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
         }
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -431,7 +431,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -440,7 +440,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $byUserId . '/' . $forumTopicDir . '/' . $forumTopicCommentDir . '/';
@@ -452,7 +452,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -511,7 +511,7 @@ class DocumentUploadController extends Controller
 
         $patientAssessmentDir = env('PATIENT_RECORD_DIR');
 
-        $file = $request->file('file');
+        $file = $request->file('File');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -520,7 +520,7 @@ class DocumentUploadController extends Controller
         error_log('record found');
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -528,7 +528,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -537,7 +537,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $byUserId . '/' . $patientAssessmentDir . '/';
@@ -549,7 +549,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -603,7 +603,7 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-        $file = $request->file('file');
+        $file = $request->file('File');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -616,7 +616,7 @@ class DocumentUploadController extends Controller
         error_log('record found');
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -624,7 +624,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -633,7 +633,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $byUserId . '/' . $ticketDir . '/';
@@ -645,7 +645,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -699,7 +699,7 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-        $file = $request->file('file');
+        $file = $request->file('File');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -713,7 +713,7 @@ class DocumentUploadController extends Controller
         error_log('record found');
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -721,7 +721,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -730,7 +730,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $byUserId . '/' . $ticketDir . '/' . $ticketReplyDir . '/';
@@ -742,7 +742,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -796,7 +796,7 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-        $file = $request->file('file');
+        $file = $request->file('File');
 
         if (!isset($file)) {
             return response()->json(['data' => null, 'message' => 'File is missing'], 400);
@@ -809,7 +809,7 @@ class DocumentUploadController extends Controller
         error_log('record found');
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -817,7 +817,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -826,7 +826,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $byUserId . '/' . $ccmPlanDir . '/';
@@ -838,7 +838,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -1130,7 +1130,8 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-        $file = $request->file('file');
+        $file = $request->file('File');
+        $purpose = $request->get('Purpose');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -1163,7 +1164,7 @@ class DocumentUploadController extends Controller
         error_log('record found');
 
         //get filename with extension
-        $filenamewithextension = $request->file('file')->getClientOriginalName();
+        $filenamewithextension = $request->file('File')->getClientOriginalName();
         error_log(' File with extension ' . $filenamewithextension);
 
         //get filename without extension
@@ -1171,7 +1172,7 @@ class DocumentUploadController extends Controller
         error_log(' Only file name is:  ' . $filename);
 
         //get file extension
-        $extension = $request->file('file')->getClientOriginalExtension();
+        $extension = $request->file('File')->getClientOriginalExtension();
         error_log(' File extension is:  ' . $extension);
 
         $filenameWithoutExtension = $filename . '_' . uniqid();
@@ -1180,7 +1181,7 @@ class DocumentUploadController extends Controller
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
         error_log(' File name unique id is : ' . $filenametostore);
 
-        $fileSize = $request->file('file')->getSize();
+        $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
 
         $dirPath = $dirAndEnumValue . '/';
@@ -1192,7 +1193,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('file'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -1220,6 +1221,7 @@ class DocumentUploadController extends Controller
                 'FileName' => $filenameWithoutExtension,
                 'FileExtension' => '.' . $extension,
                 'FileSizeByte' => $fileSize,
+                'Purpose' => $purpose,
                 'BelongTo' => $dirAndEnumValue,
                 'CreatedOn' => $date["timestamp"],
                 'IsActive' => true

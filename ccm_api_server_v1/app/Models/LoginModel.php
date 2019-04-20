@@ -104,13 +104,34 @@ class LoginModel
                         $checkTokenData = json_decode(json_encode($tokenData), true);
                         if (count($checkTokenData) > 0) {
 
+                            ### now updating isLoggedIn field to 1  -Start ###
+
+                            $isLoggedInData = array(
+                                "IsLoggedIn" => 1,
+                                "LastLoggedIn" => $date["timestamp"]
+                            );
+
+                            DB::table('user')
+                                ->where('Id', $checkLogin[0]['Id'])
+                                ->update($isLoggedInData);
+
+                            ### now updating isLoggedIn field to 1  - End###
+
+//                          ### now adding entry in login history table -start ###
+                            $insertLoginHistoryData = array(
+                                "UserId" => $checkLogin[0]['Id'],
+                                "CreatedOn" => $date["timestamp"]
+                            );
+
+                            DB::table("user_login_history")->insertGetId($insertLoginHistoryData);
+
                             $data = array(
                                 "userId" => $checkTokenData[0]["UserId"],
                                 "accessToken" => $checkTokenData[0]["AccessToken"],
                                 "expiryTime" => $checkTokenData[0]["ExpiryTime"]
                             );
-                            // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                            // return response()->json(['data' => ['User' => $data, 'accessToken' => "a123"], 'message' => 'Successfully Login'], 200);
+
+                            ### now adding entry in login history table -end ###
 
                             DB::commit();
                             // return array("status" => true, "data" => $data);
@@ -437,10 +458,38 @@ class LoginModel
 
     static function getlogout(Request $request)
     {
-        session()->forget('sessionLoginData');
-        session()->flush();
-        return redirect(url('/login'));
+        $userId = Input::get('Id');
 
+        error_log("User Id is");
+        error_log($userId);
+
+        DB::beginTransaction();
+        try {
+
+            DB::table('access_token')->where('UserId', $userId)->delete();
+
+            error_log("Access Token deleted");
+
+            $isLoggedInData = array(
+                "IsLoggedIn" => 0
+            );
+
+            DB::table('user')
+                ->where('Id', $userId)
+                ->update($isLoggedInData);
+
+            DB::commit();
+
+            return array("status" => "success", "data" => null);
+
+        } catch (Exception $e) {
+
+            error_log('in exception');
+            error_log($e);
+
+            DB::rollBack();
+            return array("status" => "error", "data" => null, 'message' => "Something went wrong");
+        }
     }
 
     static function getAdminlogout(Request $request)
