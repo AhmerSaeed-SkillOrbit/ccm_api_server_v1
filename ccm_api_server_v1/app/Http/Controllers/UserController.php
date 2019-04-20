@@ -857,6 +857,8 @@ class UserController extends Controller
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
         $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
+        $userDetails['IsLoggedIn'] = $val->IsLoggedIn; //terninary operator
+        $userDetails['LastLoggedIn'] = $val->LastLoggedIn; //time stamp
 
         $userDetails['FileUpload'] = array();
 
@@ -903,6 +905,8 @@ class UserController extends Controller
         }
 
         //Now fetching uploaded file data
+        error_log("val->ProfilePictureId");
+        error_log($val->ProfilePictureId);
         if ($val->ProfilePictureId != null) {
 
             $checkDocument = DocumentUploadModel::GetDocumentData($val->ProfilePictureId);
