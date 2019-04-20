@@ -107,13 +107,15 @@ class LoginModel
                             ### now updating isLoggedIn field to 1  -Start ###
 
                             $isLoggedInData = array(
-                                "IsLoggedIn" => 1
+                                "IsLoggedIn" => 1,
+                                "LastLoggedIn" => $date["timestamp"]
                             );
 
                             DB::table('user')
                                 ->where('Id', $checkLogin[0]['Id'])
                                 ->update($isLoggedInData);
-                            ### now updating isLoggedIn field to 1  -End ###
+
+                            ### now updating isLoggedIn field to 1  - End###
 
 //                          ### now adding entry in login history table -start ###
                             $insertLoginHistoryData = array(
@@ -456,10 +458,38 @@ class LoginModel
 
     static function getlogout(Request $request)
     {
-        session()->forget('sessionLoginData');
-        session()->flush();
-        return redirect(url('/login'));
+        $userId = Input::get('Id');
 
+        error_log("User Id is");
+        error_log($userId);
+
+        DB::beginTransaction();
+        try {
+
+            DB::table('access_token')->where('UserId', $userId)->delete();
+
+            error_log("Access Token deleted");
+
+            $isLoggedInData = array(
+                "IsLoggedIn" => 0
+            );
+
+            DB::table('user')
+                ->where('Id', $userId)
+                ->update($isLoggedInData);
+
+            DB::commit();
+
+            return array("status" => "success", "data" => null);
+
+        } catch (Exception $e) {
+
+            error_log('in exception');
+            error_log($e);
+
+            DB::rollBack();
+            return array("status" => "error", "data" => null, 'message' => "Something went wrong");
+        }
     }
 
     static function getAdminlogout(Request $request)
