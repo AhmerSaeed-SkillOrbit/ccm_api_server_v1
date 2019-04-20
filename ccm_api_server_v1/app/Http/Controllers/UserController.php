@@ -858,7 +858,7 @@ class UserController extends Controller
         $userDetails['Role']['RoleName'] = $val->RoleName;
         $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
 
-        $userDetails['FileUpload'] = array();
+        $userDetails['ProfilePicture'] = array();
 
 //        $data = array();
 //        //Pushing logged in user basic inforamtion
@@ -913,8 +913,11 @@ class UserController extends Controller
                 //Now checking if document name is same as it is given in parameter
                 error_log('document name is valid');
 
-                $userDetails['FileUpload']['Id'] = $checkDocument->Id;
-                $userDetails['FileUpload']['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '/' . $checkDocument->Id . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                $userDetails['ProfilePicture']['Id'] = $checkDocument->Id;
+                $userDetails['ProfilePicture']['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '/' . $checkDocument->Id . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                $userDetails['ProfilePicture']['FileOriginalName'] = $checkDocument->FileOriginalName;
+                $userDetails['ProfilePicture']['FileName'] = $checkDocument->FileName;
+                $userDetails['ProfilePicture']['FileExtension'] = $checkDocument->FileExtension;
             }
         }
 
