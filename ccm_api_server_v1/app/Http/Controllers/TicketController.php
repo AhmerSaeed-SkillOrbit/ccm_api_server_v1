@@ -544,7 +544,10 @@ class TicketController extends Controller
                     foreach ($fileUploadData as $item) {
                         $fileData = array(
                             'Id' => $item->Id,
-                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension
                         );
 
                         array_push($fileUpload, $fileData);
@@ -1019,7 +1022,10 @@ class TicketController extends Controller
                     foreach ($fileUploadData as $item) {
                         $fileData = array(
                             'Id' => $item->Id,
-                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension
                         );
 
                         array_push($fileUpload, $fileData);
