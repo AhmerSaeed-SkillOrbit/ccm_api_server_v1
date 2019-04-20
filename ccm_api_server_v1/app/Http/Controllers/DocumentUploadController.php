@@ -1243,4 +1243,542 @@ class DocumentUploadController extends Controller
             return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
+
+    function DownloadGeneralFile($fileUploadId, $fileName)
+    {
+        error_log('in controller');
+
+//        $fileId = $fileUploadId;
+//        $fileUplaodName = $fileName;
+
+        error_log('$fileUploadId ' . $fileUploadId);
+
+        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('GENERAL_FILE_API_PREFIX');
+
+        error_log('Checking if user record exists or not');
+        $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
+        if ($checkDocument == null) {
+            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+        } else {
+            error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+            error_log($fileName);
+            //Now checking if document name is same as it is given in parameter
+            if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
+                error_log('document name is valid');
+                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+            }
+        }
+    }
+
+    function GeneralFileListViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $patientRole = env('ROLE_PATIENT');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $byUserId = $request->get('userId');
+        $searchDateFrom = $request->get('searchDateFrom');
+        $searchDateTo = $request->get('searchDateTo');
+        $searchKeyword = $request->get('searchKeyword');
+        $byUserRoleId = $request->get('byUserRole');
+        $pageNumber = $request->get('pageNo');
+        $limit = $request->get('limit');
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('GENERAL_FILE_API_PREFIX');
+
+        $ids = array();
+
+        if ($searchDateFrom == "null" && $searchDateTo != "null" || $searchDateFrom != "null" && $searchDateTo == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($byUserId);
+
+        if ($checkUserData == null) {
+            error_log('user record not found');
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        } else {
+
+            array_push($ids, $byUserId);
+
+            error_log('user record found');
+            if ($checkUserData->RoleCodeName == $doctorRole) {
+                error_log('logged in user is doctor');
+                error_log('Now fetching its association with patients and facilitator');
+
+                //First getting associated patients
+                $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($byUserId, $doctorPatientAssociation);
+                error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+                if (count($getAssociatedPatients) > 0) {
+                    error_log('associated patients are there');
+                    //Means associated patients are there
+                    foreach ($getAssociatedPatients as $item) {
+                        array_push($ids, $item->DestinationUserId);
+                    }
+                }
+
+                //Now getting associated
+
+                $getAssociatedFacilitators = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($byUserId, $doctorFacilitatorAssociation);
+                error_log('$getAssociatedFacilitators are ' . $getAssociatedFacilitators);
+                if (count($getAssociatedFacilitators) > 0) {
+                    error_log('associated facilitators are there');
+                    //Means associated patients are there
+                    foreach ($getAssociatedFacilitators as $item) {
+                        array_push($ids, $item->DestinationUserId);
+                    }
+                }
+
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForDoctors($ids, $searchDateFrom, $searchDateTo, $searchKeyword, $pageNumber, $limit);
+
+                $finalData = array();
+
+                if (count($getAllDocuments) > 0) {
+                    error_log('data found');
+                    foreach ($getAllDocuments as $item) {
+
+                        if ($byUserRoleId != "null") {
+                            error_log('user role is given . ' . $byUserRoleId);
+                            if ((int)$byUserRoleId == $item->RoleId) {
+
+                                $data = array(
+                                    'Id' => $item->FileUploadId,
+                                    'FileOriginalName' => $item->FileOriginalName,
+                                    'FileName' => $item->FileName,
+                                    'FileExtension' => $item->FileExtension,
+                                    'Purpose' => $item->Purpose,
+                                    'CreatedOn' => $item->CreatedOn,
+                                    'BelongTo' => $item->BelongTo,
+                                    'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->FileUploadId . '/' . $item->FileName . '' . $item->FileExtension,
+                                    'Role' => array(),
+                                    'CreatedBy' => array()
+                                );
+
+                                $data['Role']['Id'] = $item->RoleId;
+                                $data['Role']['Name'] = $item->RoleName;
+                                $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                                $data['CreatedBy']['Id'] = $item->UserId;
+                                $data['CreatedBy']['FirstName'] = $item->FirstName;
+                                $data['CreatedBy']['LastName'] = $item->LastName;
+
+                                array_push($finalData, $data);
+                            }
+
+                        } else {
+                            error_log('user role is not given');
+
+                            $data = array(
+                                'Id' => $item->FileUploadId,
+                                'FileOriginalName' => $item->FileOriginalName,
+                                'FileName' => $item->FileName,
+                                'FileExtension' => $item->FileExtension,
+                                'Purpose' => $item->Purpose,
+                                'CreatedOn' => $item->CreatedOn,
+                                'BelongTo' => $item->BelongTo,
+                                'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->FileUploadId . '/' . $item->FileName . '' . $item->FileExtension,
+                                'Role' => array(),
+                                'CreatedBy' => array()
+                            );
+
+                            $data['Role']['Id'] = $item->RoleId;
+                            $data['Role']['Name'] = $item->RoleName;
+                            $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                            $data['CreatedBy']['Id'] = $item->UserId;
+                            $data['CreatedBy']['FirstName'] = $item->FirstName;
+                            $data['CreatedBy']['LastName'] = $item->LastName;
+
+                            array_push($finalData, $data);
+                        }
+                    }
+                    if (count($finalData) > 0) {
+
+                        return response()->json(['data' => $finalData, 'message' => 'Files found'], 200);
+                    } else {
+
+                        return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                    }
+
+                } else {
+                    error_log('data not found');
+
+                    return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                }
+
+            } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+                error_log('logged in user is facilitator');
+
+                //First get associated doctors id.
+                $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($byUserId);
+                $doctorIds = array();
+                if (count($getAssociatedDoctorsId) > 0) {
+                    error_log('Associated doctor found');
+                    foreach ($getAssociatedDoctorsId as $item) {
+                        array_push($doctorIds, $item->SourceUserId);
+                        //Pushing value in our variable
+                        array_push($ids, $item->SourceUserId);
+                    }
+                }
+
+                $getAssociatedPatientIds = UserModel::getAssociatedPatientsUserId($doctorIds, $doctorPatientAssociation);
+
+                if (count($getAssociatedPatientIds) > 0) {
+                    error_log('Associated patients found');
+                    foreach ($getAssociatedPatientIds as $item) {
+                        array_push($ids, $item->DestinationUserId);
+                    }
+                }
+
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForDoctors($ids, $searchDateFrom, $searchDateTo, $searchKeyword, $pageNumber, $limit);
+
+                $finalData = array();
+
+                if (count($getAllDocuments) > 0) {
+                    error_log('data found');
+                    foreach ($getAllDocuments as $item) {
+
+                        if ($byUserRoleId != "null") {
+                            error_log('user role is given . ' . $byUserRoleId);
+                            if ((int)$byUserRoleId == $item->RoleId) {
+
+                                $data = array(
+                                    'Id' => $item->FileUploadId,
+                                    'FileOriginalName' => $item->FileOriginalName,
+                                    'FileName' => $item->FileName,
+                                    'FileExtension' => $item->FileExtension,
+                                    'Purpose' => $item->Purpose,
+                                    'CreatedOn' => $item->CreatedOn,
+                                    'BelongTo' => $item->BelongTo,
+                                    'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->FileUploadId . '/' . $item->FileName . '' . $item->FileExtension,
+                                    'Role' => array(),
+                                    'CreatedBy' => array()
+                                );
+
+                                $data['Role']['Id'] = $item->RoleId;
+                                $data['Role']['Name'] = $item->RoleName;
+                                $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                                $data['CreatedBy']['Id'] = $item->UserId;
+                                $data['CreatedBy']['FirstName'] = $item->FirstName;
+                                $data['CreatedBy']['LastName'] = $item->LastName;
+
+                                array_push($finalData, $data);
+                            }
+
+                        } else {
+                            error_log('user role is not given');
+
+                            $data = array(
+                                'Id' => $item->FileUploadId,
+                                'FileOriginalName' => $item->FileOriginalName,
+                                'FileName' => $item->FileName,
+                                'FileExtension' => $item->FileExtension,
+                                'Purpose' => $item->Purpose,
+                                'CreatedOn' => $item->CreatedOn,
+                                'BelongTo' => $item->BelongTo,
+                                'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->FileUploadId . '/' . $item->FileName . '' . $item->FileExtension,
+                                'Role' => array(),
+                                'CreatedBy' => array()
+                            );
+
+                            $data['Role']['Id'] = $item->RoleId;
+                            $data['Role']['Name'] = $item->RoleName;
+                            $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                            $data['CreatedBy']['Id'] = $item->UserId;
+                            $data['CreatedBy']['FirstName'] = $item->FirstName;
+                            $data['CreatedBy']['LastName'] = $item->LastName;
+
+                            array_push($finalData, $data);
+                        }
+                    }
+                    if (count($finalData) > 0) {
+
+                        return response()->json(['data' => $finalData, 'message' => 'Files found'], 200);
+                    } else {
+
+                        return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                    }
+
+                } else {
+                    error_log('data not found');
+
+                    return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                }
+
+            } else if ($checkUserData->RoleCodeName == $patientRole) {
+                error_log('logged in user is patient');
+                error_log('documents uploaded by patient will be appeared');
+
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForPatient($ids, $searchDateFrom, $searchDateTo, $searchKeyword, $pageNumber, $limit);
+
+                $finalData = array();
+
+                if (count($getAllDocuments) > 0) {
+                    error_log('data found');
+                    foreach ($getAllDocuments as $item) {
+
+                        $data = array(
+                            'Id' => $item->FileUploadId,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension,
+                            'Purpose' => $item->Purpose,
+                            'CreatedOn' => $item->CreatedOn,
+                            'BelongTo' => $item->BelongTo,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->FileUploadId . '/' . $item->FileName . '' . $item->FileExtension,
+                            'Role' => array(),
+                            'CreatedBy' => array()
+                        );
+
+                        $data['Role']['Id'] = $item->RoleId;
+                        $data['Role']['Name'] = $item->RoleName;
+                        $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                        $data['CreatedBy']['Id'] = $item->UserId;
+                        $data['CreatedBy']['FirstName'] = $item->FirstName;
+                        $data['CreatedBy']['LastName'] = $item->LastName;
+
+                        array_push($finalData, $data);
+                    }
+
+                    if (count($finalData) > 0) {
+
+                        return response()->json(['data' => $finalData, 'message' => 'Files found'], 200);
+                    } else {
+
+                        return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                    }
+
+                } else {
+                    error_log('data not found');
+
+                    return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                }
+
+            } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+                error_log('logged in user is super admin');
+                error_log('all documents uploaded by everyone will be shown');
+
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForAdmin($searchDateFrom, $searchDateTo, $searchKeyword, $pageNumber, $limit);
+
+                $finalData = array();
+
+                if (count($getAllDocuments) > 0) {
+                    error_log('data found');
+                    foreach ($getAllDocuments as $item) {
+
+                        if ($byUserRoleId != "null") {
+                            error_log('user role is given . ' . $byUserRoleId);
+                            if ((int)$byUserRoleId == $item->RoleId) {
+
+                                $data = array(
+                                    'Id' => $item->FileUploadId,
+                                    'FileOriginalName' => $item->FileOriginalName,
+                                    'FileName' => $item->FileName,
+                                    'FileExtension' => $item->FileExtension,
+                                    'Purpose' => $item->Purpose,
+                                    'CreatedOn' => $item->CreatedOn,
+                                    'BelongTo' => $item->BelongTo,
+                                    'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->FileUploadId . '/' . $item->FileName . '' . $item->FileExtension,
+                                    'Role' => array(),
+                                    'CreatedBy' => array()
+                                );
+
+                                $data['Role']['Id'] = $item->RoleId;
+                                $data['Role']['Name'] = $item->RoleName;
+                                $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                                $data['CreatedBy']['Id'] = $item->UserId;
+                                $data['CreatedBy']['FirstName'] = $item->FirstName;
+                                $data['CreatedBy']['LastName'] = $item->LastName;
+
+                                array_push($finalData, $data);
+                            }
+
+                        } else {
+                            error_log('user role is not given');
+
+                            $data = array(
+                                'Id' => $item->FileUploadId,
+                                'FileOriginalName' => $item->FileOriginalName,
+                                'FileName' => $item->FileName,
+                                'FileExtension' => $item->FileExtension,
+                                'Purpose' => $item->Purpose,
+                                'CreatedOn' => $item->CreatedOn,
+                                'BelongTo' => $item->BelongTo,
+                                'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->FileUploadId . '/' . $item->FileName . '' . $item->FileExtension,
+                                'Role' => array(),
+                                'CreatedBy' => array()
+                            );
+
+                            $data['Role']['Id'] = $item->RoleId;
+                            $data['Role']['Name'] = $item->RoleName;
+                            $data['Role']['CodeName'] = $item->RoleCodeName;
+
+                            $data['CreatedBy']['Id'] = $item->UserId;
+                            $data['CreatedBy']['FirstName'] = $item->FirstName;
+                            $data['CreatedBy']['LastName'] = $item->LastName;
+
+                            array_push($finalData, $data);
+                        }
+                    }
+                    if (count($finalData) > 0) {
+
+                        return response()->json(['data' => $finalData, 'message' => 'Files found'], 200);
+                    } else {
+
+                        return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                    }
+
+                } else {
+                    error_log('data not found');
+
+                    return response()->json(['data' => null, 'message' => 'Files not found'], 200);
+                }
+
+            } else {
+                return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+            }
+        }
+
+    }
+
+    function GeneralFileListCount(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $patientRole = env('ROLE_PATIENT');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        $byUserId = $request->get('userId');
+        $searchDateFrom = $request->get('searchDateFrom');
+        $searchDateTo = $request->get('searchDateTo');
+        $searchKeyword = $request->get('searchKeyword');
+        $byUserRoleId = $request->get('byUserRole');
+
+        $ids = array();
+
+        if ($searchDateFrom == "null" && $searchDateTo != "null" || $searchDateFrom != "null" && $searchDateTo == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+
+        if ($searchDateFrom != "null" && $searchDateTo != "null") {
+            //Do conversion here
+        }
+
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($byUserId);
+
+        if ($checkUserData == null) {
+            error_log('user record not found');
+            return response()->json(['data' => null, 'message' => 'User not found'], 400);
+        } else {
+
+            array_push($ids, $byUserId);
+
+            error_log('user record found');
+            if ($checkUserData->RoleCodeName == $doctorRole) {
+                error_log('logged in user is doctor');
+                error_log('Now fetching its association with patients and facilitator');
+
+                //First getting associated patients
+                $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($byUserId, $doctorPatientAssociation);
+                error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+                if (count($getAssociatedPatients) > 0) {
+                    error_log('associated patients are there');
+                    //Means associated patients are there
+                    foreach ($getAssociatedPatients as $item) {
+                        array_push($ids, $item->DestinationUserId);
+                    }
+                }
+
+                //Now getting associated
+
+                $getAssociatedFacilitators = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($byUserId, $doctorFacilitatorAssociation);
+                error_log('$getAssociatedFacilitators are ' . $getAssociatedFacilitators);
+                if (count($getAssociatedFacilitators) > 0) {
+                    error_log('associated facilitators are there');
+                    //Means associated patients are there
+                    foreach ($getAssociatedFacilitators as $item) {
+                        array_push($ids, $item->DestinationUserId);
+                    }
+                }
+
+                $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForDoctorsCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
+
+                return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
+
+            } else
+                if ($checkUserData->RoleCodeName == $facilitatorRole) {
+                    error_log('logged in user is facilitator');
+
+                    //First get associated doctors id.
+                    $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($byUserId);
+                    $doctorIds = array();
+                    if (count($getAssociatedDoctorsId) > 0) {
+                        error_log('Associated doctor found');
+                        foreach ($getAssociatedDoctorsId as $item) {
+                            array_push($doctorIds, $item->SourceUserId);
+                            //Pushing value in our variable
+                            array_push($ids, $item->SourceUserId);
+                        }
+                    }
+
+                    $getAssociatedPatientIds = UserModel::getAssociatedPatientsUserId($doctorIds, $doctorPatientAssociation);
+
+                    if (count($getAssociatedPatientIds) > 0) {
+                        error_log('Associated patients found');
+                        foreach ($getAssociatedPatientIds as $item) {
+                            array_push($ids, $item->DestinationUserId);
+                        }
+                    }
+
+                    $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForDoctorsCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
+
+                    return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
+
+                } else if ($checkUserData->RoleCodeName == $patientRole) {
+                    error_log('logged in user is patient');
+                    error_log('documents uploaded by patient will be appeared');
+
+                    $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForPatientCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
+
+                    return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
+
+                } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+                    error_log('logged in user is super admin');
+                    error_log('all documents uploaded by everyone will be shown');
+
+                    $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForAdminCount($searchDateFrom, $searchDateTo, $searchKeyword);
+
+                    return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
+
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                }
+        }
+
+    }
 }

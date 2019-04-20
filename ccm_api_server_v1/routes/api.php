@@ -432,6 +432,9 @@ Route::post('/upload/ticket/reply/file', 'DocumentUploadController@UploadTicketR
 Route::post('/upload/ccm/plan/file', 'DocumentUploadController@UploadCcmFile');
 Route::post('/upload/general/file', 'DocumentUploadController@UploadGeneralAttachment');
 
+Route::get('/general/file/list', 'DocumentUploadController@GeneralFileListViaPagination');
+Route::get('/general/file/list/count', 'DocumentUploadController@GeneralFileListCount');
+
 //Download file routes
 
 Route::get('/download/profile/picture/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadProfilePicture');
@@ -441,6 +444,7 @@ Route::get('/download/patient/assessment/file/{fileUploadId}/{fileName}', 'Docum
 Route::get('/download/ticket/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketFile');
 Route::get('/download/ticket/reply/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketReplyFile');
 Route::get('/download/ccm/plan/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
+Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
 
 
 
