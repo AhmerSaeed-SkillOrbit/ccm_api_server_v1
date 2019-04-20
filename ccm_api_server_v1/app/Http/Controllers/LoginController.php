@@ -364,12 +364,21 @@ class LoginController extends Controller
 
     function logout(Request $request)
     {
-        return LoginModel::getlogout($request);
-    }
+        try {
+            $check = LoginModel::getLogout($request);
 
-    function adminLogout(Request $request)
-    {
-        return LoginModel::getAdminlogout($request);
+            if ($check['status'] == "success") {
+
+                return response()->json(['data' => $check['data'], 'message' => 'User Successfully Logs out'], 200);
+            } else if ($check['status'] == "failed") {
+
+                return response()->json(['data' => null, 'message' => $check['message']], 400);
+            } else {
+                return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+            }
+        } catch (Exception $e) {
+            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+        }
     }
 
     /**
@@ -386,5 +395,4 @@ class LoginController extends Controller
 //            'BelongTo' => ['required'],
         ]);
     }
-
 }
