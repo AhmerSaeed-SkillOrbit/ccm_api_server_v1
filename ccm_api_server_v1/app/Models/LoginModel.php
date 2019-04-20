@@ -104,13 +104,32 @@ class LoginModel
                         $checkTokenData = json_decode(json_encode($tokenData), true);
                         if (count($checkTokenData) > 0) {
 
+                            ### now updating isLoggedIn field to 1  -Start ###
+
+                            $isLoggedInData = array(
+                                "IsLoggedIn" => 1
+                            );
+
+                            DB::table('user')
+                                ->where('Id', $checkLogin[0]['Id'])
+                                ->update($isLoggedInData);
+                            ### now updating isLoggedIn field to 1  -End ###
+
+//                          ### now adding entry in login history table -start ###
+                            $insertLoginHistoryData = array(
+                                "UserId" => $checkLogin[0]['Id'],
+                                "CreatedOn" => $date["timestamp"]
+                            );
+
+                            DB::table("user_login_history")->insertGetId($insertLoginHistoryData);
+
                             $data = array(
                                 "userId" => $checkTokenData[0]["UserId"],
                                 "accessToken" => $checkTokenData[0]["AccessToken"],
                                 "expiryTime" => $checkTokenData[0]["ExpiryTime"]
                             );
-                            // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                            // return response()->json(['data' => ['User' => $data, 'accessToken' => "a123"], 'message' => 'Successfully Login'], 200);
+
+                            ### now adding entry in login history table -end ###
 
                             DB::commit();
                             // return array("status" => true, "data" => $data);
