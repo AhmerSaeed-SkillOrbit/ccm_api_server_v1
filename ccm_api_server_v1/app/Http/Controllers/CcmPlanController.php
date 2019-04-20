@@ -3087,7 +3087,10 @@ class CcmPlanController extends Controller
                 foreach ($fileUploadData as $item) {
                     $fileData = array(
                         'Id' => $item->Id,
-                        'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                        'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                        'FileOriginalName' => $item->FileOriginalName,
+                        'FileName' => $item->FileName,
+                        'FileExtension' => $item->FileExtension
                     );
 
                     array_push($fileUpload, $fileData);
@@ -6295,6 +6298,7 @@ class CcmPlanController extends Controller
             'PlanNumber' => 'P-' . $totalCountForCcmPlans,
             'StartDate' => $request->get('StartDate'),
             'EndDate' => $request->get('EndDate'),
+            'IsInitialHealthReading' => (bool) $request->get('IsInitialHealthReading'),
             'CreatedBy' => $userId,
             'IsActive' => true,
             'CreatedOn' => $date["timestamp"]
@@ -6326,6 +6330,7 @@ class CcmPlanController extends Controller
                             'CcmPlanId' => $insertCcmPlanData,
                             'ItemName' => $item['ItemName'],
                             'Goal' => $item2['Name'],
+                            'GoalNumber' => (int)$item2['GoalNumber'],
                             'Intervention' => (string)$item2['Intervention'],
                             'IsActive' => true
                         );
@@ -6478,7 +6483,8 @@ class CcmPlanController extends Controller
                 'PlanNumber' => $ccmPlanData->PlanNumber,
                 'StartDate' => $ccmPlanData->StartDate,
                 'EndDate' => $ccmPlanData->EndDate,
-                'IsActive' => $ccmPlanData->IsActive,
+                'IsInitialHealthReading' => (bool) $ccmPlanData->IsInitialHealthReading,
+                'IsActive' =>  (bool)$ccmPlanData->IsActive,
                 'Item' => array(),
                 'HealthParams' => array(),
                 'FileUpload' => array()
@@ -6499,6 +6505,7 @@ class CcmPlanController extends Controller
                         'Id' => $item->Id,
                         'ItemName' => $item->ItemName,
                         'Goal' => $item->Goal,
+                        'GoalNumber' => (int) $item->GoalNumber,
                         'Intervention' => $item->Intervention,
                         'Result' => $item->Result,
                         'PatientComment' => $item->PatientComment,
@@ -6547,7 +6554,10 @@ class CcmPlanController extends Controller
                     foreach ($fileUploadData as $item) {
                         $fileData = array(
                             'Id' => $item->Id,
-                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension
                         );
 
                         array_push($fileUpload, $fileData);
@@ -6651,7 +6661,8 @@ class CcmPlanController extends Controller
                     'PlanNumber' => $ccmPlanData->PlanNumber,
                     'StartDate' => $ccmPlanData->StartDate,
                     'EndDate' => $ccmPlanData->EndDate,
-                    'IsActive' => $ccmPlanData->IsActive,
+                    'IsInitialHealthReading' => (bool) $ccmPlanData->IsInitialHealthReading,
+                    'IsActive' => (bool) $ccmPlanData->IsActive,
                     'Item' => array(),
                     'HealthParams' => array()
                 );
@@ -6671,6 +6682,7 @@ class CcmPlanController extends Controller
                             'Id' => $item->Id,
                             'ItemName' => $item->ItemName,
                             'Goal' => $item->Goal,
+                            'GoalNumber' => (int) $item->GoalNumber,
                             'Intervention' => $item->Intervention,
                             'Result' => $item->Result,
                             'PatientComment' => $item->PatientComment,
@@ -6904,6 +6916,7 @@ class CcmPlanController extends Controller
             $ccmPlanData = array(
                 'StartDate' => $request->get('StartDate'),
                 'EndDate' => $request->get('EndDate'),
+                'IsInitialHealthReading' => (bool) $request->get('IsInitialHealthReading'),
                 'CreatedBy' => $userId,
                 'IsActive' => true,
                 'UpdatedOn' => $date["timestamp"]
@@ -6933,6 +6946,7 @@ class CcmPlanController extends Controller
                                 'CcmPlanId' => $id,
                                 'ItemName' => $item['ItemName'],
                                 'Goal' => $item2['Name'],
+                                'GoalNumber' => (int) $item2['GoalNumber'],
                                 'Intervention' => (string)$item2['Intervention'],
                                 'IsActive' => true
                             );
