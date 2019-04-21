@@ -1678,6 +1678,8 @@ class DocumentUploadController extends Controller
         $searchKeyword = $request->get('searchKeyword');
         $byUserRoleId = $request->get('byUserRole');
 
+        $totalCount = 0;
+
         $ids = array();
 
         if ($searchDateFrom == "null" && $searchDateTo != "null" || $searchDateFrom != "null" && $searchDateTo == "null") {
@@ -1726,58 +1728,118 @@ class DocumentUploadController extends Controller
                     }
                 }
 
-                $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForDoctorsCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForDoctorsCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
 
-                return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
+                if (count($getAllDocuments) > 0) {
+                    error_log('data found');
+                    foreach ($getAllDocuments as $item) {
 
-            } else
-                if ($checkUserData->RoleCodeName == $facilitatorRole) {
-                    error_log('logged in user is facilitator');
+                        if ($byUserRoleId != "null") {
+                            error_log('user role is given . ' . $byUserRoleId);
+                            if ((int)$byUserRoleId == $item->RoleId) {
 
-                    //First get associated doctors id.
-                    $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($byUserId);
-                    $doctorIds = array();
-                    if (count($getAssociatedDoctorsId) > 0) {
-                        error_log('Associated doctor found');
-                        foreach ($getAssociatedDoctorsId as $item) {
-                            array_push($doctorIds, $item->SourceUserId);
-                            //Pushing value in our variable
-                            array_push($ids, $item->SourceUserId);
+                                $totalCount = $totalCount + 1;
+                            }
+
+                        } else {
+                            $totalCount = $totalCount + 1;
                         }
                     }
 
-                    $getAssociatedPatientIds = UserModel::getAssociatedPatientsUserId($doctorIds, $doctorPatientAssociation);
-
-                    if (count($getAssociatedPatientIds) > 0) {
-                        error_log('Associated patients found');
-                        foreach ($getAssociatedPatientIds as $item) {
-                            array_push($ids, $item->DestinationUserId);
-                        }
-                    }
-
-                    $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForDoctorsCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
-
-                    return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
-
-                } else if ($checkUserData->RoleCodeName == $patientRole) {
-                    error_log('logged in user is patient');
-                    error_log('documents uploaded by patient will be appeared');
-
-                    $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForPatientCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
-
-                    return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
-
-                } else if ($checkUserData->RoleCodeName == $superAdminRole) {
-                    error_log('logged in user is super admin');
-                    error_log('all documents uploaded by everyone will be shown');
-
-                    $getAllDocumentsCount = DocumentUploadModel::GetAllGeneralDocumentsForAdminCount($searchDateFrom, $searchDateTo, $searchKeyword);
-
-                    return response()->json(['data' => $getAllDocumentsCount, 'message' => 'Total Count'], 200);
+                    return response()->json(['data' => $totalCount, 'message' => 'Total count'], 200);
 
                 } else {
-                    return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                    return response()->json(['data' => $totalCount, 'message' => 'Total count'], 200);
                 }
+
+            } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+                error_log('logged in user is facilitator');
+
+                //First get associated doctors id.
+                $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($byUserId);
+                $doctorIds = array();
+                if (count($getAssociatedDoctorsId) > 0) {
+                    error_log('Associated doctor found');
+                    foreach ($getAssociatedDoctorsId as $item) {
+                        array_push($doctorIds, $item->SourceUserId);
+                        //Pushing value in our variable
+                        array_push($ids, $item->SourceUserId);
+                    }
+                }
+
+                $getAssociatedPatientIds = UserModel::getAssociatedPatientsUserId($doctorIds, $doctorPatientAssociation);
+
+                if (count($getAssociatedPatientIds) > 0) {
+                    error_log('Associated patients found');
+                    foreach ($getAssociatedPatientIds as $item) {
+                        array_push($ids, $item->DestinationUserId);
+                    }
+                }
+
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForDoctorsCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
+
+                if (count($getAllDocuments) > 0) {
+                    error_log('data found');
+                    foreach ($getAllDocuments as $item) {
+
+                        if ($byUserRoleId != "null") {
+                            error_log('user role is given . ' . $byUserRoleId);
+                            if ((int)$byUserRoleId == $item->RoleId) {
+
+                                $totalCount = $totalCount + 1;
+                            }
+
+                        } else {
+                            $totalCount = $totalCount + 1;
+                        }
+                    }
+
+                    return response()->json(['data' => $totalCount, 'message' => 'Total count'], 200);
+
+                } else {
+                    return response()->json(['data' => $totalCount, 'message' => 'Total count'], 200);
+                }
+
+            } else if ($checkUserData->RoleCodeName == $patientRole) {
+                error_log('logged in user is patient');
+                error_log('documents uploaded by patient will be appeared');
+
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForPatientCount($ids, $searchDateFrom, $searchDateTo, $searchKeyword);
+
+                $totalCount = count($getAllDocuments);
+
+                return response()->json(['data' => $totalCount, 'message' => 'Total Count'], 200);
+
+            } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+                error_log('logged in user is super admin');
+                error_log('all documents uploaded by everyone will be shown');
+
+                $getAllDocuments = DocumentUploadModel::GetAllGeneralDocumentsForAdminCount($searchDateFrom, $searchDateTo, $searchKeyword);
+
+                if (count($getAllDocuments) > 0) {
+                    error_log('data found');
+                    foreach ($getAllDocuments as $item) {
+
+                        if ($byUserRoleId != "null") {
+                            error_log('user role is given . ' . $byUserRoleId);
+                            if ((int)$byUserRoleId == $item->RoleId) {
+
+                                $totalCount = $totalCount + 1;
+                            }
+
+                        } else {
+                            $totalCount = $totalCount + 1;
+                        }
+                    }
+
+                    return response()->json(['data' => $totalCount, 'message' => 'Total count'], 200);
+
+                } else {
+                    return response()->json(['data' => $totalCount, 'message' => 'Total count'], 200);
+                }
+            } else {
+                return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+            }
         }
 
     }
