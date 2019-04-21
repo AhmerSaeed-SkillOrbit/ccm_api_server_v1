@@ -383,6 +383,11 @@ Route::get('/patient/ccm/plan/all/count', 'CcmPlanController@GetCCMPlanViaPatien
 //get update CCM plan
 Route::post('/patient/ccm/plan/update', 'CcmPlanController@UpdateCcmPlan');
 
+//Ccm plan reviews api
+//get update CCM plan
+Route::post('/ccm/plan/review/add', 'CcmPlanController@AddCCmPlanReview');
+
+
 Route::get('/', function () {
     return 'Hello';
 });

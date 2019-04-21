@@ -6298,7 +6298,7 @@ class CcmPlanController extends Controller
             'PlanNumber' => 'P-' . $totalCountForCcmPlans,
             'StartDate' => $request->get('StartDate'),
             'EndDate' => $request->get('EndDate'),
-            'IsInitialHealthReading' => (bool) $request->get('IsInitialHealthReading'),
+            'IsInitialHealthReading' => (bool)$request->get('IsInitialHealthReading'),
             'CreatedBy' => $userId,
             'IsActive' => true,
             'CreatedOn' => $date["timestamp"]
@@ -6483,8 +6483,8 @@ class CcmPlanController extends Controller
                 'PlanNumber' => $ccmPlanData->PlanNumber,
                 'StartDate' => $ccmPlanData->StartDate,
                 'EndDate' => $ccmPlanData->EndDate,
-                'IsInitialHealthReading' => (bool) $ccmPlanData->IsInitialHealthReading,
-                'IsActive' =>  (bool)$ccmPlanData->IsActive,
+                'IsInitialHealthReading' => (bool)$ccmPlanData->IsInitialHealthReading,
+                'IsActive' => (bool)$ccmPlanData->IsActive,
                 'Item' => array(),
                 'HealthParams' => array(),
                 'FileUpload' => array()
@@ -6505,7 +6505,7 @@ class CcmPlanController extends Controller
                         'Id' => $item->Id,
                         'ItemName' => $item->ItemName,
                         'Goal' => $item->Goal,
-                        'GoalNumber' => (int) $item->GoalNumber,
+                        'GoalNumber' => (int)$item->GoalNumber,
                         'Intervention' => $item->Intervention,
                         'Result' => $item->Result,
                         'PatientComment' => $item->PatientComment,
@@ -6661,8 +6661,8 @@ class CcmPlanController extends Controller
                     'PlanNumber' => $ccmPlanData->PlanNumber,
                     'StartDate' => $ccmPlanData->StartDate,
                     'EndDate' => $ccmPlanData->EndDate,
-                    'IsInitialHealthReading' => (bool) $ccmPlanData->IsInitialHealthReading,
-                    'IsActive' => (bool) $ccmPlanData->IsActive,
+                    'IsInitialHealthReading' => (bool)$ccmPlanData->IsInitialHealthReading,
+                    'IsActive' => (bool)$ccmPlanData->IsActive,
                     'Item' => array(),
                     'HealthParams' => array()
                 );
@@ -6682,7 +6682,7 @@ class CcmPlanController extends Controller
                             'Id' => $item->Id,
                             'ItemName' => $item->ItemName,
                             'Goal' => $item->Goal,
-                            'GoalNumber' => (int) $item->GoalNumber,
+                            'GoalNumber' => (int)$item->GoalNumber,
                             'Intervention' => $item->Intervention,
                             'Result' => $item->Result,
                             'PatientComment' => $item->PatientComment,
@@ -6916,7 +6916,7 @@ class CcmPlanController extends Controller
             $ccmPlanData = array(
                 'StartDate' => $request->get('StartDate'),
                 'EndDate' => $request->get('EndDate'),
-                'IsInitialHealthReading' => (bool) $request->get('IsInitialHealthReading'),
+                'IsInitialHealthReading' => (bool)$request->get('IsInitialHealthReading'),
                 'CreatedBy' => $userId,
                 'IsActive' => true,
                 'UpdatedOn' => $date["timestamp"]
@@ -6946,7 +6946,7 @@ class CcmPlanController extends Controller
                                 'CcmPlanId' => $id,
                                 'ItemName' => $item['ItemName'],
                                 'Goal' => $item2['Name'],
-                                'GoalNumber' => (int) $item2['GoalNumber'],
+                                'GoalNumber' => (int)$item2['GoalNumber'],
                                 'Intervention' => (string)$item2['Intervention'],
                                 'IsActive' => true
                             );
@@ -7048,6 +7048,125 @@ class CcmPlanController extends Controller
         } else {
             error_log('ccm health param inserted');
             return response()->json(['data' => $insertedDataId, 'message' => 'CCM Health param added successfully'], 200);
+        }
+    }
+
+    static public function AddCCmPlanReview(Request $request)
+    {
+        error_log('in controller');
+
+        $userId = $request->get('userId');
+        $patientId = $request->get('patientId');
+        $ccmPlanId = $request->get('ccmPlanId');
+        $ccmPLanGoalId = $request->get('ccmPlanGoalId');
+
+
+        $reviewDate = $request->get('ReviewDate');
+
+        $doctorRole = env('ROLE_DOCTOR');
+        $facilitatorRole = env('ROLE_FACILITATOR');
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
+
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First check if logged in user belongs to facilitator
+        //if it is facilitator then check it's doctor association
+        //And then check if that patient is associated with dr or not
+
+        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+
+        if ($checkUserData->RoleCodeName == $doctorRole) {
+            error_log('logged in user role is doctor');
+            error_log('Now fetching its associated patients');
+
+            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
+            if (count($checkAssociatedPatient) <= 0) {
+                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            error_log('logged in user role is facilitator');
+            error_log('Now first get facilitator association with doctor');
+
+            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+            if (count($getAssociatedDoctors) > 0) {
+                error_log('this facilitator is associated to doctor');
+                $doctorIds = array();
+                foreach ($getAssociatedDoctors as $item) {
+                    array_push($doctorIds, $item->SourceUserId);
+                }
+
+                //Now we will get associated patient with respect to these doctors.
+                //If there will be no data then we will throw an error message that this patient is not associated to doctor
+
+                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
+                if (count($checkAssociatedPatient) <= 0) {
+                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
+                }
+
+            } else {
+                error_log('associated doctor not found');
+                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
+            }
+
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+        } else {
+            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
+        }
+
+        //Now check if Ccm plan of this patient with the same start data already exists or not
+
+        $ccmPlanData = CcmModel::GetSinglePatientCcmPlanViaId($ccmPlanId);
+        if ($ccmPlanData == null) {
+            return response()->json(['data' => null, 'message' => 'Ccm plan not found'], 400);
+        } else {
+            error_log('ccm plan found');
+            error_log('Now checking if ccm plan goal exist');
+
+            $ccmPlanGoals = CcmModel::GetCcmPlanGoalsViaId($ccmPLanGoalId);
+
+            if (count($ccmPlanGoals) == 0) {
+                return response()->json(['data' => null, 'message' => 'Goal not found'], 400);
+            } else {
+                error_log('goal found');
+                error_log('Now checking if review against this goal and plan already exists');
+
+                $getCcmPlanReview = CcmModel::GetCCMReviewViaPlanAndGoalId($ccmPlanId, $ccmPLanGoalId, $reviewDate);
+
+                if ($getCcmPlanReview == null) {
+                    error_log('No review exists against this ccm plan and goal');
+                    error_log('So simply insert');
+
+                    $date = HelperModel::getDate();
+
+                    $dataToAdd = array(
+                        'ReviewById' => $userId,
+                        'CcmPlanId' => $ccmPlanId,
+                        'CcmPlanGoalId' => $ccmPLanGoalId,
+                        'IsGoalAchieve' => $request->get('IsGoalAchieve'),
+                        'ReviewerComment' => $request->get('ReviewerComment'),
+                        'Barrier' => $request->get('Barrier'),
+                        'ReviewDate' => $request->get('ReviewDate'),
+                        'IsActive' => true,
+                        'CreatedOn' => $date["timestamp"]
+                    );
+
+                    $insertedData = GenericModel::insertGenericAndReturnID('ccm_plan_review', $dataToAdd);
+                    if ($insertedData == 0) {
+                        error_log('data not inserted');
+                        return response()->json(['data' => null, 'message' => 'Error in adding review'], 400);
+                    } else {
+                        error_log('data inserted');
+                        return response()->json(['data' => $insertedData, 'message' => 'Review successfully added'], 200);
+                    }
+
+                } else {
+                    error_log('review found');
+                    return response()->json(['data' => null, 'message' => 'Review for this date against the same goal already exists'], 400);
+                }
+            }
         }
     }
 }

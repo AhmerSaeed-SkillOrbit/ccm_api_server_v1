@@ -587,6 +587,16 @@ class CcmModel
         return $query;
     }
 
+    static public function GetCcmPlanGoalsViaId($ccmPlanGoalId)
+    {
+        $query = DB::table('ccm_plan_goal')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $ccmPlanGoalId)
+            ->get();
+
+        return $query;
+    }
+
 
     static public function CheckIfCcmPlanAlreadyExists($patientId, $startDate)
     {
@@ -662,6 +672,30 @@ class CcmModel
         $query = DB::table('ccm_health_param')
             ->where('ccm_health_param.IsActive', '=', true)
             ->where('ccm_health_param.Name', '=', $ccmHealthParamName)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetCCMReviewViaPlanAndGoalId($ccmPlanId, $ccmPlanGoalId, $reviewDate)
+    {
+        $query = DB::table('ccm_plan_review')
+            ->select('ccm_plan_review.*')
+            ->where('ccm_plan_review.IsActive', '=', true)
+            ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+            ->where('ccm_plan_review.CcmPlanGoalId', '=', $ccmPlanGoalId)
+            ->where('ccm_plan_review.ReviewDate', '=', $reviewDate)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetCCMPlanReviewViewId($id)
+    {
+        $query = DB::table('ccm_plan_review')
+            ->select('ccm_plan_review.*')
+            ->where('ccm_plan_review.IsActive', '=', true)
+            ->where('ccm_plan_review.Id', '=', $id)
             ->first();
 
         return $query;
