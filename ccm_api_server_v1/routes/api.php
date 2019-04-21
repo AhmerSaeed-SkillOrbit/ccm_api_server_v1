@@ -389,6 +389,7 @@ Route::post('/ccm/plan/review/add', 'CcmPlanController@AddCCmPlanReview');
 Route::post('/ccm/plan/review/update', 'CcmPlanController@UpdateCCmPlanReview');
 Route::get('/ccm/plan/review/single', 'CcmPlanController@GetSingleCCMPlanReview');
 Route::get('/ccm/plan/review/all', 'CcmPlanController@GetAllCCMPlanReviewViaPagination');
+Route::get('/ccm/plan/review/all/count', 'CcmPlanController@GetAllCCMPlanReviewCount');
 
 
 Route::get('/', function () {

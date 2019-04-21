@@ -7323,7 +7323,7 @@ class CcmPlanController extends Controller
 
             $data = array(
                 'Id' => $getCcmPlanReviewSingle->ccmPlanReviewId,
-                'IsGoalAchieve' => (bool) $getCcmPlanReviewSingle->IsGoalAchieve,
+                'IsGoalAchieve' => (bool)$getCcmPlanReviewSingle->IsGoalAchieve,
                 'ReviewerComment' => $getCcmPlanReviewSingle->ReviewerComment,
                 'Barrier' => $getCcmPlanReviewSingle->Barrier,
                 'ReviewDate' => $getCcmPlanReviewSingle->ReviewDate,
@@ -7375,13 +7375,14 @@ class CcmPlanController extends Controller
             foreach ($getCcmPlanReviewAll as $item) {
                 $data = array(
                     'Id' => $item->ccmPlanReviewId,
-                    'IsGoalAchieve' => (bool) $item->IsGoalAchieve,
+                    'IsGoalAchieve' => (bool)$item->IsGoalAchieve,
                     'ReviewerComment' => $item->ReviewerComment,
                     'Barrier' => $item->Barrier,
                     'ReviewDate' => $item->ReviewDate,
                     'IsActive' => (bool)$item->IsActive,
                     'CcmPlan' => array(),
                     'CcmPlanGoal' => array(),
+                    'Patient' => array()
                 );
 
                 $data['CcmPlan']['Id'] = $item->CcmPlanId;
@@ -7396,11 +7397,32 @@ class CcmPlanController extends Controller
                 $data['CcmPlanGoal']['Intervention'] = $item->Intervention;
                 $data['CcmPlanGoal']['IsCompleted'] = $item->IsCompleted;
 
+                $data['Patient']['Id'] = $item->UserId;
+                $data['Patient']['FirstName'] = $item->FirstName;
+                $data['Patient']['LastName'] = $item->LastName;
+                $data['Patient']['PatientUniqueId'] = $item->PatientUniqueId;
+
                 array_push($finalData, $data);
             }
 
 
             return response()->json(['data' => $finalData, 'message' => 'Review found successfully'], 200);
         }
+    }
+
+    static public function GetAllCCMPlanReviewCount(Request $request)
+    {
+        error_log('in controller');
+
+        $ccmPlanId = $request->get('ccmPlanId');
+        $searchDateFrom = $request->get('searchDateFrom');
+        $searchDateTo = $request->get('searchDateTo');
+
+        if ($searchDateFrom == "null" && $searchDateTo != "null" || $searchDateFrom != "null" && $searchDateTo == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+
+        $getCcmPlanReviewAll = CcmModel::GetAllCCMPlanReviewCount($ccmPlanId, $searchDateFrom, $searchDateTo);
+        return response()->json(['data' => $getCcmPlanReviewAll, 'message' => 'Total Count'], 200);
     }
 }
