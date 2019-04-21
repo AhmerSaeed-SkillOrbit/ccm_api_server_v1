@@ -7300,11 +7300,107 @@ class CcmPlanController extends Controller
                             return response()->json(['data' => null, 'message' => 'Error in updating review'], 400);
                         } else {
                             error_log('data updated');
-                            return response()->json(['data' => $reviewId, 'message' => 'Review successfully updated'], 200);
+                            return response()->json(['data' => (int)$reviewId, 'message' => 'Review successfully updated'], 200);
                         }
                     }
                 }
             }
+        }
+    }
+
+    static public function GetSingleCCMPlanReview(Request $request)
+    {
+        error_log('in controller');
+
+        $reviewId = $request->get('id');
+
+        $getCcmPlanReviewSingle = CcmModel::GetCCMPlanReviewViewId($reviewId);
+        if ($getCcmPlanReviewSingle == null) {
+            return response()->json(['data' => null, 'message' => 'Invalid review'], 400);
+        } else {
+            error_log('review found');
+            error_log('Now making data');
+
+            $data = array(
+                'Id' => $getCcmPlanReviewSingle->ccmPlanReviewId,
+                'IsGoalAchieve' => (bool) $getCcmPlanReviewSingle->IsGoalAchieve,
+                'ReviewerComment' => $getCcmPlanReviewSingle->ReviewerComment,
+                'Barrier' => $getCcmPlanReviewSingle->Barrier,
+                'ReviewDate' => $getCcmPlanReviewSingle->ReviewDate,
+                'IsActive' => (bool)$getCcmPlanReviewSingle->IsActive,
+                'CcmPlan' => array(),
+                'CcmPlanGoal' => array(),
+            );
+
+            $data['CcmPlan']['Id'] = $getCcmPlanReviewSingle->CcmPlanId;
+            $data['CcmPlan']['PlanNumber'] = $getCcmPlanReviewSingle->PlanNumber;
+            $data['CcmPlan']['StartDate'] = $getCcmPlanReviewSingle->StartDate;
+            $data['CcmPlan']['EndDate'] = $getCcmPlanReviewSingle->EndDate;
+            $data['CcmPlan']['IsInitialHealthReading'] = $getCcmPlanReviewSingle->IsInitialHealthReading;
+
+            $data['CcmPlanGoal']['Id'] = $getCcmPlanReviewSingle->ItemName;
+            $data['CcmPlanGoal']['GoalNumber'] = $getCcmPlanReviewSingle->GoalNumber;
+            $data['CcmPlanGoal']['Goal'] = $getCcmPlanReviewSingle->Goal;
+            $data['CcmPlanGoal']['Intervention'] = $getCcmPlanReviewSingle->Intervention;
+            $data['CcmPlanGoal']['IsCompleted'] = $getCcmPlanReviewSingle->IsCompleted;
+
+            return response()->json(['data' => $data, 'message' => 'Review found successfully'], 200);
+        }
+    }
+
+    static public function GetAllCCMPlanReviewViaPagination(Request $request)
+    {
+        error_log('in controller');
+
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $ccmPlanId = $request->get('ccmPlanId');
+        $searchDateFrom = $request->get('searchDateFrom');
+        $searchDateTo = $request->get('searchDateTo');
+
+        if ($searchDateFrom == "null" && $searchDateTo != "null" || $searchDateFrom != "null" && $searchDateTo == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+
+
+        $getCcmPlanReviewAll = CcmModel::GetAllCCMPlanReviewViaPagination($ccmPlanId, $pageNo, $limit, $searchDateFrom, $searchDateTo);
+        if (count($getCcmPlanReviewAll) == 0) {
+            return response()->json(['data' => null, 'message' => 'Review list not found'], 200);
+        } else {
+            error_log('review found');
+            error_log('Now making data');
+
+            $finalData = array();
+
+            foreach ($getCcmPlanReviewAll as $item) {
+                $data = array(
+                    'Id' => $item->ccmPlanReviewId,
+                    'IsGoalAchieve' => (bool) $item->IsGoalAchieve,
+                    'ReviewerComment' => $item->ReviewerComment,
+                    'Barrier' => $item->Barrier,
+                    'ReviewDate' => $item->ReviewDate,
+                    'IsActive' => (bool)$item->IsActive,
+                    'CcmPlan' => array(),
+                    'CcmPlanGoal' => array(),
+                );
+
+                $data['CcmPlan']['Id'] = $item->CcmPlanId;
+                $data['CcmPlan']['PlanNumber'] = $item->PlanNumber;
+                $data['CcmPlan']['StartDate'] = $item->StartDate;
+                $data['CcmPlan']['EndDate'] = $item->EndDate;
+                $data['CcmPlan']['IsInitialHealthReading'] = $item->IsInitialHealthReading;
+
+                $data['CcmPlanGoal']['Id'] = $item->ItemName;
+                $data['CcmPlanGoal']['GoalNumber'] = $item->GoalNumber;
+                $data['CcmPlanGoal']['Goal'] = $item->Goal;
+                $data['CcmPlanGoal']['Intervention'] = $item->Intervention;
+                $data['CcmPlanGoal']['IsCompleted'] = $item->IsCompleted;
+
+                array_push($finalData, $data);
+            }
+
+
+            return response()->json(['data' => $finalData, 'message' => 'Review found successfully'], 200);
         }
     }
 }

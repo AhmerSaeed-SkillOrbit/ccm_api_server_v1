@@ -691,7 +691,6 @@ class CcmModel
     }
 
 
-
     static public function GetCCMReviewViaPlanAndGoalId($ccmPlanId, $ccmPlanGoalId)
     {
         $query = DB::table('ccm_plan_review')
@@ -707,10 +706,69 @@ class CcmModel
     static public function GetCCMPlanReviewViewId($id)
     {
         $query = DB::table('ccm_plan_review')
-            ->select('ccm_plan_review.*')
+            ->leftjoin('ccm_plan as ccm_plan', 'ccm_plan_review.CcmPlanId', 'ccm_plan.Id')
+            ->leftjoin('ccm_plan_goal as ccm_plan_goal', 'ccm_plan_review.CcmPlanGoalId', 'ccm_plan_goal.Id')
+            ->select('ccm_plan_review.Id as ccmPlanReviewId', 'ccm_plan_review.IsGoalAchieve', 'ccm_plan_review.ReviewerComment',
+                'ccm_plan_review.Barrier', 'ccm_plan_review.ReviewDate', 'ccm_plan_review.IsActive',
+
+                'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
+
+                'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
+                'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+            )
             ->where('ccm_plan_review.IsActive', '=', true)
             ->where('ccm_plan_review.Id', '=', $id)
             ->first();
+
+        return $query;
+    }
+
+    static public function GetAllCCMPlanReviewViaPagination($ccmPlanId, $pageNo, $limit, $searchDateFrom, $searchDateTo)
+    {
+        if ($searchDateFrom == "null" && $searchDateTo == "null") {
+            error_log('search dates are null');
+
+            $query = DB::table('ccm_plan_review')
+                ->leftjoin('ccm_plan as ccm_plan', 'ccm_plan_review.CcmPlanId', 'ccm_plan.Id')
+                ->leftjoin('ccm_plan_goal as ccm_plan_goal', 'ccm_plan_review.CcmPlanGoalId', 'ccm_plan_goal.Id')
+                ->select('ccm_plan_review.Id as ccmPlanReviewId', 'ccm_plan_review.IsGoalAchieve', 'ccm_plan_review.ReviewerComment',
+                    'ccm_plan_review.Barrier', 'ccm_plan_review.ReviewDate', 'ccm_plan_review.IsActive',
+
+                    'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
+
+                    'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
+                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                )
+                ->where('ccm_plan_review.IsActive', '=', true)
+                ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+        } else {
+
+            error_log('search date is given');
+
+            $query = DB::table('ccm_plan_review')
+                ->leftjoin('ccm_plan as ccm_plan', 'ccm_plan_review.CcmPlanId', 'ccm_plan.Id')
+                ->leftjoin('ccm_plan_goal as ccm_plan_goal', 'ccm_plan_review.CcmPlanGoalId', 'ccm_plan_goal.Id')
+                ->select('ccm_plan_review.Id as ccmPlanReviewId', 'ccm_plan_review.IsGoalAchieve', 'ccm_plan_review.ReviewerComment',
+                    'ccm_plan_review.Barrier', 'ccm_plan_review.ReviewDate', 'ccm_plan_review.IsActive',
+
+                    'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
+
+                    'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
+                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                )
+                ->where('ccm_plan_review.IsActive', '=', true)
+                ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+                ->Where('.ccm_plan_review.ReviewDate', '>=', $searchDateFrom)
+                ->Where('.ccm_plan_review.ReviewDate', '<=', $searchDateTo)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->orderBy('ccm_plan_review.Id', 'desc')
+                ->get();
+        }
+
 
         return $query;
     }
