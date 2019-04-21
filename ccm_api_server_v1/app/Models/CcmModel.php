@@ -677,7 +677,7 @@ class CcmModel
         return $query;
     }
 
-    static public function GetCCMReviewViaPlanAndGoalId($ccmPlanId, $ccmPlanGoalId, $reviewDate)
+    static public function GetCCMReviewViaPlanIdGoalIdAndDate($ccmPlanId, $ccmPlanGoalId, $reviewDate)
     {
         $query = DB::table('ccm_plan_review')
             ->select('ccm_plan_review.*')
@@ -686,6 +686,20 @@ class CcmModel
             ->where('ccm_plan_review.CcmPlanGoalId', '=', $ccmPlanGoalId)
             ->where('ccm_plan_review.ReviewDate', '=', $reviewDate)
             ->first();
+
+        return $query;
+    }
+
+
+
+    static public function GetCCMReviewViaPlanAndGoalId($ccmPlanId, $ccmPlanGoalId)
+    {
+        $query = DB::table('ccm_plan_review')
+            ->select('ccm_plan_review.*')
+            ->where('ccm_plan_review.IsActive', '=', true)
+            ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+            ->where('ccm_plan_review.CcmPlanGoalId', '=', $ccmPlanGoalId)
+            ->get();
 
         return $query;
     }

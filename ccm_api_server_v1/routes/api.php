@@ -386,6 +386,7 @@ Route::post('/patient/ccm/plan/update', 'CcmPlanController@UpdateCcmPlan');
 //Ccm plan reviews api
 //get update CCM plan
 Route::post('/ccm/plan/review/add', 'CcmPlanController@AddCCmPlanReview');
+Route::post('/ccm/plan/review/update', 'CcmPlanController@UpdateCCmPlanReview');
 
 
 Route::get('/', function () {
