@@ -455,14 +455,15 @@ class LoginController extends Controller
                     'CityId' => $item->CityId,
                     'MiddleName' => $item->MiddleName,
                     'LastLoggedIn' => $item->LastLoggedIn,
-                    'IsLoggedIn' => $item->IsLoggedIn,
+                    'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
                     'LoginHistoryId' => $item->LoginHistoryId,
                     'LoginDateTime' => date('d-m-Y h:m:s', $item->LoginDateTime)
                 );
                 array_push($loginHistory, $itemArray);
             }
             return response()->json(['data' => $loginHistory, 'message' => 'Login User History'], 200);
-        } else {
+        }
+        else {
             return response()->json(['data' => null, 'message' => 'Login User History is empty'], 200);
         }
     }

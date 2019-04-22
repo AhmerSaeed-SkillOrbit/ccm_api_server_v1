@@ -104,18 +104,18 @@ class LoginModel
                         $checkTokenData = json_decode(json_encode($tokenData), true);
                         if (count($checkTokenData) > 0) {
 
-                            ### now updating isLoggedIn field to 1  -Start ###
+                            ### now updating IsCurrentlyLoggedIn field to 1  -Start ###
 
-                            $isLoggedInData = array(
-                                "IsLoggedIn" => 1,
+                            $IsCurrentlyLoggedInData = array(
+                                "IsCurrentlyLoggedIn" => 1,
                                 "LastLoggedIn" => $date["timestamp"]
                             );
 
                             DB::table('user')
                                 ->where('Id', $checkLogin[0]['Id'])
-                                ->update($isLoggedInData);
+                                ->update($IsCurrentlyLoggedInData);
 
-                            ### now updating isLoggedIn field to 1  - End###
+                            ### now updating IsCurrentlyLoggedIn field to 1  - End###
 
 //                          ### now adding entry in login history table -start ###
                             $insertLoginHistoryData = array(
@@ -470,13 +470,13 @@ class LoginModel
 
             error_log("Access Token deleted");
 
-            $isLoggedInData = array(
-                "IsLoggedIn" => 0
+            $IsCurrentlyLoggedInData = array(
+                "IsCurrentlyLoggedIn" => 0
             );
 
             DB::table('user')
                 ->where('Id', $userId)
-                ->update($isLoggedInData);
+                ->update($IsCurrentlyLoggedInData);
 
             DB::commit();
 

@@ -858,7 +858,7 @@ class UserController extends Controller
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
         $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
-        $userDetails['IsLoggedIn'] = ((bool)$val->IsLoggedIn ? "YES" : "NO");
+        $userDetails['IsCurrentlyLoggedIn'] = ((bool)$val->IsCurrentlyLoggedIn ? "YES" : "NO");
         $userDetails['LastLoggedIn'] = ForumModel::calculateTopicAnCommentTime($val->LastLoggedIn); //timestamp
 
         $userDetails['ProfilePicture'] = null;
