@@ -2483,6 +2483,7 @@ class CcmPlanController extends Controller
             $data['FunctionalTitle'] = $checkUserData->FunctionalTitle;
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
+            $data['ProfileSummary'] = $checkUserData->ProfileSummary;
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
@@ -2509,6 +2510,7 @@ class CcmPlanController extends Controller
         $telephoneNumber = $request->post('TelephoneNumber');
         $gender = $request->post('Gender');
         $age = $request->post('Age');
+        $profileSummary = $request->post('ProfileSummary');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2517,7 +2519,8 @@ class CcmPlanController extends Controller
             "MobileNumber" => $mobileNumber,
             "TelephoneNumber" => $telephoneNumber,
             "Gender" => $gender,
-            "Age" => $age
+            "Age" => $age,
+            "ProfileSummary" => $profileSummary
         );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
@@ -2847,6 +2850,9 @@ class CcmPlanController extends Controller
 
                 $dataToAdd = array(
                     'PatientId' => $patientId,
+                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
+                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
+                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
                     'AbleToMessage' => (bool)$request->get('AbleToMessage'),
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
@@ -2913,6 +2919,9 @@ class CcmPlanController extends Controller
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
+                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
+                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
+                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
                     'AbleToMessage' => (bool)$request->get('AbleToMessage'),
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
@@ -3064,6 +3073,9 @@ class CcmPlanController extends Controller
 
             $data = array(
                 'Id' => $checkData->Id,
+                'IsAgreeCcmService' => (bool)$checkData->IsAgreeCcmService,
+                'IsAgreeToDiscussHealthInfo' => (bool)$checkData->IsAgreeToDiscussHealthInfo,
+                'LastPcpVisitDate' => $checkData->LastPcpVisitDate,
                 'AbleToMessage' => (bool)$checkData->AbleToMessage,
                 'AbleToCall' => (bool)$checkData->AbleToCall,
                 'FeasibleMessageTime' => $checkData->FeasibleMessageTime,
@@ -4635,9 +4647,9 @@ class CcmPlanController extends Controller
 
             $data = array(
                 'Id' => $checkData->pdmId,
-                'IsPatientMeasure' => (bool) $checkData->IsPatientMeasure,
+                'IsPatientMeasure' => (bool)$checkData->IsPatientMeasure,
                 'Description' => $checkData->pdmDescription,
-                'IsActive' => (bool) $checkData->pdmIsActive,
+                'IsActive' => (bool)$checkData->pdmIsActive,
                 'DiabeticMeasureParam' => array()
             );
 
@@ -4865,9 +4877,9 @@ class CcmPlanController extends Controller
 
             $data = array(
                 'Id' => $checkData->ptrId,
-                'IsOkay' => (bool) $checkData->IsOkay,
+                'IsOkay' => (bool)$checkData->IsOkay,
                 'Description' => $checkData->ptrDescription,
-                'IsActive' => (bool) $checkData->ptrIsActive,
+                'IsActive' => (bool)$checkData->ptrIsActive,
                 'FunctionalReviewParam' => array()
             );
 
@@ -5192,8 +5204,8 @@ class CcmPlanController extends Controller
             $data['OfficeAddress'] = $patientOrganizationData->poaOfficeAddress;
             $data['ContactPerson'] = $patientOrganizationData->poaContactPerson;
             $data['Description'] = $patientOrganizationData->poaDescription;
-            $data['IsPatientRefused'] = (bool) $patientOrganizationData->poaIsPatientRefused;
-            $data['IsActive'] = (bool) $patientOrganizationData->ptrIsActive;
+            $data['IsPatientRefused'] = (bool)$patientOrganizationData->poaIsPatientRefused;
+            $data['IsActive'] = (bool)$patientOrganizationData->ptrIsActive;
             $data['AssistanceOrganization'] = array();
 
             //Assistance organization data
@@ -5428,9 +5440,9 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->ppseId;
-            $data['IsPatientExamined'] = (bool) $checkData->IsPatientExamined;
+            $data['IsPatientExamined'] = (bool)$checkData->IsPatientExamined;
             $data['Description'] = $checkData->ppseDescription;
-            $data['IsActive'] = (bool) $checkData->ppseIsActive;
+            $data['IsActive'] = (bool)$checkData->ppseIsActive;
             $data['PreventScreeningParam'] = array();
 
             //Assistance organization data
@@ -5528,7 +5540,7 @@ class CcmPlanController extends Controller
                     $data['Answer']['Id'] = $checkData->ppseId;
                     $data['Answer']['IsPatientExamined'] = $checkData->IsPatientExamined;
                     $data['Answer']['Description'] = $checkData->ppseDescription;
-                    $data['Answer']['IsActive'] = (bool) $checkData->ppseIsActive;
+                    $data['Answer']['IsActive'] = (bool)$checkData->ppseIsActive;
                 }
 
                 array_push($finalData, $data);
@@ -5757,9 +5769,9 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->ppsId;
-            $data['IsPatientExamined'] = (bool) $checkData->IsOkay;
+            $data['IsPatientExamined'] = (bool)$checkData->IsOkay;
             $data['Description'] = $checkData->ppsDescription;
-            $data['IsActive'] = (bool) $checkData->ppsIsActive;
+            $data['IsActive'] = (bool)$checkData->ppsIsActive;
             $data['PsychologicalReviewParam'] = array();
 
             //Assistance organization data
@@ -5853,9 +5865,9 @@ class CcmPlanController extends Controller
                     error_log('data found ');
 
                     $data['Answer']['Id'] = $checkData->ppsId;
-                    $data['Answer']['IsPatientExamined'] = (bool) $checkData->IsOkay;
+                    $data['Answer']['IsPatientExamined'] = (bool)$checkData->IsOkay;
                     $data['Answer']['Description'] = $checkData->ppsDescription;
-                    $data['Answer']['IsActive'] = (bool) $checkData->ppsIsActive;
+                    $data['Answer']['IsActive'] = (bool)$checkData->ppsIsActive;
 
                 }
 
@@ -6096,9 +6108,9 @@ class CcmPlanController extends Controller
                     error_log('data found ');
 
                     $data['Answer']['Id'] = $checkData->psrId;
-                    $data['Answer']['IsPatientExamined'] = (bool) $checkData->IsOkay;
+                    $data['Answer']['IsPatientExamined'] = (bool)$checkData->IsOkay;
                     $data['Answer']['Description'] = $checkData->psrDescription;
-                    $data['Answer']['IsActive'] = (bool) $checkData->psrIsActive;
+                    $data['Answer']['IsActive'] = (bool)$checkData->psrIsActive;
                 }
 
                 array_push($finalData, $data);
@@ -6180,9 +6192,9 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->psrId;
-            $data['IsPatientExamined'] = (bool) $checkData->IsOkay;
+            $data['IsPatientExamined'] = (bool)$checkData->IsOkay;
             $data['Description'] = $checkData->psrDescription;
-            $data['IsActive'] = (bool) $checkData->psrIsActive;
+            $data['IsActive'] = (bool)$checkData->psrIsActive;
             $data['SocialReviewParam'] = array();
 
             //Assistance organization data
@@ -7342,7 +7354,8 @@ class CcmPlanController extends Controller
             $data['CcmPlan']['EndDate'] = $getCcmPlanReviewSingle->EndDate;
             $data['CcmPlan']['IsInitialHealthReading'] = $getCcmPlanReviewSingle->IsInitialHealthReading;
 
-            $data['CcmPlanGoal']['Id'] = $getCcmPlanReviewSingle->ItemName;
+            $data['CcmPlanGoal']['Id'] = $getCcmPlanReviewSingle->CcmPlanGoalId;
+            $data['CcmPlanGoal']['ItemName'] = $getCcmPlanReviewSingle->ItemName;
             $data['CcmPlanGoal']['GoalNumber'] = $getCcmPlanReviewSingle->GoalNumber;
             $data['CcmPlanGoal']['Goal'] = $getCcmPlanReviewSingle->Goal;
             $data['CcmPlanGoal']['Intervention'] = $getCcmPlanReviewSingle->Intervention;
@@ -7395,7 +7408,8 @@ class CcmPlanController extends Controller
                 $data['CcmPlan']['EndDate'] = $item->EndDate;
                 $data['CcmPlan']['IsInitialHealthReading'] = $item->IsInitialHealthReading;
 
-                $data['CcmPlanGoal']['Id'] = $item->ItemName;
+                $data['CcmPlanGoal']['Id'] = $item->CcmPlanGoalId;
+                $data['CcmPlanGoal']['ItemName'] = $item->ItemName;
                 $data['CcmPlanGoal']['GoalNumber'] = $item->GoalNumber;
                 $data['CcmPlanGoal']['Goal'] = $item->Goal;
                 $data['CcmPlanGoal']['Intervention'] = $item->Intervention;
