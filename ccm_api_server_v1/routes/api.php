@@ -408,8 +408,6 @@ Route::get('/logout', 'LoginController@logout');
 //byUserId - means who want to view the history
 //toUserId - means who's history is required
 
-Route::get('/general/file/list/count', 'DocumentUploadController@GeneralFileListCount');
-
 Route::get('/login/history/count', 'LoginController@LoginHistoryCount'); //api/login/history/count?byUserId=1&ofUserId=2
 Route::get('/login/history/all', 'LoginController@LoginHistoryList'); //api/login/history/list?byUserId=1&ofUserId=2&p=0&c=10
 

@@ -625,14 +625,6 @@ class LoginModel
             return $formatMessage;
         }
     }
-
-    public static function convertUtcDatTimeCustom($createdOn)
-    {
-        error_log("createdOn");
-        error_log($createdOn);
-        $convertedTime = Carbon::createFromTimestampUTC($createdOn,"UTC");
-        return $convertedTime;
-    }
 }
 
 

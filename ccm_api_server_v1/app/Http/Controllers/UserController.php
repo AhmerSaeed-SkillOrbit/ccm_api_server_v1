@@ -15,6 +15,7 @@ use App\Models\UserModel;
 use App\Models\GenericModel;
 use App\Models\HelperModel;
 use App\Models\DocumentUploadModel;
+use App\Models\ForumModel;
 use Config;
 use Carbon\Carbon;
 
@@ -857,8 +858,8 @@ class UserController extends Controller
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
         $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
-        $userDetails['IsLoggedIn'] = $val->IsLoggedIn; //terninary operator
-        $userDetails['LastLoggedIn'] = $val->LastLoggedIn; //time stamp
+        $userDetails['IsLoggedIn'] = ((bool)$val->IsLoggedIn ? "YES" : "NO");
+        $userDetails['LastLoggedIn'] = ForumModel::calculateTopicAnCommentTime($val->LastLoggedIn); //timestamp
 
         $userDetails['ProfilePicture'] = null;
 
