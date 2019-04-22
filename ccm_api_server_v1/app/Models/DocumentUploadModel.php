@@ -52,7 +52,8 @@ class DocumentUploadModel
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
-        } else {
+        }
+        else {
             error_log('Some search parameter is given');
             if ($searchDateFrom == "null" && $searchDateTo == "null" && $searchKeyword != "null") {
                 error_log('Only search word is given');
@@ -73,7 +74,8 @@ class DocumentUploadModel
                     ->take($limit)
                     ->get();
 
-            } else if ($searchDateFrom != "null" && $searchDateTo != "null" && $searchKeyword == "null") {
+            }
+            else if ($searchDateFrom != "null" && $searchDateTo != "null" && $searchKeyword == "null") {
 
                 error_log('Only search date is given');
 
