@@ -411,7 +411,7 @@ Route::get('/logout', 'LoginController@logout');
 Route::get('/general/file/list/count', 'DocumentUploadController@GeneralFileListCount');
 
 Route::get('/login/history/count', 'LoginController@LoginHistoryCount'); //api/login/history/count?byUserId=1&ofUserId=2
-Route::get('/login/history/list', 'LoginController@LoginHistoryList'); //api/login/history/list?byUserId=1&ofUserId=2&p=0&c=10
+Route::get('/login/history/all', 'LoginController@LoginHistoryList'); //api/login/history/list?byUserId=1&ofUserId=2&p=0&c=10
 
 
 //?doctorScheduleDetailId=1

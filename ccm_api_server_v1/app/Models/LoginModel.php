@@ -561,11 +561,77 @@ class LoginModel
     public static function FetchLoginHistoryListViaPagination($userId, $offset, $limit)
     {
         error_log('getting list of login history for provided user');
-        $query = DB::table('user_login_history')
-            ->where('UserId', $userId)
+        $query = DB::table('user')
+            ->join('user_login_history', 'user.Id', 'user_login_history.UserId')
+            ->where('user_login_history.UserId', $userId)
             ->skip($offset * $limit)->take($limit)
+            ->select('user.*','user_login_history.Id as LoginHistoryId','user_login_history.CreatedOn as LoginDateTime')
             ->get();
         return $query;
+    }
+
+    public static function calculateFormattedTime($createdOn)
+    {
+        $formatMessage = null;
+//
+//        $timestamp = $request->get('t');
+//        error_log($timestamp);
+
+        $topicCreatedTime = Carbon::createFromTimestamp($createdOn);
+        $currentTime = Carbon::now("UTC");
+
+        $diffInYears = $currentTime->diffInYears($topicCreatedTime);
+        $diffInMonths = $currentTime->diffInMonths($topicCreatedTime);
+        $diffInWeeks = $currentTime->diffInWeeks($topicCreatedTime);
+        $diffInDays = $currentTime->diffInDays($topicCreatedTime);
+        $diffInHours = $currentTime->diffInHours($topicCreatedTime);
+        $diffInMints = $currentTime->diffInMinutes($topicCreatedTime);
+        $diffInSec = $currentTime->diffInSeconds($topicCreatedTime);
+
+        error_log($topicCreatedTime);
+        error_log($currentTime);
+        error_log($diffInYears);
+        error_log($diffInMonths);
+        error_log($diffInWeeks);
+        error_log($diffInDays);
+        error_log($diffInHours);
+        error_log($diffInMints);
+        error_log($diffInSec);
+
+        if ($diffInYears > 0) {
+            $formatMessage = $diffInYears . ' y ago';
+            return $formatMessage;
+        } else if ($diffInMonths > 0) {
+            $formatMessage = $diffInMonths . ' mon ago';
+            return $formatMessage;
+        } else if ($diffInWeeks > 0) {
+            $formatMessage = $diffInWeeks . ' w ago';
+            return $formatMessage;
+        } else if ($diffInDays > 0) {
+            $formatMessage = $diffInDays . ' d ago';
+            return $formatMessage;
+        } else if ($diffInHours > 0) {
+            $formatMessage = $diffInHours . ' h ago';
+            return $formatMessage;
+        } else if ($diffInMints > 0) {
+            $formatMessage = $diffInMints . ' min ago';
+            return $formatMessage;
+        } else if ($diffInSec >= 30) {
+            $formatMessage = $diffInMints . ' sec ago';
+            return $formatMessage;
+        } else {
+            //seconds
+            $formatMessage = 'Now';
+            return $formatMessage;
+        }
+    }
+
+    public static function convertUtcDatTimeCustom($createdOn)
+    {
+        error_log("createdOn");
+        error_log($createdOn);
+        $convertedTime = Carbon::createFromTimestampUTC($createdOn,"UTC");
+        return $convertedTime;
     }
 }
 

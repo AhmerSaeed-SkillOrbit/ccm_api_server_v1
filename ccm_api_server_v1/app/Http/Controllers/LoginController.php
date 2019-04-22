@@ -425,10 +425,45 @@ class LoginController extends Controller
         $offset = $request->get('p');
         $limit = $request->get('c');
 
+        $loginHistory = array();
+
         $list = LoginModel::FetchLoginHistoryListViaPagination($ofUserId, $offset, $limit);
+        foreach ($list as $item) {
+
+            $itemArray = array(
+                'Id' => $item->Id,
+                'FirstName' => $item->FirstName,
+                'LastName' => $item->LastName,
+                'EmailAddress' => $item->EmailAddress,
+                'CountryPhoneCode' => $item->CountryPhoneCode,
+                'MobileNumber' => $item->MobileNumber,
+                'TelephoneNumber' => $item->TelephoneNumber,
+                'PatientUniqueId' => $item->PatientUniqueId,
+                'Gender' => $item->Gender,
+                'FunctionalTitle' => $item->FunctionalTitle,
+                'Age' => $item->Age,
+                'AgeGroup' => $item->AgeGroup,
+                'AccountVerified' => $item->AccountVerified,
+                'CreatedBy' => $item->CreatedBy,
+                'CreatedOn' => $item->CreatedOn,
+                'UpdatedOn' => $item->UpdatedOn,
+                'UpdatedBy' => $item->UpdatedBy,
+                'IsActive' => $item->IsActive,
+                'IsBlock' => $item->IsBlock,
+                'BlockReason' => $item->BlockReason,
+                'InActiveReason' => $item->InActiveReason,
+                'CityId' => $item->CityId,
+                'MiddleName' => $item->MiddleName,
+                'LastLoggedIn' => $item->LastLoggedIn,
+                'IsLoggedIn' => $item->IsLoggedIn,
+                'LoginHistoryId' => $item->LoginHistoryId,
+                'LoginDateTime' => LoginModel::convertUtcDatTimeCustom($item->LoginDateTime)
+            );
+            array_push($loginHistory, $itemArray);
+        }
 
         if (count($list) > 0) {
-            return response()->json(['data' => $list, 'message' => 'Login User History'], 200);
+            return response()->json(['data' => $loginHistory, 'message' => 'Login User History'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Login User History is empty'], 200);
         }
