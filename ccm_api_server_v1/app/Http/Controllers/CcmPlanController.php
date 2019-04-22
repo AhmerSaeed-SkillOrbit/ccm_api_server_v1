@@ -683,7 +683,7 @@ class CcmPlanController extends Controller
                     'MedicineName' => $item['MedicineName'],
                     'MedicineReaction' => $item['MedicineReaction'],
                     'ReactionDate' => $item['ReactionDate'],
-                    'IsReactionSevere' => $item['IsReactionSevere'],
+                    'IsReactionSevere' => (bool) $item['IsReactionSevere'],
                     'IsActive' => true,
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
@@ -726,7 +726,7 @@ class CcmPlanController extends Controller
                 'MedicineName' => $request->get('MedicineName'),
                 'MedicineReaction' => $request->get('MedicineReaction'),
                 'ReactionDate' => $request->get('ReactionDate'),
-                'IsReactionSevere' => $request->get('IsReactionSevere'),
+                'IsReactionSevere' => (bool)$request->get('IsReactionSevere'),
                 'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
@@ -819,7 +819,7 @@ class CcmPlanController extends Controller
                     'MedicineName' => $item->MedicineName,
                     'MedicineReaction' => $item->MedicineReaction,
                     'ReactionDate' => $item->ReactionDate,
-                    'IsReactionSevere' => $item->IsReactionSevere,
+                    'IsReactionSevere' => (bool)$item->IsReactionSevere,
                     'IsActive' => (bool)$item->IsActive,
                 );
 
@@ -849,7 +849,7 @@ class CcmPlanController extends Controller
             $data['MedicineName'] = $medicineData->MedicineName;
             $data['MedicineReaction'] = $medicineData->MedicineReaction;
             $data['ReactionDate'] = $medicineData->ReactionDate;
-            $data['IsReactionSevere'] = $medicineData->IsReactionSevere;
+            $data['IsReactionSevere'] = (bool) $medicineData->IsReactionSevere;
             $data['IsActive'] = (bool)$medicineData->IsActive;
 
             return response()->json(['data' => $data, 'message' => 'Allergy medicine found'], 200);
@@ -932,7 +932,7 @@ class CcmPlanController extends Controller
                     'SubstanceName' => $item['SubstanceName'],
                     'SubstanceReaction' => $item['SubstanceReaction'],
                     'ReactionDate' => $item['ReactionDate'],
-                    'IsReactionSevere' => $item['IsReactionSevere'],
+                    'IsReactionSevere' => (bool) $item['IsReactionSevere'],
                     'IsActive' => true,
                     'CreatedBy' => $userId,
                     'CreatedOn' => $date["timestamp"]
@@ -975,7 +975,7 @@ class CcmPlanController extends Controller
                 'SubstanceName' => $request->get('SubstanceName'),
                 'SubstanceReaction' => $request->get('SubstanceReaction'),
                 'ReactionDate' => $request->get('ReactionDate'),
-                'IsReactionSevere' => $request->get('IsReactionSevere'),
+                'IsReactionSevere' =>(bool) $request->get('IsReactionSevere'),
                 'IsActive' => (bool)$request->get('IsActive'),
                 'UpdatedBy' => $userId,
                 'UpdatedOn' => $date["timestamp"]
@@ -1068,7 +1068,7 @@ class CcmPlanController extends Controller
                     'SubstanceName' => $item->SubstanceName,
                     'SubstanceReaction' => $item->SubstanceReaction,
                     'ReactionDate' => $item->ReactionDate,
-                    'IsReactionSevere' => $item->IsReactionSevere,
+                    'IsReactionSevere' => (bool) $item->IsReactionSevere,
                     'IsActive' => (bool)$item->IsActive
                 );
 
@@ -1098,7 +1098,7 @@ class CcmPlanController extends Controller
             $data['SubstanceName'] = $medicineData->SubstanceName;
             $data['SubstanceReaction'] = $medicineData->SubstanceReaction;
             $data['ReactionDate'] = $medicineData->ReactionDate;
-            $data['IsReactionSevere'] = $medicineData->IsReactionSevere;
+            $data['IsReactionSevere'] = (bool) $medicineData->IsReactionSevere;
             $data['IsActive'] = (bool)$medicineData->IsActive;
 
             return response()->json(['data' => $data, 'message' => 'Non medicine found'], 200);
