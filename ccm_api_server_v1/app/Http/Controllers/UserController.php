@@ -911,6 +911,7 @@ class UserController extends Controller
 
             $checkDocument = DocumentUploadModel::GetDocumentData($val->ProfilePictureId);
             if ($checkDocument != null) {
+
                 error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
                 //Now checking if document name is same as it is given in parameter
                 error_log('document name is valid');
