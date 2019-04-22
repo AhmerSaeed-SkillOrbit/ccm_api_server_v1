@@ -418,6 +418,9 @@ class TicketController extends Controller
         $userId = $request->get('userId');
         $ticketId = $request->get('ticketId');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TICKET_FILE_API_PREFIX');
+
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
         if ($checkUserData == null) {
             return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
@@ -457,6 +460,8 @@ class TicketController extends Controller
                 $data['Role']['Id'] = $ticketData->RoleId;
                 $data['Role']['Name'] = $ticketData->RoleName;
                 $data['Role']['CodeName'] = $ticketData->RoleCodeName;
+
+                $data['FileUpload'] = array();
 
                 //Now fetching replies to ticket
 
@@ -529,6 +534,30 @@ class TicketController extends Controller
                     }
 
                     $data['TicketAssignee'] = $ticketAssignedData;
+                }
+
+                //Now fetching file upload data
+                $fileUpload = array();
+                $fileUploadData = TicketModel::GetAllTicketFiles($ticketId);
+                if (count($fileUploadData) > 0) {
+                    error_log('files found');
+                    foreach ($fileUploadData as $item) {
+                        $fileData = array(
+                            'Id' => $item->Id,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension
+                        );
+
+                        array_push($fileUpload, $fileData);
+                    }
+
+                    $data['FileUpload'] = $fileUpload;
+
+                } else {
+                    error_log('file not found');
+                    $data['FileUpload'] = null;
                 }
 
 
@@ -949,6 +978,9 @@ class TicketController extends Controller
         $userId = $request->get('userId');
         $ticketReplyId = $request->get('ticketReplyId');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TICKET_REPLY_FILE_API_PREFIX');
+
         $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
         if ($checkUserData == null) {
             return response()->json(['data' => null, 'message' => 'logged in user not found'], 400);
@@ -979,6 +1011,32 @@ class TicketController extends Controller
                 $data['Role']['Id'] = $ticketReplyData->RoleId;
                 $data['Role']['Name'] = $ticketReplyData->RoleName;
                 $data['Role']['CodeName'] = $ticketReplyData->RoleCodeName;
+
+                $data['FileUpload'] = array();
+
+                //Now fetching file upload data
+                $fileUpload = array();
+                $fileUploadData = TicketModel::GetAllTicketReplyFiles($ticketReplyId);
+                if (count($fileUploadData) > 0) {
+                    error_log('files found');
+                    foreach ($fileUploadData as $item) {
+                        $fileData = array(
+                            'Id' => $item->Id,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension
+                        );
+
+                        array_push($fileUpload, $fileData);
+                    }
+
+                    $data['FileUpload'] = $fileUpload;
+
+                } else {
+                    error_log('file not found');
+                    $data['FileUpload'] = null;
+                }
 
 
                 return response()->json(['data' => $data, 'message' => 'ticket reply data found'], 200);

@@ -542,8 +542,8 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->where('.ccm_plan.StartDate', '>=',  $startDate)
-                ->where('.ccm_plan.EndDate', '<=',  $endDate)
+                ->where('.ccm_plan.StartDate', '>=', $startDate)
+                ->where('.ccm_plan.EndDate', '<=', $endDate)
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
@@ -569,8 +569,8 @@ class CcmModel
                 ->select('ccm_plan.*')
                 ->where('ccm_plan.IsActive', '=', true)
                 ->where('ccm_plan.PatientId', '=', $patientId)
-                ->where('.ccm_plan.StartDate', '>=',  $startDate)
-                ->where('.ccm_plan.EndDate', '<=',  $endDate)
+                ->where('.ccm_plan.StartDate', '>=', $startDate)
+                ->where('.ccm_plan.EndDate', '<=', $endDate)
                 ->count();
         }
 
@@ -582,6 +582,16 @@ class CcmModel
         $query = DB::table('ccm_plan_goal')
             ->where('IsActive', '=', true)
             ->where('CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetCcmPlanGoalsViaId($ccmPlanGoalId)
+    {
+        $query = DB::table('ccm_plan_goal')
+            ->where('IsActive', '=', true)
+            ->where('Id', '=', $ccmPlanGoalId)
             ->get();
 
         return $query;
@@ -621,6 +631,185 @@ class CcmModel
             ->where('patient_assessment_file.PatientAssessmentId', '=', $patientAssessmnetId)
             ->where('patient_assessment_file.IsActive', '=', true)
             ->get();
+
+        return $query;
+    }
+
+    static public function GetPatientAssessmentFile($patientAssessmentFile)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('patient_assessment_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'patient_assessment_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('patient_assessment_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('patient_assessment_file.PatientAssessmentId', '=', $patientAssessmentFile)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetCCMPlanFile($ccmPlanId)
+    {
+        error_log('in model, fetching files');
+
+        $query = DB::table('ccm_plan_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'ccm_plan_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('ccm_plan_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('ccm_plan_file.CcmPlanId', '=', $ccmPlanId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function IsHealthParamDuplicate($ccmHealthParamName)
+    {
+        error_log('in model, checking if parametere exists');
+
+        $query = DB::table('ccm_health_param')
+            ->where('ccm_health_param.IsActive', '=', true)
+            ->where('ccm_health_param.Name', '=', $ccmHealthParamName)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetCCMReviewViaPlanIdGoalIdAndDate($ccmPlanId, $ccmPlanGoalId, $reviewDate)
+    {
+        $query = DB::table('ccm_plan_review')
+            ->select('ccm_plan_review.*')
+            ->where('ccm_plan_review.IsActive', '=', true)
+            ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+            ->where('ccm_plan_review.CcmPlanGoalId', '=', $ccmPlanGoalId)
+            ->where('ccm_plan_review.ReviewDate', '=', $reviewDate)
+            ->first();
+
+        return $query;
+    }
+
+
+    static public function GetCCMReviewViaPlanAndGoalId($ccmPlanId, $ccmPlanGoalId)
+    {
+        $query = DB::table('ccm_plan_review')
+            ->select('ccm_plan_review.*')
+            ->where('ccm_plan_review.IsActive', '=', true)
+            ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+            ->where('ccm_plan_review.CcmPlanGoalId', '=', $ccmPlanGoalId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetCCMPlanReviewViewId($id)
+    {
+        $query = DB::table('ccm_plan_review')
+            ->leftjoin('ccm_plan as ccm_plan', 'ccm_plan_review.CcmPlanId', 'ccm_plan.Id')
+            ->leftjoin('ccm_plan_goal as ccm_plan_goal', 'ccm_plan_review.CcmPlanGoalId', 'ccm_plan_goal.Id')
+            ->select('ccm_plan_review.Id as ccmPlanReviewId', 'ccm_plan_review.IsGoalAchieve', 'ccm_plan_review.ReviewerComment',
+                'ccm_plan_review.Barrier', 'ccm_plan_review.ReviewDate', 'ccm_plan_review.IsActive',
+
+                'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
+
+                'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
+                'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+            )
+            ->where('ccm_plan_review.IsActive', '=', true)
+            ->where('ccm_plan_review.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetAllCCMPlanReviewViaPagination($ccmPlanId, $pageNo, $limit, $searchDateFrom, $searchDateTo)
+    {
+        if ($searchDateFrom == "null" && $searchDateTo == "null") {
+            error_log('search dates are null');
+
+            $query = DB::table('ccm_plan_review')
+                ->leftjoin('ccm_plan as ccm_plan', 'ccm_plan_review.CcmPlanId', 'ccm_plan.Id')
+                ->leftjoin('ccm_plan_goal as ccm_plan_goal', 'ccm_plan_review.CcmPlanGoalId', 'ccm_plan_goal.Id')
+                ->leftjoin('user as user', 'ccm_plan.PatientId', 'user.Id')
+                ->select('ccm_plan_review.Id as ccmPlanReviewId', 'ccm_plan_review.IsGoalAchieve', 'ccm_plan_review.ReviewerComment',
+                    'ccm_plan_review.Barrier', 'ccm_plan_review.ReviewDate', 'ccm_plan_review.IsActive',
+
+                    'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
+
+                    'user.Id as UserId', 'user.FirstName as FirstName', 'user.LastName as LastName', 'user.PatientUniqueId as PatientUniqueId',
+
+                    'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
+                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                )
+                ->where('ccm_plan_review.IsActive', '=', true)
+                ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->orderBy('ccm_plan_review.Id', 'desc')
+                ->get();
+        } else {
+
+            error_log('search date is given');
+
+            $query = DB::table('ccm_plan_review')
+                ->leftjoin('ccm_plan as ccm_plan', 'ccm_plan_review.CcmPlanId', 'ccm_plan.Id')
+                ->leftjoin('ccm_plan_goal as ccm_plan_goal', 'ccm_plan_review.CcmPlanGoalId', 'ccm_plan_goal.Id')
+                ->leftjoin('user as user', 'ccm_plan.PatientId', 'user.Id')
+                ->select('ccm_plan_review.Id as ccmPlanReviewId', 'ccm_plan_review.IsGoalAchieve', 'ccm_plan_review.ReviewerComment',
+                    'ccm_plan_review.Barrier', 'ccm_plan_review.ReviewDate', 'ccm_plan_review.IsActive',
+
+                    'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
+
+                    'user.Id as UserId', 'user.FirstName as FirstName', 'user.LastName as LastName', 'user.PatientUniqueId as PatientUniqueId',
+
+                    'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
+                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                )
+                ->where('ccm_plan_review.IsActive', '=', true)
+                ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+                ->Where('.ccm_plan_review.ReviewDate', '>=', $searchDateFrom)
+                ->Where('.ccm_plan_review.ReviewDate', '<=', $searchDateTo)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->orderBy('ccm_plan_review.Id', 'desc')
+                ->get();
+        }
+
+        return $query;
+    }
+
+    static public function GetAllCCMPlanReviewCount($ccmPlanId, $searchDateFrom, $searchDateTo)
+    {
+        if ($searchDateFrom == "null" && $searchDateTo == "null") {
+            error_log('search dates are null');
+
+            $query = DB::table('ccm_plan_review')
+                ->where('ccm_plan_review.IsActive', '=', true)
+                ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+                ->count();
+        } else {
+
+            error_log('search date is given');
+
+            $query = DB::table('ccm_plan_review')
+                ->leftjoin('ccm_plan as ccm_plan', 'ccm_plan_review.CcmPlanId', 'ccm_plan.Id')
+                ->leftjoin('ccm_plan_goal as ccm_plan_goal', 'ccm_plan_review.CcmPlanGoalId', 'ccm_plan_goal.Id')
+                ->select('ccm_plan_review.Id as ccmPlanReviewId', 'ccm_plan_review.IsGoalAchieve', 'ccm_plan_review.ReviewerComment',
+                    'ccm_plan_review.Barrier', 'ccm_plan_review.ReviewDate', 'ccm_plan_review.IsActive',
+
+                    'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
+
+                    'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
+                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                )
+                ->where('ccm_plan_review.IsActive', '=', true)
+                ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
+                ->Where('.ccm_plan_review.ReviewDate', '>=', $searchDateFrom)
+                ->Where('.ccm_plan_review.ReviewDate', '<=', $searchDateTo)
+                ->count();
+        }
+
 
         return $query;
     }

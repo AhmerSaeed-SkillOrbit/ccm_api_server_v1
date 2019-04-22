@@ -799,12 +799,16 @@ class UserModel
 
     static public function getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $associationType)
     {
-        return DB::table('user_association')
+        error_log('$associationType ' . $associationType);
+
+        $query = DB::table('user_association')
             ->select('DestinationUserId')
             ->where('SourceUserId', '=', $userId)
             ->where('AssociationType', '=', $associationType)
             ->where('IsActive', '=', true)
             ->get();
+
+        return $query;
     }
 
     static public function getAssociatedPatientViaDoctorId($userId, $associationType, $patientId)
@@ -869,7 +873,7 @@ class UserModel
     static public function getMultipleUsers($userIds)
     {
         $result = DB::table('user')
-            ->select('user.EmailAddress', 'user.Id', 'user.FirstName', 'user.LastName', 'user.MobileNumber','user.CountryPhoneCode')
+            ->select('user.EmailAddress', 'user.Id', 'user.FirstName', 'user.LastName', 'user.MobileNumber', 'user.CountryPhoneCode')
             ->whereIn('Id', $userIds)
             ->where('IsActive', '=', true)
             ->get();

@@ -368,6 +368,7 @@ Route::get('/patient/social/review/all', 'CcmPlanController@GetPatientSocialRevi
 
 //Get diabetic measure param
 Route::get('/ccm/plan/health/param/all', 'CcmPlanController@GetAllHealthParam');
+Route::post('/ccm/plan/health/param/add', 'CcmPlanController@SaveCCMHealthParam');
 
 //Save CCM plan APIS
 Route::post('/patient/ccm/plan/add', 'CcmPlanController@SavePatientCCMPlan');
@@ -381,6 +382,15 @@ Route::get('/patient/ccm/plan/all/count', 'CcmPlanController@GetCCMPlanViaPatien
 
 //get update CCM plan
 Route::post('/patient/ccm/plan/update', 'CcmPlanController@UpdateCcmPlan');
+
+//Ccm plan reviews api
+//get update CCM plan
+Route::post('/ccm/plan/review/add', 'CcmPlanController@AddCCmPlanReview');
+Route::post('/ccm/plan/review/update', 'CcmPlanController@UpdateCCmPlanReview');
+Route::get('/ccm/plan/review/single', 'CcmPlanController@GetSingleCCMPlanReview');
+Route::get('/ccm/plan/review/all', 'CcmPlanController@GetAllCCMPlanReviewViaPagination');
+Route::get('/ccm/plan/review/all/count', 'CcmPlanController@GetAllCCMPlanReviewCount');
+
 
 Route::get('/', function () {
     return 'Hello';
@@ -402,6 +412,14 @@ Route::post('/forgetPass', 'LoginController@forgetPass');
 Route::post('/resetPass', 'LoginController@resetPass');
 Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
+Route::get('/logout', 'LoginController@logout');
+
+//byUserId - means who want to view the history
+//toUserId - means who's history is required
+
+Route::get('/login/history/count', 'LoginController@LoginHistoryCount'); //api/login/history/count?byUserId=1&ofUserId=2
+Route::get('/login/history/all', 'LoginController@LoginHistoryList'); //api/login/history/list?byUserId=1&ofUserId=2&p=0&c=10
+
 
 //?doctorScheduleDetailId=1
 Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
@@ -429,8 +447,21 @@ Route::post('/upload/patient/assessment/file', 'DocumentUploadController@UploadP
 Route::post('/upload/ticket/file', 'DocumentUploadController@UploadTicketFile');
 Route::post('/upload/ticket/reply/file', 'DocumentUploadController@UploadTicketReplyFile');
 Route::post('/upload/ccm/plan/file', 'DocumentUploadController@UploadCcmFile');
+Route::post('/upload/general/file', 'DocumentUploadController@UploadGeneralAttachment');
 
-Route::post('/download/profile/picture', 'DocumentUploadController@DownloadProfilePicture');
+Route::get('/general/file/list', 'DocumentUploadController@GeneralFileListViaPagination');
+Route::get('/general/file/list/count', 'DocumentUploadController@GeneralFileListCount');
+
+//Download file routes
+
+Route::get('/download/profile/picture/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadProfilePicture');
+Route::get('/download/forum/topic/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTopicFile');
+Route::get('/download/forum/topic/comment/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTopicCommentFile');
+Route::get('/download/patient/assessment/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadPatientAssessmentFile');
+Route::get('/download/ticket/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketFile');
+Route::get('/download/ticket/reply/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketReplyFile');
+Route::get('/download/ccm/plan/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
+Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
 
 
 
