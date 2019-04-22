@@ -546,6 +546,27 @@ class LoginModel
 
         return true;
     }
+
+    public static function FetchLoginHistoryCount($userId)
+    {
+        error_log('getting count of login history for provided user');
+        $query = DB::table('user_login_history')
+            ->where('UserId', $userId)
+            ->count();
+
+        return $query;
+    }
+
+
+    public static function FetchLoginHistoryListViaPagination($userId, $offset, $limit)
+    {
+        error_log('getting list of login history for provided user');
+        $query = DB::table('user_login_history')
+            ->where('UserId', $userId)
+            ->skip($offset * $limit)->take($limit)
+            ->get();
+        return $query;
+    }
 }
 
 

@@ -860,7 +860,7 @@ class UserController extends Controller
         $userDetails['IsLoggedIn'] = $val->IsLoggedIn; //terninary operator
         $userDetails['LastLoggedIn'] = $val->LastLoggedIn; //time stamp
 
-        $userDetails['ProfilePicture'] = array();
+        $userDetails['ProfilePicture'] = null;
 
 //        $data = array();
 //        //Pushing logged in user basic inforamtion
@@ -910,9 +910,7 @@ class UserController extends Controller
         if ($val->ProfilePictureId != null) {
 
             $checkDocument = DocumentUploadModel::GetDocumentData($val->ProfilePictureId);
-            if ($checkDocument == null) {
-                return response()->json(['data' => null, 'message' => 'Document not found'], 400);
-            } else {
+            if ($checkDocument != null) {
                 error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
                 //Now checking if document name is same as it is given in parameter
                 error_log('document name is valid');

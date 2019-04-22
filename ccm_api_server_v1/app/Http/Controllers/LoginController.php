@@ -261,8 +261,7 @@ class LoginController extends Controller
 
                 if (count($checkToken) == 0) {
                     return response()->json(['data' => null, 'message' => 'Invalid link'], 400);
-                }
-                else {
+                } else {
 
 
 //                    return response()->json(['data' => null, 'message' => 'Test Break'], 400);
@@ -394,5 +393,44 @@ class LoginController extends Controller
             'EmailAddress' => ['required', 'string', 'email', 'max:255'],
 //            'BelongTo' => ['required'],
         ]);
+    }
+
+    function LoginHistoryCount(Request $request)
+    {
+        $byUserId = $request->get('byUserId');
+        $ofUserId = $request->get('ofUserId');
+
+        //first fetch role of ofUserId
+        //to apply further checks such as
+        //associations
+
+//        UserModel::GetUserRoleViaUserId($ofUserId);
+
+        $count = LoginModel::FetchLoginHistoryCount($ofUserId);
+
+        error_log('Count of data is : ' . $count);
+
+        return response()->json(['data' => $count, 'message' => 'Login User History count'], 200);
+    }
+
+
+    function LoginHistoryList(Request $request)
+    {
+        //first fetch role of ofUserId
+        //to apply further checks such as
+        //associations
+
+        $byUserId = $request->get('byUserId');
+        $ofUserId = $request->get('ofUserId');
+        $offset = $request->get('p');
+        $limit = $request->get('c');
+
+        $list = LoginModel::FetchLoginHistoryListViaPagination($ofUserId, $offset, $limit);
+
+        if (count($list) > 0) {
+            return response()->json(['data' => $list, 'message' => 'Login User History'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Login User History is empty'], 200);
+        }
     }
 }
