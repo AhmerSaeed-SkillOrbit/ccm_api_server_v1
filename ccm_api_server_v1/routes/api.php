@@ -414,6 +414,13 @@ Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
 Route::get('/logout', 'LoginController@logout');
 
+//byUserId - means who want to view the history
+//toUserId - means who's history is required
+
+Route::get('/login/history/count', 'LoginController@LoginHistoryCount'); //api/login/history/count?byUserId=1&ofUserId=2
+Route::get('/login/history/all', 'LoginController@LoginHistoryList'); //api/login/history/list?byUserId=1&ofUserId=2&p=0&c=10
+
+
 //?doctorScheduleDetailId=1
 Route::post('/doctor/schedule/detail/single/update', 'DoctorScheduleController@UpdateDoctorScheduleDetailSingle');
 
