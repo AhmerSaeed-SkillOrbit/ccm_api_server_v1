@@ -2483,7 +2483,7 @@ class CcmPlanController extends Controller
             $data['FunctionalTitle'] = $checkUserData->FunctionalTitle;
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
-            $data['ProfileSummary'] = $checkUserData->ProfileSummary;
+            $data['Summary'] = $checkUserData->ProfileSummary;
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
@@ -2510,7 +2510,7 @@ class CcmPlanController extends Controller
         $telephoneNumber = $request->post('TelephoneNumber');
         $gender = $request->post('Gender');
         $age = $request->post('Age');
-        $profileSummary = $request->post('ProfileSummary');
+        $profileSummary = $request->post('Summary');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2778,7 +2778,7 @@ class CcmPlanController extends Controller
         $userId = $request->get('userId');
         $patientId = $request->get('patientId');
 
-        $fileUpload = $request->get('FileUpload');
+//        $fileUpload = $request->get('FileUpload');
 
         $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
@@ -2850,9 +2850,9 @@ class CcmPlanController extends Controller
 
                 $dataToAdd = array(
                     'PatientId' => $patientId,
-                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
-                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
-                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
+//                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
+//                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
+//                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
                     'AbleToMessage' => (bool)$request->get('AbleToMessage'),
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
@@ -2880,27 +2880,27 @@ class CcmPlanController extends Controller
                     return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment'], 400);
                 } else {
                     error_log('data inserted');
-                    if (count($fileUpload) > 0) {
-
-                        $fileUploadData = array();
-
-                        foreach ($fileUpload as $item) {
-
-                            array_push($fileUploadData,
-                                array(
-                                    "PatientAssessmentId" => $insertedData,
-                                    "FileUploadId" => $item['Id'],
-                                    "IsActive" => true
-                                )
-                            );
-                        }
-
-                        $insertForumTopicFileUpload = GenericModel::insertGeneric('patient_assessment_file', $fileUploadData);
-                        if ($insertForumTopicFileUpload == 0) {
-                            DB::rollBack();
-                            return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment file'], 400);
-                        }
-                    }
+//                    if (count($fileUpload) > 0) {
+//
+//                        $fileUploadData = array();
+//
+//                        foreach ($fileUpload as $item) {
+//
+//                            array_push($fileUploadData,
+//                                array(
+//                                    "PatientAssessmentId" => $insertedData,
+//                                    "FileUploadId" => $item['Id'],
+//                                    "IsActive" => true
+//                                )
+//                            );
+//                        }
+//
+//                        $insertForumTopicFileUpload = GenericModel::insertGeneric('patient_assessment_file', $fileUploadData);
+//                        if ($insertForumTopicFileUpload == 0) {
+//                            DB::rollBack();
+//                            return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment file'], 400);
+//                        }
+//                    }
 
                     DB::commit();
                     return response()->json(['data' => $insertedData, 'message' => 'Patient assessment successfully added'], 200);
@@ -2919,9 +2919,9 @@ class CcmPlanController extends Controller
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
-                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
-                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
-                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
+//                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
+//                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
+//                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
                     'AbleToMessage' => (bool)$request->get('AbleToMessage'),
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
@@ -2964,27 +2964,27 @@ class CcmPlanController extends Controller
                             return response()->json(['data' => null, 'message' => 'Error in deleting assessment files'], 400);
                         }
                     }
-                    if (count($fileUpload) > 0) {
-
-                        $fileUploadData = array();
-
-                        foreach ($fileUpload as $item) {
-
-                            array_push($fileUploadData,
-                                array(
-                                    "PatientAssessmentId" => (int)$request->get('Id'),
-                                    "FileUploadId" => $item['Id'],
-                                    "IsActive" => true
-                                )
-                            );
-                        }
-
-                        $insertForumTopicFileUpload = GenericModel::insertGeneric('patient_assessment_file', $fileUploadData);
-                        if ($insertForumTopicFileUpload == 0) {
-                            DB::rollBack();
-                            return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment file'], 400);
-                        }
-                    }
+//                    if (count($fileUpload) > 0) {
+//
+//                        $fileUploadData = array();
+//
+//                        foreach ($fileUpload as $item) {
+//
+//                            array_push($fileUploadData,
+//                                array(
+//                                    "PatientAssessmentId" => (int)$request->get('Id'),
+//                                    "FileUploadId" => $item['Id'],
+//                                    "IsActive" => true
+//                                )
+//                            );
+//                        }
+//
+//                        $insertForumTopicFileUpload = GenericModel::insertGeneric('patient_assessment_file', $fileUploadData);
+//                        if ($insertForumTopicFileUpload == 0) {
+//                            DB::rollBack();
+//                            return response()->json(['data' => null, 'message' => 'Error in inserting patient assessment file'], 400);
+//                        }
+//                    }
                     DB::commit();
                     return response()->json(['data' => (int)$request->get('Id'), 'message' => 'Patient assessment successfully updated'], 200);
                 }
