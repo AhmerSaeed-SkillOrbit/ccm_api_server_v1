@@ -52,8 +52,7 @@ class DocumentUploadModel
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
-        }
-        else {
+        } else {
             error_log('Some search parameter is given');
             if ($searchDateFrom == "null" && $searchDateTo == "null" && $searchKeyword != "null") {
                 error_log('Only search word is given');
@@ -74,8 +73,7 @@ class DocumentUploadModel
                     ->take($limit)
                     ->get();
 
-            }
-            else if ($searchDateFrom != "null" && $searchDateTo != "null" && $searchKeyword == "null") {
+            } else if ($searchDateFrom != "null" && $searchDateTo != "null" && $searchKeyword == "null") {
 
                 error_log('Only search date is given');
 
@@ -87,10 +85,10 @@ class DocumentUploadModel
                         'file_upload.FileExtension', 'file_upload.Purpose', 'file_upload.BelongTo', 'file_upload.CreatedOn',
                         'user.Id as UserId', 'user.FirstName', 'user.LastName',
                         'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
-                    ->where('file_upload.IsActive', '=', true)
+                    ->where('file_upload.IsActive', '=', 1)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->skip($pageNo * $limit)
                     ->take($limit)
@@ -110,8 +108,8 @@ class DocumentUploadModel
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
                     ->Where('.file_upload.Purpose', 'like', '%' . $searchKeyword . '%')
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->skip($pageNo * $limit)
                     ->take($limit)
@@ -195,8 +193,8 @@ class DocumentUploadModel
                         'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->skip($pageNo * $limit)
                     ->take($limit)
@@ -216,8 +214,8 @@ class DocumentUploadModel
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
                     ->Where('.file_upload.Purpose', 'like', '%' . $searchKeyword . '%')
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->skip($pageNo * $limit)
                     ->take($limit)
@@ -301,8 +299,8 @@ class DocumentUploadModel
                         'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->skip($pageNo * $limit)
                     ->take($limit)
                     ->get();
@@ -321,8 +319,8 @@ class DocumentUploadModel
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
                     ->Where('.file_upload.Purpose', 'like', '%' . $searchKeyword . '%')
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->skip($pageNo * $limit)
                     ->take($limit)
                     ->get();
@@ -401,8 +399,8 @@ class DocumentUploadModel
                         'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->get();
 
@@ -420,8 +418,8 @@ class DocumentUploadModel
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
                     ->Where('.file_upload.Purpose', 'like', '%' . $searchKeyword . '%')
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->get();
 
@@ -497,8 +495,8 @@ class DocumentUploadModel
                         'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->get();
 
@@ -516,8 +514,8 @@ class DocumentUploadModel
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
                     ->Where('.file_upload.Purpose', 'like', '%' . $searchKeyword . '%')
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->whereIn('file_upload.ByUserId', $createdByIds)
                     ->get();
 
@@ -593,8 +591,8 @@ class DocumentUploadModel
                         'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->get();
 
             } else if ($searchDateFrom != "null" && $searchDateTo != "null" && $searchKeyword != "null") {
@@ -611,8 +609,8 @@ class DocumentUploadModel
                     ->where('file_upload.IsActive', '=', true)
                     ->whereIn('file_upload.BelongTo', $belongsToArray)
                     ->Where('.file_upload.Purpose', 'like', '%' . $searchKeyword . '%')
-                    ->Where('.file_upload.CreatedOn', '>=', $searchDateFrom)
-                    ->Where('.file_upload.CreatedOn', '<=', $searchDateTo)
+                    ->Where('.file_upload.FileUploadDate', '>=', $searchDateFrom)
+                    ->Where('.file_upload.FileUploadDate', '<=', $searchDateTo)
                     ->get();
 
             } else {
