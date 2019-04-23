@@ -1206,6 +1206,9 @@ class DocumentUploadController extends Controller
 
         $date = HelperModel::getDate();
 
+        error_log("## formatted date ##");
+        error_log($date["formatted"]);
+
         DB::beginTransaction();
 
         // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
@@ -1224,6 +1227,7 @@ class DocumentUploadController extends Controller
                 'Purpose' => $purpose,
                 'BelongTo' => $dirAndEnumValue,
                 'CreatedOn' => $date["timestamp"],
+                'FileUploadDate' => $date["formatted"],
                 'IsActive' => true
             );
             //Now inserting data in file_upload table
@@ -1421,7 +1425,8 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            }
+            else if ($checkUserData->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user is facilitator');
 
                 //First get associated doctors id.
@@ -1522,7 +1527,8 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            } else if ($checkUserData->RoleCodeName == $patientRole) {
+            }
+            else if ($checkUserData->RoleCodeName == $patientRole) {
                 error_log('logged in user is patient');
                 error_log('documents uploaded by patient will be appeared');
 
@@ -1572,7 +1578,8 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            }
+            else if ($checkUserData->RoleCodeName == $superAdminRole) {
                 error_log('logged in user is super admin');
                 error_log('all documents uploaded by everyone will be shown');
 
@@ -1653,7 +1660,8 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            } else {
+            }
+            else {
                 return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
             }
         }

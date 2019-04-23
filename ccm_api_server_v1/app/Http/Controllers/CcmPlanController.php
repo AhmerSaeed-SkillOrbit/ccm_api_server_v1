@@ -2483,7 +2483,7 @@ class CcmPlanController extends Controller
             $data['FunctionalTitle'] = $checkUserData->FunctionalTitle;
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
-            $data['Summary'] = $checkUserData->ProfileSummary;
+            $data['ProfileSummary'] = $checkUserData->ProfileSummary;
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
@@ -2510,7 +2510,7 @@ class CcmPlanController extends Controller
         $telephoneNumber = $request->post('TelephoneNumber');
         $gender = $request->post('Gender');
         $age = $request->post('Age');
-        $profileSummary = $request->post('Summary');
+        $profileSummary = $request->post('ProfileSummary');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2850,9 +2850,9 @@ class CcmPlanController extends Controller
 
                 $dataToAdd = array(
                     'PatientId' => $patientId,
-//                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
-//                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
-//                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
+                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
+                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
+                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
                     'AbleToMessage' => (bool)$request->get('AbleToMessage'),
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
