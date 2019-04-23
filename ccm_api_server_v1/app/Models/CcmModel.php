@@ -714,7 +714,7 @@ class CcmModel
                 'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
 
                 'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
-                'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                'ccm_plan_goal.Intervention'
             )
             ->where('ccm_plan_review.IsActive', '=', true)
             ->where('ccm_plan_review.Id', '=', $id)
@@ -740,7 +740,7 @@ class CcmModel
                     'user.Id as UserId', 'user.FirstName as FirstName', 'user.LastName as LastName', 'user.PatientUniqueId as PatientUniqueId',
 
                     'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
-                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                    'ccm_plan_goal.Intervention'
                 )
                 ->where('ccm_plan_review.IsActive', '=', true)
                 ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
@@ -764,7 +764,7 @@ class CcmModel
                     'user.Id as UserId', 'user.FirstName as FirstName', 'user.LastName as LastName', 'user.PatientUniqueId as PatientUniqueId',
 
                     'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
-                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                    'ccm_plan_goal.Intervention'
                 )
                 ->where('ccm_plan_review.IsActive', '=', true)
                 ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
@@ -801,7 +801,7 @@ class CcmModel
                     'ccm_plan.Id as CcmPlanId', 'ccm_plan.PlanNumber', 'ccm_plan.StartDate', 'ccm_plan.EndDate', 'ccm_plan.IsInitialHealthReading',
 
                     'ccm_plan_goal.Id as CcmPlanGoalId', 'ccm_plan_goal.ItemName', 'ccm_plan_goal.GoalNumber', 'ccm_plan_goal.Goal',
-                    'ccm_plan_goal.Intervention', 'ccm_plan_goal.IsCompleted'
+                    'ccm_plan_goal.Intervention'
                 )
                 ->where('ccm_plan_review.IsActive', '=', true)
                 ->where('ccm_plan_review.CcmPlanId', '=', $ccmPlanId)
