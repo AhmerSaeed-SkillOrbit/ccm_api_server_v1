@@ -2919,9 +2919,9 @@ class CcmPlanController extends Controller
                 error_log('data found. Now update');
 
                 $dataToUpdate = array(
-//                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
-//                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
-//                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
+                    'IsAgreeCcmService' => (bool)$request->get('IsAgreeCcmService'),
+                    'IsAgreeToDiscussHealthInfo' => (bool)$request->get('IsAgreeToDiscussHealthInfo'),
+                    'LastPcpVisitDate' => $request->get('LastPcpVisitDate'),
                     'AbleToMessage' => (bool)$request->get('AbleToMessage'),
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
