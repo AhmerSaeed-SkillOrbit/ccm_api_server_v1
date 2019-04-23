@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoginModel;
 use App\User;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
@@ -1851,9 +1852,12 @@ class DocumentUploadController extends Controller
 
     function TestPdf()
     {
-        error_log("Generate Test PDF");
-
-        $pdf = PDF::loadView('list_notes');
-        return $pdf->download('tuts_notes.pdf');
+        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
+        return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 200);
+//        return true;
+//        error_log("Generate Test PDF");
+//
+//        $pdf = PDF::loadView('list_notes');
+//        return $pdf->download('tuts_notes.pdf');
     }
 }
