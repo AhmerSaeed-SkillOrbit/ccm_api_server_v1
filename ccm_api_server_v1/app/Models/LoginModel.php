@@ -565,7 +565,7 @@ class LoginModel
             ->join('user_login_history', 'user.Id', 'user_login_history.UserId')
             ->where('user_login_history.UserId', $userId)
             ->skip($offset * $limit)->take($limit)
-            ->select('user.*','user_login_history.Id as LoginHistoryId','user_login_history.CreatedOn as LoginDateTime')
+            ->select('user.*', 'user_login_history.Id as LoginHistoryId', 'user_login_history.CreatedOn as LoginDateTime')
             ->get();
         return $query;
     }
@@ -624,6 +624,23 @@ class LoginModel
             $formatMessage = 'Now';
             return $formatMessage;
         }
+    }
+
+    public static function sendEmailAttach($email, $subject, $emailMessage, $url = "", $path)
+    {
+        $urlForEmail = url($url);
+        $subjectForEmail = $subject;
+        $contentForEmail = " <b>Dear User</b>, <br><br>" .
+            "  " . $emailMessage . " " .
+            "<br>" . $urlForEmail . " ";
+
+        Mail::send([], [], function ($message) use ($email, $subjectForEmail, $contentForEmail) {
+            $message->to($email)
+                ->subject($subjectForEmail)
+                ->attach('C:\\Users\\SO-LPT-028\\Downloads\\tuts_notes.pdf');
+        });
+
+        return true;
     }
 }
 

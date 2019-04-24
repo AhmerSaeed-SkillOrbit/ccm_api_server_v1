@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoginModel;
 use App\User;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ use App\Models\HelperModel;
 use App\Models\DocumentUploadModel;
 use Carbon\Carbon;
 use mysql_xdevapi\Exception;
+use PDF;
 
 
 class DocumentUploadController extends Controller
@@ -1425,8 +1427,7 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            }
-            else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+            } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user is facilitator');
 
                 //First get associated doctors id.
@@ -1527,8 +1528,7 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            }
-            else if ($checkUserData->RoleCodeName == $patientRole) {
+            } else if ($checkUserData->RoleCodeName == $patientRole) {
                 error_log('logged in user is patient');
                 error_log('documents uploaded by patient will be appeared');
 
@@ -1578,8 +1578,7 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            }
-            else if ($checkUserData->RoleCodeName == $superAdminRole) {
+            } else if ($checkUserData->RoleCodeName == $superAdminRole) {
                 error_log('logged in user is super admin');
                 error_log('all documents uploaded by everyone will be shown');
 
@@ -1660,8 +1659,7 @@ class DocumentUploadController extends Controller
                     return response()->json(['data' => null, 'message' => 'Files not found'], 200);
                 }
 
-            }
-            else {
+            } else {
                 return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
             }
         }
@@ -1850,5 +1848,16 @@ class DocumentUploadController extends Controller
             }
         }
 
+    }
+
+    function TestPdf()
+    {
+        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
+        return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 200);
+//        return true;
+//        error_log("Generate Test PDF");
+//
+//        $pdf = PDF::loadView('list_notes');
+//        return $pdf->download('tuts_notes.pdf');
     }
 }
