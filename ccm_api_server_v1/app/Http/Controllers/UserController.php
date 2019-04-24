@@ -254,7 +254,6 @@ class UserController extends Controller
 
                 $resultArray = json_decode(json_encode($val), true);
                 $data = $resultArray;
-                error_log(count($data));
                 if (count($data) > 0) {
                     return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
                 } else {
@@ -858,7 +857,7 @@ class UserController extends Controller
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
         $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
-        $userDetails['IsCurrentlyLoggedIn'] = ((bool)$val->IsCurrentlyLoggedIn ? "YES" : "NO");
+        $userDetails['IsCurrentlyLoggedIn'] = ((bool)$val->IsCurrentlyLoggedIn ? true : false);
         $userDetails['LastLoggedIn'] = ForumModel::calculateTopicAnCommentTime($val->LastLoggedIn); //timestamp
         $userDetails['ProfileSummary'] = $val->ProfileSummary;
 
