@@ -21,6 +21,7 @@ use App\Models\DoctorScheduleModel;
 use App\Models\HelperModel;
 use App\Models\ForumModel;
 use App\Models\TicketModel;
+use Carbon\Carbon;
 use Twilio\Twiml;
 
 
@@ -1255,6 +1256,44 @@ class TicketController extends Controller
                     }
                 }
             }
+        }
+    }
+
+    function CloseTicket()
+    {
+        error_log('in controller');
+
+        $date = HelperModel::getDate();
+
+        $getAllTickets = TicketModel::GetAllTickets();
+
+        $ticketClosingDays = env('TICKET_CLOSE_DAYS');
+
+        if (count($getAllTickets) > 0) {
+
+            foreach ($getAllTickets as $item) {
+
+                $CreatedTime = Carbon::createFromTimestamp($item->CreatedOn);
+                $currentTime = Carbon::now("UTC");
+
+                $diffInDays = $currentTime->diffInDays($CreatedTime);
+
+                error_log('$diffInDays ' . $diffInDays);
+
+                if ($diffInDays > $ticketClosingDays) {
+                    
+                    $ticketDataUpdate = array(
+                        "TrackStatus" => env('TICKET_TRACK_STATUS_CLOSE'),
+                        "UpdatedOn" => $date["timestamp"]
+                    );
+
+                    GenericModel::updateGeneric('ticket', 'Id', $item->Id, $ticketDataUpdate);
+                }
+            }
+
+            return response()->json(['data' => null, 'message' => 'Ticket successfully closed'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'No tickets are there'], 400);
         }
     }
 }
