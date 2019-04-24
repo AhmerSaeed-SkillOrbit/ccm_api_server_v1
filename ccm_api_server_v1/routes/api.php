@@ -465,5 +465,10 @@ Route::get('/download/ticket/reply/file/{fileUploadId}/{fileName}', 'DocumentUpl
 Route::get('/download/ccm/plan/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
 Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
 
+//Background job API
+
+//Close ticket
+Route::post('/background/ticket/close', 'TicketController@CloseTicket');
+
 
 

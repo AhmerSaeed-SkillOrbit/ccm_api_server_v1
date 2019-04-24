@@ -1041,12 +1041,22 @@ class UserController extends Controller
         error_log('in controller');
         $id = $request->get('id');
 
-        //First get and check if record exists or not
-        $getUser = UserModel::getUserViaId($id);
+        $superAdminRole = env('ROLE_SUPER_ADMIN');
 
-        if (count($getUser) == 0) {
+        //First get and check if record exists or not
+        $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+
+        if ($getUser == null) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
+
+        //Now checking if super admin role user is going to delete
+
+        if ($getUser->RoleCodeName == $superAdminRole) {
+            error_log('logged in user is super admin');
+            return response()->json(['data' => null, 'message' => 'Super admin cannot be deleted'], 400);
+        }
+
         //Binding data to variable.
         $dataToUpdate = array(
             "IsActive" => false
@@ -1057,7 +1067,7 @@ class UserController extends Controller
         //now delete the account_invitation
         //of this email
 
-        $updateAccountInvitation = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser[0]->EmailAddress, $dataToUpdate);
+        $updateAccountInvitation = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
 
         if ($update == true) {
             return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
