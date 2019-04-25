@@ -81,8 +81,8 @@ class DocumentUploadController extends Controller
             'host' => env('FTP_HOST'),
             'username' => env('FTP_USER'),
             'password' => env('FTP_PASSWORD'),
-            'port' => '21', // your ftp port
-            'timeout' => '30', // timeout setting
+            'port' => env('FTP_PORT'),
+            'timeout' => env('FTP_TIMEOUT')
         ]);
 
         $file = '/ccm_attachment/EXTLMS-small_5cade01a9cacd.txt';
@@ -954,8 +954,8 @@ class DocumentUploadController extends Controller
                     'host' => env('FTP_HOST'),
                     'username' => env('FTP_USER'),
                     'password' => env('FTP_PASSWORD'),
-                    'port' => '21', // your ftp port
-                    'timeout' => '30', // timeout setting
+                    'port' => env('FTP_PORT'),
+                    'timeout' => env('FTP_TIMEOUT')
                 ]);
 
                 $fileContent = $ftp->get($filePath); // read file content
@@ -966,8 +966,46 @@ class DocumentUploadController extends Controller
                     'Content-Disposition' => 'inline; filename=' . $fileName . ''
                 ));
             } else {
-                return response()->json(['data' => null, 'message' => 'Invalid file name'], 400);
+                return response()->json(['data' => null, 'message' => 'Invalid image name'], 400);
             }
+        }
+    }
+
+    function DownloadDefaultProfilePicture($imageName)
+    {
+        error_log('## Downloading Default Profile Picture ##');
+
+        $baseUrl = env('FTP_DIR');
+        $defaultProfilePicDir = env('DEFAULT_PROFILE_PICTURE_DIR');
+
+        $fileType = "";
+        //Now checking if document name is same as it is given in parameter
+        if ($imageName == "" || $imageName == null) {
+            return response()->json(['data' => null, 'message' => 'Invalid image name'], 400);
+        } else {
+            error_log('image name is valid');
+
+            $filePath = '/' . $defaultProfilePicDir . '/' . $imageName;
+            $fileType = env('PNG_IMAGE_TYPE');
+
+            error_log($filePath);
+            error_log($fileType);
+
+            $ftp = Storage::createFtpDriver([
+                'host' => env('FTP_HOST'),
+                'username' => env('FTP_USER'),
+                'password' => env('FTP_PASSWORD'),
+                'port' => env('FTP_PORT'),
+                'timeout' => env('FTP_TIMEOUT')
+            ]);
+
+            $fileContent = $ftp->get($filePath); // read file content
+
+            // download file
+            return Response::make($fileContent, '200', array(
+                'Content-Type' => $fileType,
+                'Content-Disposition' => 'inline; filename=' . $imageName . ''
+            ));
         }
     }
 
@@ -1227,8 +1265,8 @@ class DocumentUploadController extends Controller
         $filenameWithoutExtension = $filename . '_' . uniqid();
 
         //filename to store
-        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
-        error_log(' File name unique id is : ' . $filenametostore);
+//        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenameWithoutExtension . '.' . $extension);
 
         $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
@@ -1242,7 +1280,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 

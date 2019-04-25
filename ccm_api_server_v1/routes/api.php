@@ -464,6 +464,7 @@ Route::get('/download/ticket/file/{fileUploadId}/{fileName}', 'DocumentUploadCon
 Route::get('/download/ticket/reply/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketReplyFile');
 Route::get('/download/ccm/plan/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
 Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadGeneralFile');
+Route::get('/download/default/profile/picture/{imageName}', 'DocumentUploadController@DownloadDefaultProfilePicture');
 
 //Background job API
 
