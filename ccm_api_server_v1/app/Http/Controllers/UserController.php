@@ -254,7 +254,6 @@ class UserController extends Controller
 
                 $resultArray = json_decode(json_encode($val), true);
                 $data = $resultArray;
-                error_log(count($data));
                 if (count($data) > 0) {
                     return response()->json(['data' => $data, 'message' => 'Users fetched successfully'], 200);
                 } else {
@@ -574,6 +573,9 @@ class UserController extends Controller
                 $val = UserModel::UserCountWithSearch
                 ('user', '=', 'IsActive', true, $keyword, $roleCode);
 
+                error_log("val");
+                error_log($val);
+
                 return response()->json(['data' => $val, 'message' => 'Users count'], 200);
             } //Now checking if user belongs to doctor
             else if ($userData[0]->RoleCodeName == $doctorRole) {
@@ -858,7 +860,7 @@ class UserController extends Controller
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
         $userDetails['Role']['RoleCodeName'] = $val->RoleCodeName;
-        $userDetails['IsCurrentlyLoggedIn'] = ((bool)$val->IsCurrentlyLoggedIn ? "YES" : "NO");
+        $userDetails['IsCurrentlyLoggedIn'] = ((bool)$val->IsCurrentlyLoggedIn ? true : false);
         $userDetails['LastLoggedIn'] = ForumModel::calculateTopicAnCommentTime($val->LastLoggedIn); //timestamp
         $userDetails['ProfileSummary'] = $val->ProfileSummary;
 
@@ -924,6 +926,26 @@ class UserController extends Controller
                 $userDetails['ProfilePicture']['FileName'] = $checkDocument->FileName;
                 $userDetails['ProfilePicture']['FileExtension'] = $checkDocument->FileExtension;
             }
+        } else {
+            //binding default avatar picture
+            $defaultProfilePicAPIPrefix = env('DEFAULT_PROFILE_PIC_API_PREFIX');
+
+            if (strtolower($val->Gender) == "male") {
+                $defaultImageName = env('DEFAULT_MALE_PROFILE_PIC');
+                $defaultImageExtension = env('DEFAULT_MALE_PROFILE_PIC_Ext');
+            } else if (strtolower($val->Gender) == "female") {
+                $defaultImageName = env('DEFAULT_FEMALE_PROFILE_PIC');
+                $defaultImageExtension = env('DEFAULT_FEMALE_PROFILE_PIC_Ext');
+            } else {
+                $defaultImageName = env('DEFAULT_MALE_PROFILE_PIC');
+                $defaultImageExtension = env('DEFAULT_MALE_PROFILE_PIC_Ext');
+            }
+
+            $userDetails['ProfilePicture']['Id'] = 0;
+            $userDetails['ProfilePicture']['Path'] = $baseUrl . '' . $defaultProfilePicAPIPrefix . $defaultImageName . '' . $defaultImageExtension;
+            $userDetails['ProfilePicture']['FileOriginalName'] = $defaultImageName;
+            $userDetails['ProfilePicture']['FileName'] = $defaultImageName;
+            $userDetails['ProfilePicture']['FileExtension'] = $defaultImageExtension;;
         }
 
         if ($userDetails != null) {
