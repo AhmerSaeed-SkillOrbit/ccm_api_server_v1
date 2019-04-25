@@ -19,7 +19,7 @@ use App\Models\DocumentUploadModel;
 use Carbon\Carbon;
 use mysql_xdevapi\Exception;
 use PDF;
-
+use Response;
 
 class DocumentUploadController extends Controller
 {
@@ -67,6 +67,36 @@ class DocumentUploadController extends Controller
             return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
+
+    function DownloadFilesNew()
+    {
+
+//        $file = $request->get('file');
+//        if (!$file) {
+//            return Response::json('please provide valid path', 400);
+//        }
+//        $fileName = basename($file);
+
+        $ftp = Storage::createFtpDriver([
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USER'),
+            'password' => env('FTP_PASSWORD'),
+            'port' => '21', // your ftp port
+            'timeout' => '30', // timeout setting
+        ]);
+
+        $file = '/ccm_attachment/2_5cace91e6b858.jpg';
+
+        $filecontent = $ftp->get($file); // read file content
+
+        // download file.
+
+        return Response::make($filecontent, '200', array(
+            'Content-Type' => 'image/jpeg',
+            'Content-Disposition' => 'inline; filename=xyz.jpg'
+        ));
+    }
+
 
 //    not final yet
     function DownloadFiles(Request $request)
