@@ -1288,4 +1288,13 @@ class TicketModel
         return $query;
     }
 
+    static public function GetAllTickets()
+    {
+        $query = DB::table('ticket')
+            ->where('ticket.IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
 }

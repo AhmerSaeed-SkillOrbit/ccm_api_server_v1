@@ -402,6 +402,8 @@ Route::get('/test/email', 'PageController@TestEmail');
 
 Route::get('/test/sms', 'PageController@TestSms');
 
+Route::get('/test/pdf', 'DocumentUploadController@TestPdf');
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -438,7 +440,7 @@ Route::get('/format/time/', 'DoctorScheduleController@FormatTime');
 //Test file upload
 Route::post('/upload/file', 'DocumentUploadController@UploadFiles');
 
-Route::get('/download/file', 'DocumentUploadController@DownloadFiles');
+Route::get('/download/file', 'DocumentUploadController@DownloadFilesNew');
 
 Route::post('/upload/profile/picture', 'DocumentUploadController@UploadProfilePicture');
 Route::post('/upload/forum/topic/file', 'DocumentUploadController@UploadForumTopicFile');
@@ -461,7 +463,13 @@ Route::get('/download/patient/assessment/file/{fileUploadId}/{fileName}', 'Docum
 Route::get('/download/ticket/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketFile');
 Route::get('/download/ticket/reply/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketReplyFile');
 Route::get('/download/ccm/plan/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
-Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
+Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadGeneralFile');
+Route::get('/download/default/profile/picture/{imageName}', 'DocumentUploadController@DownloadDefaultProfilePicture');
+
+//Background job API
+
+//Close ticket
+Route::post('/background/ticket/close', 'TicketController@CloseTicket');
 
 
 
