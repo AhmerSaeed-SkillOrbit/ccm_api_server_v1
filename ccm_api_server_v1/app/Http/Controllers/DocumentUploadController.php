@@ -206,135 +206,155 @@ class DocumentUploadController extends Controller
     function UploadProfilePicture(Request $request)
     {
         error_log('in controller');
-
-        $userId = $request->get('userId');
-        $byUserId = $request->get('byUserId');
-
-        $profileDirectory = env('PROFILE_PICTURE_DIR');
-        $baseUrl = env('BASE_URL');
-        $profilePicAPIPrefix = env('PROFILE_PIC_API_PREFIX');
-
-        error_log('Checking if user record exists or not');
-        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
-        if ($checkUserData == null) {
-            return response()->json(['data' => null, 'message' => 'User record not found'], 400);
-        }
-
-        error_log('user record found');
-        $file = $request->file('File');
-
-        if (!isset($file)) {
-            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
-        }
-
-        //get filename with extension
-        $filenamewithextension = $request->file('File')->getClientOriginalName();
-        error_log(' File with extension ' . $filenamewithextension);
-
-        //get filename without extension
-        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
-        error_log(' Only file name is:  ' . $filename);
-
-        //get file extension
-        $extension = $request->file('File')->getClientOriginalExtension();
-        error_log(' File extension is:  ' . $extension);
-
-        $filenameWithoutExtension = $filename . '_' . uniqid();
-
-        //filename to store
-//        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
-        error_log(' File name unique id is : ' . $filenameWithoutExtension . '.' . $extension);
-
         $fileSize = $request->file('File')->getSize();
-        error_log(' File size is : ' . $fileSize);
+        $extension = $request->file('File')->getClientOriginalExtension();
+        $extension = strtolower($extension);
 
-        $dirPath = $byUserId . '/' . $profileDirectory . '/';
-
-        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
-
-        error_log("createDir");
-
-        error_log($createDir);
-
-        try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
-            error_log('$upload_success');
-            error_log($upload_success);
-
-        } catch (Exception $ex) {
-
-            error_log('exception');
-            error_log($ex);
-            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
-        }
-
-        $date = HelperModel::getDate();
-
-        DB::beginTransaction();
-
-        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
-        if ($upload_success == true) {
-
-            error_log('upload successfully done');
-            error_log('Now insert data in file upload table');
-
-            $fileUpload = array(
-                'ByUserId' => $byUserId,
-                'RelativePath' => $dirPath,
-                'FileOriginalName' => $filename . '.' . $extension,
-                'FileName' => $filenameWithoutExtension,
-                'FileExtension' => '.' . $extension,
-                'FileSizeByte' => $fileSize,
-                'BelongTo' => 'profile',
-                'CreatedOn' => $date["timestamp"],
-                'IsActive' => true
-            );
-            //Now inserting data in file_upload table
-
-            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
-
-            if ($insertedData == 0) {
-                error_log('data not inserted');
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
+        if ($fileSize >= env('FILE_SIZE_ALLOWED')) {
+            error_log("Image Size is huge");
+            //Image size Not Allowed
+            return response()->json(['data' => null, 'message' => 'Image size is Not Allowed'], 400);
+        } else {
+            error_log("Image Size is acceptable");
+            error_log($extension);
+            if ($extension != "jpg" && $extension != "jpeg" && $extension != "png" && $extension != "gif" && $extension != "svg") {
+                error_log("Image type is not allowed");
+                //Only Image is allowed
+                return response()->json(['data' => null, 'message' => 'Only Image is allowed'], 400);
             } else {
-                error_log('data inserted in file upload');
-                error_log('File upload id is : ' . $insertedData);
 
-                $dataToUpdate = array(
-                    'UpdatedBy' => $userId,
-                    'UpdatedOn' => $date["timestamp"],
-                    'ProfilePictureId' => $insertedData
-                );
+                error_log("Image type is acceptable");
 
-                $updatedData = GenericModel::updateGeneric('user', 'Id', $userId, $dataToUpdate);
+                $userId = $request->get('userId');
+                $byUserId = $request->get('byUserId');
 
-                if ($updatedData == false) {
-                    error_log('user data not updated');
-                    DB::rollBack();
-                    return response()->json(['data' => null, 'message' => 'Error in updating user profile picture information'], 400);
-                } else {
-                    error_log('user profile picture data updated ');
-                    DB::commit();
+                $profileDirectory = env('PROFILE_PICTURE_DIR');
+                $baseUrl = env('BASE_URL');
+                $profilePicAPIPrefix = env('PROFILE_PIC_API_PREFIX');
 
-                    error_log('Checking if user record exists or not');
-                    $checkDocument = DocumentUploadModel::GetDocumentData($insertedData);
-                    if ($checkDocument == null) {
-                        return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+                error_log('Checking if user record exists or not');
+                $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
+                if ($checkUserData == null) {
+                    return response()->json(['data' => null, 'message' => 'User record not found'], 400);
+                }
+
+                error_log('user record found');
+                $file = $request->file('File');
+
+                if (!isset($file)) {
+                    return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+                }
+
+                //get filename with extension
+                $filenamewithextension = $request->file('File')->getClientOriginalName();
+                error_log(' File with extension ' . $filenamewithextension);
+
+                //get filename without extension
+                $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+                error_log(' Only file name is:  ' . $filename);
+
+                //get file extension
+
+                error_log(' File extension is:  ' . $extension);
+
+                $filenameWithoutExtension = $filename . '_' . uniqid();
+
+                //filename to store
+                //        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+                error_log(' File name unique id is : ' . $filenameWithoutExtension . '.' . $extension);
+
+                error_log(' File size is : ');
+                error_log($fileSize);
+
+                $dirPath = $byUserId . '/' . $profileDirectory . '/';
+
+                $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+                error_log("createDir");
+
+                error_log($createDir);
+
+                try {
+                    $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
+                    error_log('$upload_success');
+                    error_log($upload_success);
+
+                } catch (Exception $ex) {
+
+                    error_log('exception');
+                    error_log($ex);
+                    return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+                }
+
+                $date = HelperModel::getDate();
+
+                DB::beginTransaction();
+
+                // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+                if ($upload_success == true) {
+
+                    error_log('upload successfully done');
+                    error_log('Now insert data in file upload table');
+
+                    $fileUpload = array(
+                        'ByUserId' => $byUserId,
+                        'RelativePath' => $dirPath,
+                        'FileOriginalName' => $filename . '.' . $extension,
+                        'FileName' => $filenameWithoutExtension,
+                        'FileExtension' => '.' . $extension,
+                        'FileSizeByte' => $fileSize,
+                        'BelongTo' => 'profile',
+                        'CreatedOn' => $date["timestamp"],
+                        'IsActive' => true
+                    );
+                    //Now inserting data in file_upload table
+
+                    $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+                    if ($insertedData == 0) {
+                        error_log('data not inserted');
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
                     } else {
-                        error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
-                        //Now checking if document name is same as it is given in parameter
-                        error_log('document name is valid');
-                        $fileData['Id'] = $insertedData;
-                        $fileData['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '/' . $insertedData . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                        error_log('data inserted in file upload');
+                        error_log('File upload id is : ' . $insertedData);
 
-                        return response()->json(['data' => $fileData, 'message' => 'User profile picture uploaded successfully'], 200);
+                        $dataToUpdate = array(
+                            'UpdatedBy' => $userId,
+                            'UpdatedOn' => $date["timestamp"],
+                            'ProfilePictureId' => $insertedData
+                        );
+
+                        $updatedData = GenericModel::updateGeneric('user', 'Id', $userId, $dataToUpdate);
+
+                        if ($updatedData == false) {
+                            error_log('user data not updated');
+                            DB::rollBack();
+                            return response()->json(['data' => null, 'message' => 'Error in updating user profile picture information'], 400);
+                        } else {
+                            error_log('user profile picture data updated ');
+                            DB::commit();
+
+                            error_log('Checking if user record exists or not');
+                            $checkDocument = DocumentUploadModel::GetDocumentData($insertedData);
+                            if ($checkDocument == null) {
+                                return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+                            } else {
+                                error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
+                                //Now checking if document name is same as it is given in parameter
+                                error_log('document name is valid');
+                                $fileData['Id'] = $insertedData;
+                                $fileData['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '/' . $insertedData . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+
+                                return response()->json(['data' => $fileData, 'message' => 'User profile picture uploaded successfully'], 200);
+                            }
+                        }
                     }
+
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
                 }
             }
-
-        } else {
-            return response()->json(['data' => null, 'message' => 'Error in uploading profile picture'], 400);
         }
     }
 
@@ -1216,122 +1236,144 @@ class DocumentUploadController extends Controller
     function UploadGeneralAttachment(Request $request)
     {
         error_log('in controller');
-
-        $file = $request->file('File');
-        $purpose = $request->get('Purpose');
-
-        $doctorRole = env('ROLE_DOCTOR');
-        $facilitatorRole = env('ROLE_FACILITATOR');
-        $patientRole = env('ROLE_PATIENT');
-
-        //I have taken this variable because enum and dir name is same
-        $dirAndEnumValue = 'none';
-
-        if (!isset($file)) {
-            return response()->json(['data' => null, 'message' => 'File is missing'], 400);
-        }
-
-        $byUserId = $request->get('byUserId');
-
-        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($byUserId);
-        if ($checkUserData == null) {
-            return response()->json(['data' => null, 'message' => 'User not found'], 400);
-        } else {
-            if ($checkUserData->RoleCodeName != $doctorRole) {
-                $dirAndEnumValue = 'doctor_attachment';
-            } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
-                $dirAndEnumValue = 'facilitator_attachment';
-            } else if ($checkUserData->RoleCodeName != $patientRole) {
-                $dirAndEnumValue = 'patient_attachment';
-            } else {
-                return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-            }
-        }
-
-        error_log('record found');
-
-        //get filename with extension
-        $filenamewithextension = $request->file('File')->getClientOriginalName();
-        error_log(' File with extension ' . $filenamewithextension);
-
-        //get filename without extension
-        $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
-        error_log(' Only file name is:  ' . $filename);
-
-        //get file extension
-        $extension = $request->file('File')->getClientOriginalExtension();
-        error_log(' File extension is:  ' . $extension);
-
-        $filenameWithoutExtension = $filename . '_' . uniqid();
-
-        //filename to store
-//        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
-        error_log(' File name unique id is : ' . $filenameWithoutExtension . '.' . $extension);
-
         $fileSize = $request->file('File')->getSize();
-        error_log(' File size is : ' . $fileSize);
+        $extension = $request->file('File')->getClientOriginalExtension();
+        $extension = strtolower($extension);
 
-        $dirPath = $dirAndEnumValue . '/';
-
-        $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
-
-        error_log("createDir");
-
-        error_log($createDir);
-
-        try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
-            error_log('$upload_success');
-            error_log($upload_success);
-
-        } catch (Exception $ex) {
-
-            error_log('exception');
-            error_log($ex);
-            return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
-        }
-
-        $date = HelperModel::getDate();
-
-        error_log("## formatted date ##");
-        error_log($date["formatted"]);
-
-        DB::beginTransaction();
-
-        // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
-        if ($upload_success == true) {
-
-            error_log('upload successfully done');
-            error_log('Now insert data in file upload table');
-
-            $fileUpload = array(
-                'ByUserId' => $byUserId,
-                'RelativePath' => $dirPath,
-                'FileOriginalName' => $filename . '.' . $extension,
-                'FileName' => $filenameWithoutExtension,
-                'FileExtension' => '.' . $extension,
-                'FileSizeByte' => $fileSize,
-                'Purpose' => $purpose,
-                'BelongTo' => $dirAndEnumValue,
-                'CreatedOn' => $date["timestamp"],
-                'FileUploadDate' => $date["formatted"],
-                'IsActive' => true
-            );
-            //Now inserting data in file_upload table
-
-            $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
-
-            if ($insertedData == 0) {
-                error_log('data not inserted');
-                DB::rollBack();
-                return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
-            } else {
-                DB::commit();
-                return response()->json(['data' => $insertedData, 'message' => 'General file uploaded successfully'], 200);
-            }
-
+        if ($fileSize >= env('FILE_SIZE_ALLOWED')) {
+            error_log("File Size is huge");
+            //Image size Not Allowed
+            return response()->json(['data' => null, 'message' => 'File size is Not Allowed'], 400);
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
+            error_log("File Size is acceptable");
+            error_log($extension);
+
+            if ($extension != "jpg" && $extension != "jpeg" && $extension != "png" && $extension != "gif" && $extension != "svg"
+                && $extension != "txt" && $extension != "pdf" && $extension != "doc" && $extension != "docx" && $extension != "docs" &&
+                $extension != "xls" && $extension != "xlsx" && $extension != "csv" && $extension != "zip" && $extension != "rar") {
+                error_log("File type is not allowed");
+                //Only Image is allowed
+                return response()->json(['data' => null, 'message' => 'This File Type is not allowed'], 400);
+            } else {
+                error_log('in controller');
+
+                $file = $request->file('File');
+                $purpose = $request->get('Purpose');
+
+                $doctorRole = env('ROLE_DOCTOR');
+                $facilitatorRole = env('ROLE_FACILITATOR');
+                $patientRole = env('ROLE_PATIENT');
+
+                //I have taken this variable because enum and dir name is same
+                $dirAndEnumValue = 'none';
+
+                if (!isset($file)) {
+                    return response()->json(['data' => null, 'message' => 'File is missing'], 400);
+                }
+
+                $byUserId = $request->get('byUserId');
+
+                $checkUserData = UserModel::GetSingleUserViaIdNewFunction($byUserId);
+                if ($checkUserData == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                } else {
+                    if ($checkUserData->RoleCodeName != $doctorRole) {
+                        $dirAndEnumValue = 'doctor_attachment';
+                    } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+                        $dirAndEnumValue = 'facilitator_attachment';
+                    } else if ($checkUserData->RoleCodeName != $patientRole) {
+                        $dirAndEnumValue = 'patient_attachment';
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
+                    }
+                }
+
+                error_log('record found');
+
+                //get filename with extension
+                $filenamewithextension = $request->file('File')->getClientOriginalName();
+                error_log(' File with extension ' . $filenamewithextension);
+
+                //get filename without extension
+                $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+                error_log(' Only file name is:  ' . $filename);
+
+                //get file extension
+//                $extension = $request->file('File')->getClientOriginalExtension();
+                error_log(' File extension is:  ' . $extension);
+
+                $filenameWithoutExtension = $filename . '_' . uniqid();
+
+                //filename to store
+//        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+                error_log(' File name unique id is : ' . $filenameWithoutExtension . '.' . $extension);
+
+//                $fileSize = $request->file('File')->getSize();
+                error_log(' File size is : ' . $fileSize);
+
+                $dirPath = $dirAndEnumValue . '/';
+
+                $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+
+                error_log("createDir");
+
+                error_log($createDir);
+
+                try {
+                    $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
+                    error_log('$upload_success');
+                    error_log($upload_success);
+
+                } catch (Exception $ex) {
+
+                    error_log('exception');
+                    error_log($ex);
+                    return response()->json(['data' => null, 'message' => $ex->getMessage()], 400);
+                }
+
+                $date = HelperModel::getDate();
+
+                error_log("## formatted date ##");
+                error_log($date["formatted"]);
+
+                DB::beginTransaction();
+
+                // IF UPLOAD IS SUCCESSFUL SEND SUCCESS MESSAGE OTHERWISE SEND ERROR MESSAGE
+                if ($upload_success == true) {
+
+                    error_log('upload successfully done');
+                    error_log('Now insert data in file upload table');
+
+                    $fileUpload = array(
+                        'ByUserId' => $byUserId,
+                        'RelativePath' => $dirPath,
+                        'FileOriginalName' => $filename . '.' . $extension,
+                        'FileName' => $filenameWithoutExtension,
+                        'FileExtension' => '.' . $extension,
+                        'FileSizeByte' => $fileSize,
+                        'Purpose' => $purpose,
+                        'BelongTo' => $dirAndEnumValue,
+                        'CreatedOn' => $date["timestamp"],
+                        'FileUploadDate' => $date["formatted"],
+                        'IsActive' => true
+                    );
+                    //Now inserting data in file_upload table
+
+                    $insertedData = GenericModel::insertGenericAndReturnID('file_upload', $fileUpload);
+
+                    if ($insertedData == 0) {
+                        error_log('data not inserted');
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in inserting file upload information'], 400);
+                    } else {
+                        DB::commit();
+                        return response()->json(['data' => $insertedData, 'message' => 'General file uploaded successfully'], 200);
+                    }
+
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
+                }
+            }
         }
     }
 
