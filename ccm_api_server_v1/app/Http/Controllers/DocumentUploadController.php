@@ -85,15 +85,15 @@ class DocumentUploadController extends Controller
             'timeout' => '30', // timeout setting
         ]);
 
-        $file = '/ccm_attachment/2_5cace91e6b858.jpg';
+        $file = '/ccm_attachment/EXTLMS-small_5cade01a9cacd.txt';
 
         $filecontent = $ftp->get($file); // read file content
 
         // download file.
 
         return Response::make($filecontent, '200', array(
-            'Content-Type' => 'image/jpeg',
-            'Content-Disposition' => 'inline; filename=xyz.jpg'
+            'Content-Type' => 'text/plain',
+            'Content-Disposition' => 'inline; filename=EXTLMS-small_5cade01a9cacd.txt'
         ));
     }
 
@@ -929,12 +929,12 @@ class DocumentUploadController extends Controller
 
         error_log('$fileUploadId ' . $fileUploadId);
 
-        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+//        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
 
-        $baseUrl = env('BASE_URL');
-        $profilePicAPIPrefix = env('PROFILE_PIC_API_PREFIX');
+        $baseUrl = env('FTP_DIR');
+        $profilePicAPIPrefix = env('PROFILE_PICTURE_DIR');
 
-        error_log('Checking if user record exists or not');
+        error_log('Checking if file record exists or not');
         $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
         if ($checkDocument == null) {
             return response()->json(['data' => null, 'message' => 'Document not found'], 400);
@@ -944,12 +944,33 @@ class DocumentUploadController extends Controller
             //Now checking if document name is same as it is given in parameter
             if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
                 error_log('document name is valid');
-                $fileData['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+//                $fileData['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                $fileData = '/' . $baseUrl . '/' . $checkDocument->RelativePath . $fileName;
 
-                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+                error_log("fileData");
+                error_log($fileData);
+
+                $ftp = Storage::createFtpDriver([
+                    'host' => env('FTP_HOST'),
+                    'username' => env('FTP_USER'),
+                    'password' => env('FTP_PASSWORD'),
+                    'port' => '21', // your ftp port
+                    'timeout' => '30', // timeout setting
+                ]);
+
+//                $file = '/ccm_attachment/EXTLMS-small_5cade01a9cacd.txt';
+
+                $filecontent = $ftp->get($fileData); // read file content
+
+                // download file.
+
+                return Response::make($filecontent, '200', array(
+                    'Content-Type' => 'image/png',
+                    'Content-Disposition' => 'inline; filename=' . $fileName . ''
+                ));
 
             } else {
-                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+                return response()->json(['data' => null, 'message' => 'Invalid file name'], 400);
             }
         }
     }
