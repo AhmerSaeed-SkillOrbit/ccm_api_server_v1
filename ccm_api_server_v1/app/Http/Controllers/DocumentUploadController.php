@@ -19,7 +19,7 @@ use App\Models\DocumentUploadModel;
 use Carbon\Carbon;
 use mysql_xdevapi\Exception;
 use PDF;
-
+use Response;
 
 class DocumentUploadController extends Controller
 {
@@ -67,6 +67,36 @@ class DocumentUploadController extends Controller
             return response()->json(['data' => null, 'message' => 'Error in uploading file'], 400);
         }
     }
+
+    function DownloadFilesNew()
+    {
+
+//        $file = $request->get('file');
+//        if (!$file) {
+//            return Response::json('please provide valid path', 400);
+//        }
+//        $fileName = basename($file);
+
+        $ftp = Storage::createFtpDriver([
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USER'),
+            'password' => env('FTP_PASSWORD'),
+            'port' => '21', // your ftp port
+            'timeout' => '30', // timeout setting
+        ]);
+
+        $file = '/ccm_attachment/EXTLMS-small_5cade01a9cacd.txt';
+
+        $filecontent = $ftp->get($file); // read file content
+
+        // download file.
+
+        return Response::make($filecontent, '200', array(
+            'Content-Type' => 'text/plain',
+            'Content-Disposition' => 'inline; filename=EXTLMS-small_5cade01a9cacd.txt'
+        ));
+    }
+
 
 //    not final yet
     function DownloadFiles(Request $request)
@@ -212,8 +242,8 @@ class DocumentUploadController extends Controller
         $filenameWithoutExtension = $filename . '_' . uniqid();
 
         //filename to store
-        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
-        error_log(' File name unique id is : ' . $filenametostore);
+//        $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
+        error_log(' File name unique id is : ' . $filenameWithoutExtension . '.' . $extension);
 
         $fileSize = $request->file('File')->getSize();
         error_log(' File size is : ' . $fileSize);
@@ -227,7 +257,7 @@ class DocumentUploadController extends Controller
         error_log($createDir);
 
         try {
-            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenametostore, fopen($request->file('File'), 'r+'));
+            $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
             error_log('$upload_success');
             error_log($upload_success);
 
@@ -286,8 +316,6 @@ class DocumentUploadController extends Controller
                 } else {
                     error_log('user profile picture data updated ');
                     DB::commit();
-
-                    $ftp = env('FTP_HOST');
 
                     error_log('Checking if user record exists or not');
                     $checkDocument = DocumentUploadModel::GetDocumentData($insertedData);
@@ -894,32 +922,51 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-//        $fileId = $fileUploadId;
-//        $fileUplaodName = $fileName;
+        $baseUrl = env('FTP_DIR');
 
-        error_log('$fileUploadId ' . $fileUploadId);
-
-        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
-
-        $baseUrl = env('BASE_URL');
-        $profilePicAPIPrefix = env('PROFILE_PIC_API_PREFIX');
-
-        error_log('Checking if user record exists or not');
+        error_log('Checking if image record is exists in the database');
         $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
         if ($checkDocument == null) {
             return response()->json(['data' => null, 'message' => 'Document not found'], 400);
         } else {
             error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
-            error_log($fileName);
+
+            $fileType = "";
             //Now checking if document name is same as it is given in parameter
             if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
-                error_log('document name is valid');
-                $fileData['Path'] = $baseUrl . '' . $profilePicAPIPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                error_log('image name is valid');
+                $filePath = '/' . $baseUrl . '/' . $checkDocument->RelativePath . $fileName;
+                error_log($filePath);
+                if (strtolower($checkDocument->FileExtension) == ".jpg" || strtolower($checkDocument->FileExtension) == ".jpeg") {
+                    $fileType = env('JPG_IMAGE_TYPE');
+                    error_log($fileType);
+                } else if (strtolower($checkDocument->FileExtension) == ".png") {
+                    $fileType = env('PNG_IMAGE_TYPE');
+                    error_log($fileType);
+                } else if (strtolower($checkDocument->FileExtension) == ".gif") {
+                    $fileType = env('GIF_IMAGE_TYPE');
+                    error_log($fileType);
+                } else if (strtolower($checkDocument->FileExtension) == ".svg") {
+                    $fileType = env('SVG_IMAGE_TYPE');
+                    error_log($fileType);
+                }
+                $ftp = Storage::createFtpDriver([
+                    'host' => env('FTP_HOST'),
+                    'username' => env('FTP_USER'),
+                    'password' => env('FTP_PASSWORD'),
+                    'port' => '21', // your ftp port
+                    'timeout' => '30', // timeout setting
+                ]);
 
-                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+                $fileContent = $ftp->get($filePath); // read file content
 
+                // download file
+                return Response::make($fileContent, '200', array(
+                    'Content-Type' => $fileType,
+                    'Content-Disposition' => 'inline; filename=' . $fileName . ''
+                ));
             } else {
-                return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
+                return response()->json(['data' => null, 'message' => 'Invalid file name'], 400);
             }
         }
     }
@@ -1254,29 +1301,63 @@ class DocumentUploadController extends Controller
     {
         error_log('in controller');
 
-//        $fileId = $fileUploadId;
-//        $fileUplaodName = $fileName;
-
         error_log('$fileUploadId ' . $fileUploadId);
 
-        return response()->json(['data' => null, 'message' => 'Work in progress'], 200);
+        $baseUrl = env('FTP_DIR');
+//        $apiPrefix = env('GENERAL_FILE_API_PREFIX');
 
-        $baseUrl = env('BASE_URL');
-        $apiPrefix = env('GENERAL_FILE_API_PREFIX');
-
-        error_log('Checking if user record exists or not');
+        error_log('Checking if file record exists or not');
         $checkDocument = DocumentUploadModel::GetDocumentData($fileUploadId);
         if ($checkDocument == null) {
-            return response()->json(['data' => null, 'message' => 'Document not found'], 400);
+            return response()->json(['data' => null, 'message' => 'File not found'], 400);
         } else {
             error_log($checkDocument->FileName . '' . $checkDocument->FileExtension);
             error_log($fileName);
+            $fileType = "";
             //Now checking if document name is same as it is given in parameter
             if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
                 error_log('document name is valid');
-                $fileData['Path'] = $baseUrl . '' . $apiPrefix . '' . $checkDocument->RelativePath . '/' . $checkDocument->FileName . '' . $checkDocument->FileExtension;
+                $filePath = '/' . $baseUrl . '/' . $checkDocument->RelativePath . $fileName;
+                if (strtolower($checkDocument->FileExtension) == ".jpg" || strtolower($checkDocument->FileExtension) == ".jpeg") {
+                    $fileType = env('JPG_IMAGE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".png") {
+                    $fileType = env('PNG_IMAGE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".gif") {
+                    $fileType = env('GIF_IMAGE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".svg") {
+                    $fileType = env('SVG_IMAGE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".txt") {
+                    $fileType = env('TXT_FILE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".pdf") {
+                    $fileType = env('PDF_FILE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".doc" || strtolower($checkDocument->FileExtension) == ".docx") {
+                    $fileType = env('DOC_FILE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".xls") {
+                    $fileType = env('XLS_FILE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".xlsx") {
+                    $fileType = env('XLSX_FILE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".csv") {
+                    $fileType = env('CSV_FILE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".zip") {
+                    $fileType = env('ZIP_FILE_TYPE');
+                } else if (strtolower($checkDocument->FileExtension) == ".rar") {
+                    $fileType = env('RAR_FILE_TYPE');
+                }
+                $ftp = Storage::createFtpDriver([
+                    'host' => env('FTP_HOST'),
+                    'username' => env('FTP_USER'),
+                    'password' => env('FTP_PASSWORD'),
+                    'port' => '21', // your ftp port
+                    'timeout' => '30', // timeout setting
+                ]);
 
-                return response()->json(['data' => $fileData, 'message' => 'Document found'], 200);
+                $fileContent = $ftp->get($filePath); // read file content
+
+                // download file
+                return Response::make($fileContent, '200', array(
+                    'Content-Type' => $fileType,
+                    'Content-Disposition' => 'inline; filename=' . $fileName . ''
+                ));
 
             } else {
                 return response()->json(['data' => null, 'message' => 'Invalid document name'], 400);
