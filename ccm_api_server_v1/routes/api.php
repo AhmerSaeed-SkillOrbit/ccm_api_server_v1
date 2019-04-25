@@ -463,7 +463,7 @@ Route::get('/download/patient/assessment/file/{fileUploadId}/{fileName}', 'Docum
 Route::get('/download/ticket/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketFile');
 Route::get('/download/ticket/reply/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadTicketReplyFile');
 Route::get('/download/ccm/plan/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
-Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadCCMPlanFile');
+Route::get('/download/general/file/{fileUploadId}/{fileName}', 'DocumentUploadController@DownloadGeneralFile');
 
 //Background job API
 
