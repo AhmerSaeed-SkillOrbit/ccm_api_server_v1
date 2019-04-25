@@ -1267,7 +1267,7 @@ class TicketController extends Controller
 
         $getAllTickets = TicketModel::GetAllTickets();
 
-        $ticketClosingDays = env('TICKET_CLOSE_DAYS');
+        $ticketClosingDays = env('TICKET_CLOSE_HOURS');
 
         if (count($getAllTickets) > 0) {
 
@@ -1276,12 +1276,13 @@ class TicketController extends Controller
                 $CreatedTime = Carbon::createFromTimestamp($item->CreatedOn);
                 $currentTime = Carbon::now("UTC");
 
-                $diffInDays = $currentTime->diffInDays($CreatedTime);
+//                $diffInDays = $currentTime->diffInDays($CreatedTime);
+                $diffInHours = $currentTime->diffInHours($CreatedTime);
 
-                error_log('$diffInDays ' . $diffInDays);
+                error_log('$diffInDays ' . $diffInHours);
 
-                if ($diffInDays > $ticketClosingDays) {
-                    
+                if ($diffInHours > $ticketClosingDays) {
+
                     $ticketDataUpdate = array(
                         "TrackStatus" => env('TICKET_TRACK_STATUS_CLOSE'),
                         "UpdatedOn" => $date["timestamp"]
