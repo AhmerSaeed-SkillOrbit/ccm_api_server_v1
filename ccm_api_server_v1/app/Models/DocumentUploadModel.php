@@ -630,4 +630,14 @@ class DocumentUploadModel
 
         return $query;
     }
+
+    static public function GetGeneralDocumentViaId($id)
+    {
+        $query = DB::table('file_upload')
+            ->where('file_upload.IsActive', '=', true)
+            ->where('file_upload.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
 }
