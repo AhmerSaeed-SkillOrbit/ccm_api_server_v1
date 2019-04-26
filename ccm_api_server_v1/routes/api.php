@@ -471,5 +471,9 @@ Route::get('/download/default/profile/picture/{imageName}', 'DocumentUploadContr
 //Close ticket
 Route::post('/background/ticket/close', 'TicketController@CloseTicket');
 
+Route::post('/ccm/plan/summary/email/pdf/', 'CcmPlanController@SendEmailPdfCcmPlanSummary');
+
+
+
 
 
