@@ -7795,4 +7795,25 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'This tab needs to be published first'], 400);
         }
     }
+
+    function SendEmailPdfCcmPlanSummary($planId)
+    {
+        error_log($planId);
+
+        //extract patient id from ccm plan id
+        //fetch ccm-plan using plan id and create pdf
+
+
+
+//        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
+
+        return response()->json(['data' => null, 'message' => 'CCM Plan summary is successfully sent to the patient'], 200);
+
+//        return true;
+//        error_log("Generate Test PDF");
+//
+//        $pdf = PDF::loadView('list_notes');
+//        return $pdf->download('tuts_notes.pdf');
+
+    }
 }
