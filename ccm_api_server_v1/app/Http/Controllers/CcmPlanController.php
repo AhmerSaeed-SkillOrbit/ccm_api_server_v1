@@ -2582,6 +2582,7 @@ class CcmPlanController extends Controller
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
             $data['ProfileSummary'] = $checkUserData->ProfileSummary;
+            $data['DateOfBirth'] = $checkUserData->DateOfBirth;
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
@@ -2609,6 +2610,7 @@ class CcmPlanController extends Controller
         $gender = $request->post('Gender');
         $age = $request->post('Age');
         $profileSummary = $request->post('ProfileSummary');
+        $dob = $request->post('DateOfBirth');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2618,7 +2620,8 @@ class CcmPlanController extends Controller
             "TelephoneNumber" => $telephoneNumber,
             "Gender" => $gender,
             "Age" => $age,
-            "ProfileSummary" => $profileSummary
+            "ProfileSummary" => $profileSummary,
+            "DateOfBirth" => $dob,
         );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
