@@ -456,6 +456,7 @@ Route::post('/upload/general/file', 'DocumentUploadController@UploadGeneralAttac
 
 Route::get('/general/file/list', 'DocumentUploadController@GeneralFileListViaPagination');
 Route::get('/general/file/list/count', 'DocumentUploadController@GeneralFileListCount');
+Route::post('/general/file/remove', 'DocumentUploadController@GeneralFileRemove');
 
 //Download file routes
 
