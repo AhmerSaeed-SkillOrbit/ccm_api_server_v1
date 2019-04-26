@@ -2931,7 +2931,7 @@ class CcmPlanController extends Controller
 
         } else if ($checkUserData->RoleCodeName == $superAdminRole) {
             error_log('logged in user is super admin');
-        }  else {
+        } else {
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
@@ -3151,8 +3151,7 @@ class CcmPlanController extends Controller
                 error_log('associated doctor not found');
                 return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
             }
-        }
-        else if ($checkUserData->RoleCodeName == $superAdminRole) {
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
             error_log('logged in user is super admin');
         } else if ($checkUserData->RoleCodeName == $patientRole) {
             error_log('logged in user is patient');
@@ -7714,5 +7713,26 @@ class CcmPlanController extends Controller
 
         $getCcmPlanReviewAll = CcmModel::GetAllCCMPlanReviewCount($ccmPlanId, $searchDateFrom, $searchDateTo);
         return response()->json(['data' => $getCcmPlanReviewAll, 'message' => 'Total Count'], 200);
+    }
+
+    function SendEmailPdfCcmPlanSummary($planId)
+    {
+        error_log($planId);
+
+        //extract patient id from ccm plan id
+        //fetch ccm-plan using plan id and create pdf
+
+
+
+//        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
+
+        return response()->json(['data' => null, 'message' => 'CCM Plan summary is successfully sent to the patient'], 200);
+
+//        return true;
+//        error_log("Generate Test PDF");
+//
+//        $pdf = PDF::loadView('list_notes');
+//        return $pdf->download('tuts_notes.pdf');
+
     }
 }
