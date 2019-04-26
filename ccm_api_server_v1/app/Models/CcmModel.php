@@ -813,4 +813,14 @@ class CcmModel
 
         return $query;
     }
+
+    static public function CheckIfPatientTabExists($patientId, $patientRecordTabId){
+        $query = DB::table('patient_record_tab_publish')
+            ->where('patient_record_tab_publish.IsActive', '=', true)
+            ->where('patient_record_tab_publish.PatientRecordTabId', '=', $patientRecordTabId)
+            ->Where('.patient_record_tab_publish.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
 }

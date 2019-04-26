@@ -391,6 +391,9 @@ Route::get('/ccm/plan/review/single', 'CcmPlanController@GetSingleCCMPlanReview'
 Route::get('/ccm/plan/review/all', 'CcmPlanController@GetAllCCMPlanReviewViaPagination');
 Route::get('/ccm/plan/review/all/count', 'CcmPlanController@GetAllCCMPlanReviewCount');
 
+Route::post('/publish/tab', 'CcmPlanController@PublishTab');
+Route::post('/unpublish/tab', 'CcmPlanController@UnPublishTab');
+
 
 Route::get('/', function () {
     return 'Hello';
