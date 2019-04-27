@@ -406,8 +406,6 @@ class UserModel
                     ->groupBy('user.Id')
                     ->get();
 
-                error_log($query);
-
                 return $query;
             } else {
                 error_log('keyword is NULL and role is NOT NULL');
@@ -429,7 +427,6 @@ class UserModel
                     ->groupBy('user.Id')
                     ->get();
 
-                error_log($query);
 
                 return $query;
             }
