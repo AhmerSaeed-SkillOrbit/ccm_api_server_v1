@@ -391,6 +391,9 @@ Route::get('/ccm/plan/review/single', 'CcmPlanController@GetSingleCCMPlanReview'
 Route::get('/ccm/plan/review/all', 'CcmPlanController@GetAllCCMPlanReviewViaPagination');
 Route::get('/ccm/plan/review/all/count', 'CcmPlanController@GetAllCCMPlanReviewCount');
 
+Route::post('/publish/tab', 'CcmPlanController@PublishTab');
+Route::post('/unpublish/tab', 'CcmPlanController@UnPublishTab');
+
 
 Route::get('/', function () {
     return 'Hello';
@@ -453,6 +456,7 @@ Route::post('/upload/general/file', 'DocumentUploadController@UploadGeneralAttac
 
 Route::get('/general/file/list', 'DocumentUploadController@GeneralFileListViaPagination');
 Route::get('/general/file/list/count', 'DocumentUploadController@GeneralFileListCount');
+Route::post('/general/file/remove', 'DocumentUploadController@GeneralFileRemove');
 
 //Download file routes
 

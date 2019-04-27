@@ -2582,6 +2582,7 @@ class CcmPlanController extends Controller
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
             $data['ProfileSummary'] = $checkUserData->ProfileSummary;
+            $data['DateOfBirth'] = $checkUserData->DateOfBirth;
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
@@ -2609,6 +2610,7 @@ class CcmPlanController extends Controller
         $gender = $request->post('Gender');
         $age = $request->post('Age');
         $profileSummary = $request->post('ProfileSummary');
+        $dob = $request->post('DateOfBirth');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2618,7 +2620,8 @@ class CcmPlanController extends Controller
             "TelephoneNumber" => $telephoneNumber,
             "Gender" => $gender,
             "Age" => $age,
-            "ProfileSummary" => $profileSummary
+            "ProfileSummary" => $profileSummary,
+            "DateOfBirth" => $dob,
         );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
@@ -7711,6 +7714,88 @@ class CcmPlanController extends Controller
         $getCcmPlanReviewAll = CcmModel::GetAllCCMPlanReviewCount($ccmPlanId, $searchDateFrom, $searchDateTo);
         return response()->json(['data' => $getCcmPlanReviewAll, 'message' => 'Total Count'], 200);
     }
+
+    static public function PublishTab(Request $request)
+    {
+        error_log('in controller');
+
+        $patientId = $request->get('patientId');
+        $patientRecordTabId = $request->get('patientRecordTabId');
+
+        //Get single active medicine via medicine id
+        $checkData = CcmModel::CheckIfPatientTabExists($patientId, $patientRecordTabId);
+        if ($checkData != null) {
+            if ($checkData->IsPublish == true) {
+                return response()->json(['data' => null, 'message' => 'This tab has already published'], 200);
+            }
+
+            $data = array(
+                'PatientId' => $patientId,
+                'PatientRecordTabId' => $patientRecordTabId,
+                'IsPublish' => true
+            );
+            $updatedData = GenericModel::updateGeneric('patient_record_tab_publish', 'Id', $checkData->Id, $data);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in publishing'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => $checkData->Id, 'message' => 'Tab has been published'], 200);
+            }
+        } else {
+            $data = array(
+                'PatientId' => $patientId,
+                'PatientRecordTabId' => $patientRecordTabId,
+                'IsPublish' => true,
+                'IsActive' => true,
+            );
+
+            $insert = GenericModel::insertGenericAndReturnID('patient_record_tab_publish', $data);
+
+            if ($insert == 0) {
+                error_log('data not inserted');
+                return response()->json(['data' => null, 'message' => 'Error in publishing'], 400);
+            } else {
+                error_log('data inserted');
+                return response()->json(['data' => $insert, 'message' => 'Tab has been published'], 200);
+            }
+        }
+    }
+
+    static public function UnPublishTab(Request $request)
+    {
+        error_log('in controller');
+
+        $patientId = $request->get('patientId');
+        $patientRecordTabId = $request->get('patientRecordTabId');
+
+        //Get single active medicine via medicine id
+        $checkData = CcmModel::CheckIfPatientTabExists($patientId, $patientRecordTabId);
+        if ($checkData != null) {
+            if ($checkData->IsPublish == false) {
+                return response()->json(['data' => null, 'message' => 'This tab has already unpublished'], 200);
+            }
+
+            $data = array(
+                'PatientId' => $patientId,
+                'PatientRecordTabId' => $patientRecordTabId,
+                'IsPublish' => false
+            );
+            $updatedData = GenericModel::updateGeneric('patient_record_tab_publish', 'Id', $checkData->Id, $data);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in unpublishing'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => $checkData->Id, 'message' => 'Tab has been unpublished'], 200);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'This tab needs to be published first'], 400);
+        }
+    }
+
 
     function SendEmailPdfCcmPlanSummary(Request $request)
     {
