@@ -7796,14 +7796,36 @@ class CcmPlanController extends Controller
         }
     }
 
-    function SendEmailPdfCcmPlanSummary($planId)
+
+    function SendEmailPdfCcmPlanSummary(Request $request)
     {
-        error_log($planId);
+        error_log("SUMMARY API");
+
+        $userId = $request->get('useId');
+        $planId = $request->get('ccmPlanId');
 
         //extract patient id from ccm plan id
         //fetch ccm-plan using plan id and create pdf
 
+        try {
+            $summary = DB::table('ccm_plan_summary')
+                ->where('PlanId','=',$planId)
+                ->get();
 
+            error_log("## summary ##");
+            error_log($summary);
+
+//            if (count($getPatientCountResult) == 1) {
+//                $getPatientCountResult = $getPatientCountResult[0]->TotalPatient;
+//                if ($getPatientCountResult > 0) {
+//                    $patientUniqueId = $getPatientCountResult + 1;
+//                }
+//            }
+        } catch (Exception $exception) {
+            error_log("exception in fetching totalpatient count");
+            error_log($exception);
+            return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
+        }
 
 //        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
 
