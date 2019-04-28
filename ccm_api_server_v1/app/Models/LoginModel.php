@@ -520,6 +520,20 @@ class LoginModel
         return $result;
     }
 
+    static function checkTokenWithTypeAvailableForResetPass(string $token,$type)
+    {
+        error_log("type");
+        error_log($type);
+
+        $result = DB::table('verification_token')
+            ->select('*')
+            ->where('Token', '=', $token)
+            ->where('TokenType', '=', $type)
+            ->where('IsActive', '=', 1)
+            ->first();
+        return $result;
+    }
+
     public static function sendEmail($email, $subject, $emailMessage, $url = "")
     {
 

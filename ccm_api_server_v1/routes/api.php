@@ -486,6 +486,8 @@ Route::get('/ccm/plan/summary/email/pdf/', 'CcmPlanController@SendEmailPdfCcmPla
 
 Route::post('/send/code/on/sms', 'CcmPlanController@SendCodeOnSms');
 
+Route::post('/verify/sms/code', 'CcmPlanController@VerifySmsCode');
+
 
 
 

@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\LoginModel;
 use App\User;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
@@ -7783,6 +7784,7 @@ class CcmPlanController extends Controller
                 'PatientRecordTabId' => $patientRecordTabId,
                 'IsPublish' => false
             );
+
             $updatedData = GenericModel::updateGeneric('patient_record_tab_publish', 'Id', $checkData->Id, $data);
 
             if ($updatedData == false) {
@@ -7796,7 +7798,6 @@ class CcmPlanController extends Controller
             return response()->json(['data' => null, 'message' => 'This tab needs to be published first'], 400);
         }
     }
-
 
     function SendEmailPdfCcmPlanSummary(Request $request)
     {
@@ -7845,43 +7846,163 @@ class CcmPlanController extends Controller
         $phoneNumber = $request->post('phoneNumber');
         $type = $request->post('type');
 
-        if ($type == "daytimenum" || $type == "nighttimenum" || $type == "generalnum") {
+        if ($type == "daytimenum" || $type == "nighttimenum") {
             $ifExist = CcmModel::CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type);
+
             if ($ifExist != null) {
+                //insert in Verification_Token
                 //send SMS here
-                return response()->json(['data' => null, 'message' => 'Please place the Code send to the provided number'], 200);
+
+                $token = mt_rand(100000, 999999);
+
+                $dataToInsert = array(
+                    "UserId" => $ifExist->PatientId,
+                    "Email" => null,
+                    "MobileNumber" => $countryCode . $phoneNumber,
+                    "TokenType" => $type,
+                    "Token" => $token,
+                    "IsActive" => true
+                );
+
+                $insertedRecord = GenericModel::insertGenericAndReturnID('verification_token', $dataToInsert);
+                error_log('Inserted record id ' . $insertedRecord);
+                if ($insertedRecord == 0) {
+                    DB::rollback();
+                    return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                } else {
+                    try {
+                        $toNumber = array();
+                        $mobileNumber = $countryCode . $phoneNumber;
+
+                        array_push($toNumber, $mobileNumber);
+                        HelperModel::sendSms($toNumber, "Enter this Code in the Verification box", $token);
+
+                        return response()->json(['data' => null, 'message' => 'Please place the Code send to the provided number'], 200);
+
+                    } catch (Exception $ex) {
+                        return response()->json(['data' => $insertedRecord, 'message' => 'something went wrong'], 200);
+                    }
+                }
+            } else {
+                return response()->json(['data' => null, 'message' => 'Provided number is not exist'], 200);
+            }
+        } else if ($type == "generalnum") {
+            $ifExist = CcmModel::CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type);
+
+            if ($ifExist != null) {
+                //insert in Verification_Token
+                //send SMS here
+
+                $token = mt_rand(100000, 999999);
+
+                $dataToInsert = array(
+                    "UserId" => $ifExist->Id,
+                    "Email" => null,
+                    "MobileNumber" => $countryCode . $phoneNumber,
+                    "TokenType" => $type,
+                    "Token" => $token,
+                    "IsActive" => true
+                );
+
+                $insertedRecord = GenericModel::insertGenericAndReturnID('verification_token', $dataToInsert);
+                error_log('Inserted record id ' . $insertedRecord);
+                if ($insertedRecord == 0) {
+                    DB::rollback();
+                    return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                } else {
+                    try {
+                        $toNumber = array();
+                        $mobileNumber = $countryCode . $phoneNumber;
+
+                        array_push($toNumber, $mobileNumber);
+                        HelperModel::sendSms($toNumber, "Enter this Code in the Verification box", $token);
+
+                        return response()->json(['data' => null, 'message' => 'Please place the Code send to the provided number'], 200);
+
+                    } catch (Exception $ex) {
+                        return response()->json(['data' => $insertedRecord, 'message' => 'something went wrong'], 200);
+                    }
+                }
             } else {
                 return response()->json(['data' => null, 'message' => 'Provided number is not exist'], 200);
             }
         } else {
             return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
         }
+    }
 
-//        try {
-//            $summary = DB::table('ccm_plan_summary')
-//                ->where('PlanId', '=', $planId)
-//                ->get();
-//
-//            error_log("## summary ##");
-//            error_log($summary);
-//
-//            $pdf = View('list_notes')->with('store', $summary);
-//            return $pdf;
-//
-//        } catch (Exception $exception) {
-//            error_log("exception in fetching totalpatient count");
-//            error_log($exception);
-//            return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
-//        }
+    function VerifySmsCode(Request $request)
+    {
+        error_log("### Verify Sms Code ###");
 
-//        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
+        $code = $request->post('code');
+        $patientId = $request->post('patientId');
+        $type = $request->post('type');
 
+        $ifExist = LoginModel::checkTokenWithTypeAvailableForResetPass($code, $type);
 
-//        return true;
-//        error_log("Generate Test PDF");
-//
-//        $pdf = PDF::loadView('list_notes');
-//        return $pdf->download('tuts_notes.pdf');
+        if ($ifExist) {
+            error_log("code is exist");
+            if ($ifExist->UserId == $patientId) {
+                error_log("code is exist");
 
+                if ($ifExist->TokenType == "daytimenum") {
+                    error_log("daytimenum");
+                    $dataToUpdate = array(
+                        'IsDayTimePhoneNumberVerified' => 1
+                    );
+                    $updatedData = GenericModel::updateGeneric('patient_assessment', 'PatientId', $patientId, $dataToUpdate);
+
+                    if ($updatedData == 1) {
+                        return response()->json(['data' => null, 'message' => 'Day Time Phone Number is verified'], 200);
+                    } else if ($updatedData == 0) {
+                        return response()->json(['data' => null, 'message' => 'Day Time Phone Number is already verified'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Day Time Phone Number is failed to verified'], 500);
+                    }
+
+                } else if ($ifExist->TokenType == "nighttimenum") {
+                    error_log("nighttimenum");
+                    $dataToUpdate = array(
+                        'IsNightTimePhoneNumberVerified' => 1,
+                    );
+                    $updatedData = GenericModel::updateGeneric('patient_assessment', 'PatientId', $patientId, $dataToUpdate);
+
+                    if ($updatedData == 1) {
+                        return response()->json(['data' => null, 'message' => 'Night Time Phone Number is verified'], 200);
+                    } else if ($updatedData == 0) {
+                        return response()->json(['data' => null, 'message' => 'Night Time Phone Number is already verified'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Night Time Phone Number is failed to verified'], 500);
+                    }
+                } else if ($ifExist->TokenType == "generalnum") {
+                    error_log("generalnum");
+                    $dataToUpdate = array(
+                        'IsMobileNumberVerified' => 1,
+                    );
+                    $updatedData = GenericModel::updateGeneric('user', 'Id', $patientId, $dataToUpdate);
+
+                    if ($updatedData == 1) {
+                        return response()->json(['data' => null, 'message' => 'Mobile Number is verified'], 200);
+                    }
+                    else if($updatedData == 0){
+                        return response()->json(['data' => null, 'message' => 'Mobile Number is already verified'], 200);
+                    }
+                    else {
+                        return response()->json(['data' => null, 'message' => 'Mobile Number is failed to verified'], 500);
+                    }
+
+                } else {
+                    error_log("invalid");
+                    return response()->json(['data' => null, 'message' => 'Internal Server error occurred'], 500);
+                }
+            } else {
+                error_log("code is exist but invalid");
+                return response()->json(['data' => null, 'message' => 'Code is invalid'], 400);
+            }
+        } else {
+            error_log("code is not exist");
+            return response()->json(['data' => null, 'message' => 'Code is not exist'], 400);
+        }
     }
 }
