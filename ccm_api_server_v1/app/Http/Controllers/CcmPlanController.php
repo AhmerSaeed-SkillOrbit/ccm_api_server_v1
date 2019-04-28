@@ -7842,9 +7842,9 @@ class CcmPlanController extends Controller
     {
         error_log("### Send Code on SMS ###");
 
-        $countryCode = $request->post('countryCode');
-        $phoneNumber = $request->post('phoneNumber');
-        $type = $request->post('type');
+        $countryCode = $request->post('CountryCode');
+        $phoneNumber = $request->post('PhoneNumber');
+        $type = $request->post('Type');
 
         $dayTimePhoneNumType = env('DAY_TIME_PHONE_NUM_TYPE');
         $nightTimePhoneNumType = env('NIGHT_TIME_PHONE_NUM_TYPE');
@@ -7939,9 +7939,9 @@ class CcmPlanController extends Controller
     {
         error_log("### Verify Sms Code ###");
 
-        $code = $request->post('code');
-        $patientId = $request->post('patientId');
-        $type = $request->post('type');
+        $code = $request->post('Code');
+        $patientId = $request->post('PatientId');
+        $type = $request->post('Type');
 
         $dayTimePhoneNumType = env('DAY_TIME_PHONE_NUM_TYPE');
         $nightTimePhoneNumType = env('NIGHT_TIME_PHONE_NUM_TYPE');
