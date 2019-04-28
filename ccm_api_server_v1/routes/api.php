@@ -475,7 +475,16 @@ Route::get('/download/default/profile/picture/{imageName}', 'DocumentUploadContr
 //Close ticket
 Route::post('/background/ticket/close', 'TicketController@CloseTicket');
 
-Route::post('/ccm/plan/summary/email/pdf/', 'CcmPlanController@SendEmailPdfCcmPlanSummary');
+Route::get('/ccm/plan/summary/email/pdf/', 'CcmPlanController@SendEmailPdfCcmPlanSummary');
+
+//verify phone numbers
+//post
+//body params
+//countryCode
+//phoneNumber
+//type=daytimenum || nighttimenum || generalnum
+
+Route::post('/send/code/on/sms', 'CcmPlanController@SendCodeOnSms');
 
 
 

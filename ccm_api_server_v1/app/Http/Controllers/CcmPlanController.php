@@ -26,6 +26,7 @@ use App\Models\CcmModel;
 use Symfony\Component\Translation\Tests\Writer\BackupDumper;
 use Twilio\Twiml;
 use Carbon\Carbon;
+use PDF;
 
 
 class CcmPlanController extends Controller
@@ -7809,18 +7810,15 @@ class CcmPlanController extends Controller
 
         try {
             $summary = DB::table('ccm_plan_summary')
-                ->where('PlanId','=',$planId)
+                ->where('PlanId', '=', $planId)
                 ->get();
 
             error_log("## summary ##");
             error_log($summary);
 
-//            if (count($getPatientCountResult) == 1) {
-//                $getPatientCountResult = $getPatientCountResult[0]->TotalPatient;
-//                if ($getPatientCountResult > 0) {
-//                    $patientUniqueId = $getPatientCountResult + 1;
-//                }
-//            }
+            $pdf = View('list_notes')->with('store', $summary);
+            return $pdf;
+
         } catch (Exception $exception) {
             error_log("exception in fetching totalpatient count");
             error_log($exception);
@@ -7830,6 +7828,54 @@ class CcmPlanController extends Controller
 //        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
 
         return response()->json(['data' => null, 'message' => 'CCM Plan summary is successfully sent to the patient'], 200);
+
+//        return true;
+//        error_log("Generate Test PDF");
+//
+//        $pdf = PDF::loadView('list_notes');
+//        return $pdf->download('tuts_notes.pdf');
+
+    }
+
+    function SendCodeOnSms(Request $request)
+    {
+        error_log("### Send Code on SMS ###");
+
+        $countryCode = $request->post('countryCode');
+        $phoneNumber = $request->post('phoneNumber');
+        $type = $request->post('type');
+
+        if ($type == "daytimenum" || $type == "nighttimenum" || $type == "generalnum") {
+            $ifExist = CcmModel::CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type);
+            if ($ifExist != null) {
+                //send SMS here
+                return response()->json(['data' => null, 'message' => 'Please place the Code send to the provided number'], 200);
+            } else {
+                return response()->json(['data' => null, 'message' => 'Provided number is not exist'], 200);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+        }
+
+//        try {
+//            $summary = DB::table('ccm_plan_summary')
+//                ->where('PlanId', '=', $planId)
+//                ->get();
+//
+//            error_log("## summary ##");
+//            error_log($summary);
+//
+//            $pdf = View('list_notes')->with('store', $summary);
+//            return $pdf;
+//
+//        } catch (Exception $exception) {
+//            error_log("exception in fetching totalpatient count");
+//            error_log($exception);
+//            return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
+//        }
+
+//        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
+
 
 //        return true;
 //        error_log("Generate Test PDF");
