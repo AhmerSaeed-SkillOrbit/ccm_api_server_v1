@@ -7846,7 +7846,11 @@ class CcmPlanController extends Controller
         $phoneNumber = $request->post('phoneNumber');
         $type = $request->post('type');
 
-        if ($type == "daytimenum" || $type == "nighttimenum") {
+        $dayTimePhoneNumType = env('DAY_TIME_PHONE_NUM_TYPE');
+        $nightTimePhoneNumType = env('NIGHT_TIME_PHONE_NUM_TYPE');
+        $mobileNumType = env('MOBILE_NUM_TYPE');
+
+        if ($type == $dayTimePhoneNumType || $type == $nightTimePhoneNumType) {
             $ifExist = CcmModel::CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type);
 
             if ($ifExist != null) {
@@ -7886,7 +7890,7 @@ class CcmPlanController extends Controller
             } else {
                 return response()->json(['data' => null, 'message' => 'Provided number is not exist'], 200);
             }
-        } else if ($type == "generalnum") {
+        } else if ($type == $mobileNumType) {
             $ifExist = CcmModel::CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type);
 
             if ($ifExist != null) {
@@ -7939,6 +7943,10 @@ class CcmPlanController extends Controller
         $patientId = $request->post('patientId');
         $type = $request->post('type');
 
+        $dayTimePhoneNumType = env('DAY_TIME_PHONE_NUM_TYPE');
+        $nightTimePhoneNumType = env('NIGHT_TIME_PHONE_NUM_TYPE');
+        $mobileNumType = env('MOBILE_NUM_TYPE');
+
         $ifExist = LoginModel::checkTokenWithTypeAvailableForResetPass($code, $type);
 
         if ($ifExist) {
@@ -7946,8 +7954,8 @@ class CcmPlanController extends Controller
             if ($ifExist->UserId == $patientId) {
                 error_log("code is exist");
 
-                if ($ifExist->TokenType == "daytimenum") {
-                    error_log("daytimenum");
+                if ($ifExist->TokenType == $dayTimePhoneNumType) {
+                    error_log($dayTimePhoneNumType);
                     $dataToUpdate = array(
                         'IsDayTimePhoneNumberVerified' => 1
                     );
@@ -7961,8 +7969,8 @@ class CcmPlanController extends Controller
                         return response()->json(['data' => null, 'message' => 'Day Time Phone Number is failed to verified'], 500);
                     }
 
-                } else if ($ifExist->TokenType == "nighttimenum") {
-                    error_log("nighttimenum");
+                } else if ($ifExist->TokenType == $nightTimePhoneNumType) {
+                    error_log($nightTimePhoneNumType);
                     $dataToUpdate = array(
                         'IsNightTimePhoneNumberVerified' => 1,
                     );
@@ -7975,8 +7983,8 @@ class CcmPlanController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Night Time Phone Number is failed to verified'], 500);
                     }
-                } else if ($ifExist->TokenType == "generalnum") {
-                    error_log("generalnum");
+                } else if ($ifExist->TokenType == $mobileNumType) {
+                    error_log($mobileNumType);
                     $dataToUpdate = array(
                         'IsMobileNumberVerified' => 1,
                     );
