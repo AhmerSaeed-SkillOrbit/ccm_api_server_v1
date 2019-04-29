@@ -926,4 +926,17 @@ class UserModel
 
         return $query;
     }
+
+    static public function GetRoleNameViaUserId($userId)
+    {
+        error_log("userId");
+        error_log($userId);
+
+        return DB::table('user')
+            ->select('user.Id', 'role.Name')
+            ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
+            ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
+            ->where('user.Id', '=', $userId)
+            ->get();
+    }
 }

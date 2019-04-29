@@ -571,7 +571,6 @@ class LoginModel
         return $query;
     }
 
-
     public static function FetchLoginHistoryListViaPagination($userId, $offset, $limit)
     {
         error_log('getting list of login history for provided user');

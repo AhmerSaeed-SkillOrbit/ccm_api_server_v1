@@ -1423,54 +1423,81 @@ class UserController extends Controller
         }
     }
 
-    function BulkRegisterPatient(Request $request)
+    function BulkUserRegister(Request $request)
     {
         error_log("### BULK REGISTER PATIENTS");
 
-//        error_log($filePath);
-//
-//        $excel = Importer::make('Excel');
-//        $excel->load($filePath);
-//        $excel->setSheet(1);
-//
-//        print_r($excel->setSheet(1));
-//
-//        $collection = $excel->getCollection();
-//
-//        return Importer::make('Excel')->load($filepath)->getCollection();
-//
-//        print_r($collection);
-
         $this->validate($request, [
-            'file'  => 'required|mimes:xls,xlsx'
+            'file' => 'required|mimes:xls,xlsx'
         ]);
 
+        $date = HelperModel::getDate();
+        $createdById = $request->post('id');
+        $type = $request->post('type');
         $path = $request->file('file')->getRealPath();
-
-        error_log($path);
-
         $data = Excel::load($path)->get();
+
+        $roleData = UserModel::GetRoleNameViaUserId($createdById);
+        if (count($roleData) > 0) {
+            $roleName = $roleData[0]->Name;
+            if ($roleName == env('ROLE_PATIENT') || $roleName == env('ROLE_SUPPORT_STAFF')) {
+                return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => ' Not Allowed'], 400);
+        }
+
+        if ($type != env('ROLE_SUPER_ADMIN') && $type != env('ROLE_PATIENT') && $type != env('ROLE_DOCTOR') && $type != env('ROLE_FACILITATOR') && $type != env('ROLE_SUPPORT_STAFF')) {
+            return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+        }
 
         if ($data->count() > 0) {
             error_log("count is greater than zero");
-            foreach ($data->toArray() as $key) {
-                foreach ($key as $row) {
-                    error_log($row->first_name);
-
-//                    $insert_data[] = array(
-//                        'CustomerName'  => $row['customer_name'],
-//                        'Gender'   => $row['gender'],
-//                        'Address'   => $row['address'],
-//                        'City'    => $row['city'],
-//                        'PostalCode'  => $row['postal_code'],
-//                        'Country'   => $row['country']
-//                    );
-                }
+            foreach ($data->toArray() as $key => $value) {
+                $insert_data[] = array(
+                    'FirstName' => $value['firstname'],
+                    'MiddleName' => $value['middlename'],
+                    'LastName' => $value['lastname'],
+                    'EmailAddress' => $value['emailaddress'],
+                    'CountryPhoneCode' => $value['countryphonecode'],
+                    'MobileNumber' => $value['mobilenumber'],
+                    'TelephoneNumber' => $value['telephonenumber'],
+                    'IsMobileNumberVerified' => true,
+                    'OfficeAddress' => $value['officeaddress'],
+                    'ResidentialAddress' => $value['residentialaddress'],
+                    'Gender' => $value['gender'],
+                    'Age' => $value['age'],
+                    'AccountVerified' => $value['dateofbirth'],
+                    'CreatedBy' => $createdById,
+                    'CreatedOn' => $date["timestamp"],
+                    'IsActive' => true,
+                    'ProfileSummary' => $value['profilesummary'],
+                    'DateOfBirth' => $value['dateofbirth'],
+                    'Role' => $type,
+                    'CreatedByRole' => $roleName
+                );
             }
-//            if (!empty($insert_data)) {
-//                DB::table('tbl_customer')->insert($insert_data);
-//            }
         }
-        return response()->json(['data' => null, 'message' => 'Successfully'], 200);
+
+        try {
+            DB::table('temp_bulk_user')->insert($insert_data);
+            return response()->json(['data' => null, 'message' => 'Bulk User file is successfully uploaded,background operation is in process once users are updated you will receive an email on your registered email address'], 200);
+        } catch (Exception $exception) {
+            return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
+        }
+
+        //            Bulk-1
+//                    One
+//                     Person
+//                     bulk.1@xyz.com
+//                     92
+//                    3122410823
+//                    211234567
+//                    XYZ Street
+//                     ABC Street
+//                     Male
+//                     69
+//                    2019-04-29 00:00:00
+//                    Lorem Ipsum is simply dummy text of the printing
     }
 }

@@ -488,7 +488,7 @@ Route::post('/send/code/on/sms', 'CcmPlanController@SendCodeOnSms');
 
 Route::post('/verify/sms/code', 'CcmPlanController@VerifySmsCode');
 
-Route::post('/bulk/register/patient', 'UserController@BulkRegisterPatient');
+Route::post('/bulk/user/register/', 'UserController@BulkUserRegister');
 
 
 
