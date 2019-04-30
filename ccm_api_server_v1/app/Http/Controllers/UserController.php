@@ -1427,10 +1427,9 @@ class UserController extends Controller
     {
         error_log("### BULK REGISTER PATIENTS");
 
-        $this->validate($request, [
-            'file' => 'required|mimes:xls,xlsx'
-        ]);
-
+//        $this->validate($request, [
+//            'file' => 'required|mimes:xls,xlsx,csv'
+//        ]);
         $date = HelperModel::getDate();
         $createdById = $request->post('id');
         $type = $request->post('type');
@@ -1453,29 +1452,34 @@ class UserController extends Controller
 
         if ($data->count() > 0) {
             error_log("count is greater than zero");
-            foreach ($data->toArray() as $key => $value) {
-                $insert_data[] = array(
-                    'FirstName' => $value['firstname'],
-                    'MiddleName' => $value['middlename'],
-                    'LastName' => $value['lastname'],
-                    'EmailAddress' => $value['emailaddress'],
-                    'CountryPhoneCode' => $value['countryphonecode'],
-                    'MobileNumber' => $value['mobilenumber'],
-                    'TelephoneNumber' => $value['telephonenumber'],
-                    'IsMobileNumberVerified' => true,
-                    'OfficeAddress' => $value['officeaddress'],
-                    'ResidentialAddress' => $value['residentialaddress'],
-                    'Gender' => $value['gender'],
-                    'Age' => $value['age'],
-                    'AccountVerified' => $value['dateofbirth'],
-                    'CreatedBy' => $createdById,
-                    'CreatedOn' => $date["timestamp"],
-                    'IsActive' => true,
-                    'ProfileSummary' => $value['profilesummary'],
-                    'DateOfBirth' => $value['dateofbirth'],
-                    'Role' => $type,
-                    'CreatedByRole' => $roleName
-                );
+
+            try {
+                foreach ($data->toArray() as $key => $value) {
+                    $insert_data[] = array(
+                        'FirstName' => $value['firstname'],
+                        'MiddleName' => $value['middlename'],
+                        'LastName' => $value['lastname'],
+                        'EmailAddress' => $value['emailaddress'],
+                        'CountryPhoneCode' => $value['countryphonecode'],
+                        'MobileNumber' => $value['mobilenumber'],
+                        'TelephoneNumber' => $value['telephonenumber'],
+                        'IsMobileNumberVerified' => true,
+                        'OfficeAddress' => $value['officeaddress'],
+                        'ResidentialAddress' => $value['residentialaddress'],
+                        'Gender' => $value['gender'],
+                        'Age' => $value['age'],
+                        'AccountVerified' => $value['dateofbirth'],
+                        'CreatedBy' => $createdById,
+                        'CreatedOn' => $date["timestamp"],
+                        'IsActive' => true,
+                        'ProfileSummary' => $value['profilesummary'],
+                        'DateOfBirth' => $value['dateofbirth'],
+                        'Role' => $type,
+                        'CreatedByRole' => $roleName
+                    );
+                }
+            } catch (Exception $ex) {
+                return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
             }
         }
 

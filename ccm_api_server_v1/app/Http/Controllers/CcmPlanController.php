@@ -2961,8 +2961,16 @@ class CcmPlanController extends Controller
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
                     'FeasibleCallTime' => $request->get('FeasibleCallTime'),
+                    'FeasibleMessageStartTime' => $request->get('FeasibleMessageStartTime'),
+                    'FeasibleMessageEndTime' => $request->get('FeasibleMessageEndTime'),
+                    'FeasibleCallStartTime' => $request->get('FeasibleCallStartTime'),
+                    'FeasibleCallEndTime' => $request->get('FeasibleCallEndTime'),
                     'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
+                    'DayTimeCountryCode' => $request->get('DayTimeCountryCode'),
                     'NightTimePhoneNumber' => $request->get('NightTimePhoneNumber'),
+                    'NightTimeCountryCode' => $request->get('NightTimeCountryCode'),
+                    'IsNightTimePhoneNumberVerified' => false,
+                    'IsDayTimePhoneNumberVerified' => false,
                     'IsInternetAvailable' => (bool)$request->get('IsInternetAvailable'),
                     'IsInternetHelper' => (bool)$request->get('IsInternetHelper'),
                     'CanUseInternet' => (bool)$request->get('CanUseInternet'),
@@ -3032,6 +3040,14 @@ class CcmPlanController extends Controller
                     'FeasibleCallTime' => $request->get('FeasibleCallTime'),
                     'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
                     'NightTimePhoneNumber' => $request->get('NightTimePhoneNumber'),
+                    'FeasibleMessageStartTime' => $request->get('FeasibleMessageStartTime'),
+                    'FeasibleMessageEndTime' => $request->get('FeasibleMessageEndTime'),
+                    'FeasibleCallStartTime' => $request->get('FeasibleCallStartTime'),
+                    'FeasibleCallEndTime' => $request->get('FeasibleCallEndTime'),
+                    'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
+                    'DayTimeCountryCode' => $request->get('DayTimeCountryCode'),
+                    'IsNightTimePhoneNumberVerified' => false,
+                    'IsDayTimePhoneNumberVerified' => false,
                     'IsInternetAvailable' => (bool)$request->get('IsInternetAvailable'),
                     'IsInternetHelper' => (bool)$request->get('IsInternetHelper'),
                     'CanUseInternet' => (bool)$request->get('CanUseInternet'),
@@ -3186,6 +3202,14 @@ class CcmPlanController extends Controller
                 'FeasibleCallTime' => $checkData->FeasibleCallTime,
                 'DayTimePhoneNumber' => $checkData->DayTimePhoneNumber,
                 'NightTimePhoneNumber' => $checkData->NightTimePhoneNumber,
+                'FeasibleMessageStartTime' => $checkData->FeasibleMessageStartTime,
+                'FeasibleMessageEndTime' => $checkData->FeasibleMessageEndTime,
+                'FeasibleCallStartTime' => $checkData->FeasibleCallStartTime,
+                'FeasibleCallEndTime' =>$checkData->FeasibleCallEndTime,
+                'DayTimePhoneNumber' => $checkData->DayTimePhoneNumber,
+                'DayTimeCountryCode' => $checkData->DayTimeCountryCode,
+                'IsNightTimePhoneNumberVerified' => $checkData->IsNightTimePhoneNumberVerified,
+                'IsDayTimePhoneNumberVerified' => $checkData->IsDayTimePhoneNumberVerified,
                 'IsInternetAvailable' => (bool)$checkData->IsInternetAvailable,
                 'IsInternetHelper' => (bool)$checkData->IsInternetHelper,
                 'CanUseInternet' => (bool)$checkData->CanUseInternet,
@@ -7992,11 +8016,9 @@ class CcmPlanController extends Controller
 
                     if ($updatedData == 1) {
                         return response()->json(['data' => null, 'message' => 'Mobile Number is verified'], 200);
-                    }
-                    else if($updatedData == 0){
+                    } else if ($updatedData == 0) {
                         return response()->json(['data' => null, 'message' => 'Mobile Number is already verified'], 200);
-                    }
-                    else {
+                    } else {
                         return response()->json(['data' => null, 'message' => 'Mobile Number is failed to verified'], 500);
                     }
 
