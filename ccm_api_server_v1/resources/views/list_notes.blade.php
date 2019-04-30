@@ -21,27 +21,56 @@
             <table class="table table-bordered" id="laravel_crud">
                 <thead>
                 <tr>
-                    <th>Id</th>
-                    <th>Title</th>
-                    <th>Description</th>
+                    <th>IMAGE</th>
+                    <th>PATIENT NAME</th>
+                    <th>PATIENT UNIQUE ID</th>
+                    <th>GENDER</th>
+                    <th>AGE</th>
+                    <th>SUMMARY</th>
                 </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Sample</td>
-                        <td>Sample Description</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Sample</td>
-                        <td>Sample Description</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Sample</td>
-                        <td>Sample Description</td>
-                    </tr>
+                <tr>
+                    <td>{{ $store[0]->ProfilePicturePath }}</td>
+                    <td>{{ $store[0]->FirstName . $store[0]->LastName}}</td>
+                    <td>{{ $store[0]->PatientUniqueId }}</td>
+                    <td>{{ $store[0]->Gender }}</td>
+                    <td>{{ $store[0]->Age }}</td>
+                    <td>{{ $store[0]->ProfileSummary }}</td>
+                </tr>
+                <tr></tr>
+                </tbody>
+            </table>
+            <table class="table table-bordered" id="laravel_crud">
+                <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Goal</th>
+                    <th>Intervention</th>
+                    <th>Review</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                <?php
+                $goal = explode(",", $store[0]->Goal);
+                print_r($goal);
+                ?>
+                <tr>
+                    <td>1</td>
+                    <td>Sample</td>
+                    <td>Sample Description</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Sample</td>
+                    <td>Sample Description</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Sample</td>
+                    <td>Sample Description</td>
+                </tr>
                 </tbody>
             </table>
         </div>

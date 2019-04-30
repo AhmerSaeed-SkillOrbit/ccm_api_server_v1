@@ -18,6 +18,7 @@ use App\Models\DocumentUploadModel;
 use App\Models\ForumModel;
 use Config;
 use Carbon\Carbon;
+use Excel;
 
 class UserController extends Controller
 {
@@ -240,8 +241,7 @@ class UserController extends Controller
         $userData = UserModel::GetSingleUserViaId($userId);
         if (count($userData) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
-        }
-        else {
+        } else {
             //Means user data fetched
             //Now checking if user belongs to super admin
             if ($userData[0]->RoleCodeName == $superAdminRole) {
@@ -250,7 +250,7 @@ class UserController extends Controller
                 $val = UserModel::FetchUserWithSearchAndPagination
                 ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
-                foreach ($val as $key){
+                foreach ($val as $key) {
                     $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                     $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                 }
@@ -273,8 +273,7 @@ class UserController extends Controller
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
                 } else if ($roleCode == $doctorRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                }
-                else if ($roleCode == $facilitatorRole) {
+                } else if ($roleCode == $facilitatorRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedFacilitatorId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
 
@@ -289,7 +288,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -304,8 +303,7 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Facilitators not found'], 200);
                     }
-                }
-                else if ($roleCode == $patientRole) {
+                } else if ($roleCode == $patientRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedPatientId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorPatientAssociation);
 
@@ -320,7 +318,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -344,8 +342,7 @@ class UserController extends Controller
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
                 } else if ($roleCode == $facilitatorRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                }
-                else if ($roleCode == $doctorRole) {
+                } else if ($roleCode == $doctorRole) {
                     $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($userId);
 
                     if (count($getAssociatedDoctorsId) == 0) {
@@ -359,7 +356,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -374,8 +371,7 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Doctors not found'], 200);
                     }
-                }
-                else if ($roleCode == $patientRole) {
+                } else if ($roleCode == $patientRole) {
                     //First get associated doctors id.
                     $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($userId);
 
@@ -400,7 +396,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $patientIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -415,12 +411,10 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Patients not found'], 200);
                     }
-                }
-                else {
+                } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $patientRole) {
+            } else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -455,7 +449,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $facilitatorIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -484,7 +478,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -502,8 +496,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
@@ -515,7 +508,7 @@ class UserController extends Controller
                         $val = UserModel::FetchUserWithSearchAndPagination
                         ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
-                        foreach ($val as $key){
+                        foreach ($val as $key) {
                             $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                             $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                         }
@@ -1428,5 +1421,83 @@ class UserController extends Controller
                 return response()->json(['data' => null, 'message' => 'No Facilitator associated with the Doctor'], 200);
             }
         }
+    }
+
+    function BulkUserRegister(Request $request)
+    {
+        error_log("### BULK REGISTER PATIENTS");
+
+        $this->validate($request, [
+            'file' => 'required|mimes:xls,xlsx'
+        ]);
+
+        $date = HelperModel::getDate();
+        $createdById = $request->post('id');
+        $type = $request->post('type');
+        $path = $request->file('file')->getRealPath();
+        $data = Excel::load($path)->get();
+
+        $roleData = UserModel::GetRoleNameViaUserId($createdById);
+        if (count($roleData) > 0) {
+            $roleName = $roleData[0]->Name;
+            if ($roleName == env('ROLE_PATIENT') || $roleName == env('ROLE_SUPPORT_STAFF')) {
+                return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => ' Not Allowed'], 400);
+        }
+
+        if ($type != env('ROLE_SUPER_ADMIN') && $type != env('ROLE_PATIENT') && $type != env('ROLE_DOCTOR') && $type != env('ROLE_FACILITATOR') && $type != env('ROLE_SUPPORT_STAFF')) {
+            return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+        }
+
+        if ($data->count() > 0) {
+            error_log("count is greater than zero");
+            foreach ($data->toArray() as $key => $value) {
+                $insert_data[] = array(
+                    'FirstName' => $value['firstname'],
+                    'MiddleName' => $value['middlename'],
+                    'LastName' => $value['lastname'],
+                    'EmailAddress' => $value['emailaddress'],
+                    'CountryPhoneCode' => $value['countryphonecode'],
+                    'MobileNumber' => $value['mobilenumber'],
+                    'TelephoneNumber' => $value['telephonenumber'],
+                    'IsMobileNumberVerified' => true,
+                    'OfficeAddress' => $value['officeaddress'],
+                    'ResidentialAddress' => $value['residentialaddress'],
+                    'Gender' => $value['gender'],
+                    'Age' => $value['age'],
+                    'AccountVerified' => $value['dateofbirth'],
+                    'CreatedBy' => $createdById,
+                    'CreatedOn' => $date["timestamp"],
+                    'IsActive' => true,
+                    'ProfileSummary' => $value['profilesummary'],
+                    'DateOfBirth' => $value['dateofbirth'],
+                    'Role' => $type,
+                    'CreatedByRole' => $roleName
+                );
+            }
+        }
+
+        try {
+            DB::table('temp_bulk_user')->insert($insert_data);
+            return response()->json(['data' => null, 'message' => 'Bulk User file is successfully uploaded,background operation is in process once users are updated you will receive an email on your registered email address'], 200);
+        } catch (Exception $exception) {
+            return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
+        }
+
+        //            Bulk-1
+//                    One
+//                     Person
+//                     bulk.1@xyz.com
+//                     92
+//                    3122410823
+//                    211234567
+//                    XYZ Street
+//                     ABC Street
+//                     Male
+//                     69
+//                    2019-04-29 00:00:00
+//                    Lorem Ipsum is simply dummy text of the printing
     }
 }
