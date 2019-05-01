@@ -6027,7 +6027,7 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->ppsId;
-            $data['IsPatientExamined'] = (bool)$checkData->IsOkay;
+            $data['IsOkay'] = (bool)$checkData->IsOkay;
             $data['Description'] = $checkData->ppsDescription;
             $data['IsActive'] = (bool)$checkData->ppsIsActive;
             $data['PsychologicalReviewParam'] = array();
@@ -6133,7 +6133,7 @@ class CcmPlanController extends Controller
                     error_log('data found ');
 
                     $data['Answer']['Id'] = $checkData->ppsId;
-                    $data['Answer']['IsPatientExamined'] = (bool)$checkData->IsOkay;
+                    $data['Answer']['IsOkay'] = (bool)$checkData->IsOkay;
                     $data['Answer']['Description'] = $checkData->ppsDescription;
                     $data['Answer']['IsActive'] = (bool)$checkData->ppsIsActive;
 
@@ -6376,7 +6376,7 @@ class CcmPlanController extends Controller
                     error_log('data found ');
 
                     $data['Answer']['Id'] = $checkData->psrId;
-                    $data['Answer']['IsPatientExamined'] = (bool)$checkData->IsOkay;
+                    $data['Answer']['IsOkay'] = (bool)$checkData->IsOkay;
                     $data['Answer']['Description'] = $checkData->psrDescription;
                     $data['Answer']['IsActive'] = (bool)$checkData->psrIsActive;
                 }
@@ -6471,7 +6471,7 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->psrId;
-            $data['IsPatientExamined'] = (bool)$checkData->IsOkay;
+            $data['IsOkay'] = (bool)$checkData->IsOkay;
             $data['Description'] = $checkData->psrDescription;
             $data['IsActive'] = (bool)$checkData->psrIsActive;
             $data['SocialReviewParam'] = array();
