@@ -35,11 +35,18 @@ class GenericModel
 
     static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data, $orderby = "Id")
     {
-        return DB::table($tableName)
-            ->select('*')
-            ->where($columnName, $operator, $data)
-            ->orderBy($orderby, 'ASC')
-            ->get();
+        if ($orderby == null) {
+            return DB::table($tableName)
+                ->select('*')
+                ->where($columnName, $operator, $data)
+                ->get();
+        } else {
+            return DB::table($tableName)
+                ->select('*')
+                ->where($columnName, $operator, $data)
+                ->orderBy($orderby, 'ASC')
+                ->get();
+        }
     }
 
     static public function simpleFetchGenericAll($tableName)
