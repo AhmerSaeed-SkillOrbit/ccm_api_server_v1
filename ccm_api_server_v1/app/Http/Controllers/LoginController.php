@@ -457,7 +457,7 @@ class LoginController extends Controller
                     'LastLoggedIn' => $item->LastLoggedIn,
                     'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
                     'LoginHistoryId' => $item->LoginHistoryId,
-                    'LoginDateTime' => date('d-m-Y h:m:s', $item->LoginDateTime)
+                    'LoginDateTime' => date('d-M-Y h:m a', $item->LoginDateTime)
                 );
                 array_push($loginHistory, $itemArray);
             }

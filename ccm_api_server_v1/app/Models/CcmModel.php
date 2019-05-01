@@ -813,4 +813,49 @@ class CcmModel
 
         return $query;
     }
+
+    static public function CheckIfPatientTabExists($patientId, $patientRecordTabId)
+    {
+        $query = DB::table('patient_record_tab_publish')
+            ->where('patient_record_tab_publish.IsActive', '=', true)
+            ->where('patient_record_tab_publish.PatientRecordTabId', '=', $patientRecordTabId)
+            ->Where('.patient_record_tab_publish.PatientId', '=', $patientId)
+            ->first();
+
+        return $query;
+    }
+
+    static public function CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type)
+    {
+        error_log($countryCode);
+        error_log($phoneNumber);
+
+        if ($type == "daytimenum") {
+            error_log("daytimenum");
+
+            $query = DB::table('patient_assessment')
+                ->where('DayTimeCountryCode', '=', $countryCode)
+                ->where('DayTimePhoneNumber', '=', $phoneNumber)
+                ->first();
+
+            return $query;
+        } else if ($type == "nighttimenum") {
+            error_log("nighttimenum");
+            $query = DB::table('patient_assessment')
+                ->where('NightTimeCountryCode', '=', $countryCode)
+                ->where('NightTimePhoneNumber', '=', $phoneNumber)
+                ->first();
+
+            return $query;
+        } else if ($type == "generalnum") {
+            error_log("generalnum");
+            $query = DB::table('user')
+                ->where('CountryPhoneCode', '=', $countryCode)
+                ->where('MobileNumber', '=', $phoneNumber)
+                ->first();
+            return $query;
+        } else {
+            return 0;
+        }
+    }
 }

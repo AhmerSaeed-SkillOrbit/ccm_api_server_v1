@@ -2021,4 +2021,30 @@ class DocumentUploadController extends Controller
 //        $pdf = PDF::loadView('list_notes');
 //        return $pdf->download('tuts_notes.pdf');
     }
+
+    static public function GeneralFileRemove(Request $request)
+    {
+        error_log('in controller');
+
+        $date = HelperModel::getDate();
+
+        $checkData = DocumentUploadModel::GetGeneralDocumentViaId($request->get('id'));
+        if ($checkData != null) {
+
+            $data = array(
+                'IsActive' => false
+            );
+            $updatedData = GenericModel::updateGeneric('file_upload', 'Id', $checkData->Id, $data);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in removing general file'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => $checkData->Id, 'message' => 'General file removed successfully'], 200);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'General file not found'], 400);
+        }
+    }
 }

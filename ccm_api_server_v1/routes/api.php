@@ -391,6 +391,9 @@ Route::get('/ccm/plan/review/single', 'CcmPlanController@GetSingleCCMPlanReview'
 Route::get('/ccm/plan/review/all', 'CcmPlanController@GetAllCCMPlanReviewViaPagination');
 Route::get('/ccm/plan/review/all/count', 'CcmPlanController@GetAllCCMPlanReviewCount');
 
+Route::post('/publish/tab', 'CcmPlanController@PublishTab');
+Route::post('/unpublish/tab', 'CcmPlanController@UnPublishTab');
+
 
 Route::get('/', function () {
     return 'Hello';
@@ -453,6 +456,7 @@ Route::post('/upload/general/file', 'DocumentUploadController@UploadGeneralAttac
 
 Route::get('/general/file/list', 'DocumentUploadController@GeneralFileListViaPagination');
 Route::get('/general/file/list/count', 'DocumentUploadController@GeneralFileListCount');
+Route::post('/general/file/remove', 'DocumentUploadController@GeneralFileRemove');
 
 //Download file routes
 
@@ -470,6 +474,23 @@ Route::get('/download/default/profile/picture/{imageName}', 'DocumentUploadContr
 
 //Close ticket
 Route::post('/background/ticket/close', 'TicketController@CloseTicket');
+
+Route::get('/ccm/plan/summary/email/pdf/', 'CcmPlanController@SendEmailPdfCcmPlanSummary');
+
+//verify phone numbers
+//post
+//body params
+//countryCode
+//phoneNumber
+//type=daytimenum || nighttimenum || generalnum
+
+Route::post('/send/code/on/sms', 'CcmPlanController@SendCodeOnSms');
+
+Route::post('/verify/sms/code', 'CcmPlanController@VerifySmsCode');
+
+Route::post('/bulk/user/register/', 'UserController@BulkUserRegister');
+
+
 
 
 
