@@ -6443,7 +6443,7 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->psrId;
-            $data['IsOkay'] = (bool)$checkData->IsOkay;
+            $data['IsPatientExamined'] = (bool)$checkData->IsOkay;
             $data['Description'] = $checkData->psrDescription;
             $data['IsActive'] = (bool)$checkData->psrIsActive;
             $data['SocialReviewParam'] = array();
