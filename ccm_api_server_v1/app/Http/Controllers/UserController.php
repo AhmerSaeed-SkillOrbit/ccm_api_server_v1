@@ -1067,7 +1067,7 @@ class UserController extends Controller
 
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
-        $emailMessage = "Welcome, You are successfully registered to CCM as ' .$roleName. ', use this password to login ' . $defaultPassword";
+        $emailMessage = "Welcome, You are successfully registered to CCM as .' '. $roleName.' '., use this password to login .' '. $defaultPassword";
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
@@ -1527,7 +1527,7 @@ class UserController extends Controller
             $registeredEmailAddress = array();
             $isUniqueEmail = true;
             $roleList = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true, 'SortOrder');
-            $existingUserList = GenericModel::simpleFetchGenericByWhere('user', '=', 'IsActive', true, 'SortOrder');
+            $existingUserList = GenericModel::simpleFetchGenericByWhere('user', '=', 'IsActive', true, null);
 
             try {
 
@@ -1541,7 +1541,7 @@ class UserController extends Controller
                     //verifying unique email address
                     error_log("verifying unique email address");
 
-                    if ($tempUser[$i]->Role == env('ROLE_PATIENT')) {
+                    if (strtolower($tempUser[$i]->Role) == env('ROLE_PATIENT')) {
                         //Role is Patient
                         error_log("Role is Patient");
 
@@ -1590,6 +1590,9 @@ class UserController extends Controller
 
                     $defaultPassword = getenv("DEFAULT_PWD");
 
+                    error_log("isUniqueEmail");
+                    error_log($isUniqueEmail);
+
                     if ($isUniqueEmail) {
 
                         $insertData = array(
@@ -1627,7 +1630,8 @@ class UserController extends Controller
                             $newUserId = $insertedUserId;
                             $roleId = null;
                             foreach ($roleList as $key) {
-                                if ($key->Name == $tempUser[$i]->Role) {
+
+                                if (strtolower($key->Name) == strtolower($tempUser[$i]->Role)) {
                                     $roleId = $key->Id;
                                     //finding role break
                                     error_log('finding role break');
@@ -1649,9 +1653,9 @@ class UserController extends Controller
                             //checking the possibility of
                             //User association
 
-                            if ($tempUser[$i]->Role == env('ROLE_SUPER_ADMIN') || $tempUser[$i]->Role == env('ROLE_SUPPORT_STAFF') || $tempUser[$i]->Role == env('ROLE_DOCTOR')) {
+                            if (strtolower($tempUser[$i]->Role) == env('ROLE_SUPER_ADMIN') || strtolower($tempUser[$i]->Role) == env('ROLE_SUPPORT_STAFF') || strtolower($tempUser[$i]->Role) == env('ROLE_DOCTOR')) {
                                 error_log("No Need to insert in user_association");
-                            } else if ($tempUser[$i]->Role == env('ROLE_PATIENT')) {
+                            } else if (strtolower($tempUser[$i]->Role) == env('ROLE_PATIENT')) {
                                 error_log("Insert in user_association now");
 
 //                            ASSOCIATION_DOCTOR_PATIENT=doctor_patient
@@ -1666,7 +1670,7 @@ class UserController extends Controller
                                 );
                                 GenericModel::insertGenericAndReturnID('user_association', $insertUserAssociationData);
 
-                            } else if ($tempUser[$i]->Role == env('ROLE_FACILITATOR')) {
+                            } else if (strtolower($tempUser[$i]->Role) == env('ROLE_FACILITATOR')) {
                                 //insert in user_association
                                 $insertUserAssociationData = array(
                                     'SourceUserId' => $tempUser[$i]->CreatedBy,
@@ -1688,6 +1692,7 @@ class UserController extends Controller
 
                     error_log("### ITERATION ENDS ### -- " . $i);
 
+                    $isUniqueEmail = true;
                 }
 
                 //as import completes
