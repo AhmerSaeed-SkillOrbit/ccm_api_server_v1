@@ -1067,7 +1067,7 @@ class UserController extends Controller
 
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
-        $emailMessage = "Welcome, You are successfully registered to CCM as ' .$roleName. ', use this password to login ' . $defaultPassword";
+        $emailMessage = "Welcome, You are successfully registered to CCM as .' '. $roleName.' '., use this password to login .' '. $defaultPassword";
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
@@ -1439,6 +1439,7 @@ class UserController extends Controller
         $roleData = UserModel::GetRoleNameViaUserId($createdById);
         if (count($roleData) > 0) {
             $roleName = $roleData[0]->Name;
+            $createdByEmail = $roleData[0]->EmailAddress;
             if ($roleName == env('ROLE_PATIENT') || $roleName == env('ROLE_SUPPORT_STAFF')) {
                 return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
             }
@@ -1468,8 +1469,8 @@ class UserController extends Controller
                         'ResidentialAddress' => $value['residentialaddress'],
                         'Gender' => $value['gender'],
                         'Age' => $value['age'],
-                        'AccountVerified' => $value['dateofbirth'],
                         'CreatedBy' => $createdById,
+                        'CreatedByEmail' => $createdByEmail,
                         'CreatedOn' => $date["timestamp"],
                         'IsActive' => true,
                         'ProfileSummary' => $value['profilesummary'],
@@ -1503,5 +1504,235 @@ class UserController extends Controller
 //                     69
 //                    2019-04-29 00:00:00
 //                    Lorem Ipsum is simply dummy text of the printing
+    }
+
+    function BackgroundBulkUserRegister()
+    {
+        //first fetch record from temp table
+        //if record exist move ahead
+        //other wise stop here
+
+        $tempUser = GenericModel::simpleFetchGenericByWhere('temp_bulk_user', '=', 'IsActive', true, null);
+        $tempUserCount = count($tempUser);
+
+        error_log('User Count');
+        error_log($tempUserCount);
+
+        if (count($tempUser) == 0) {
+            return response()->json(['data' => null, 'message' => 'Data not exist'], 200);
+        } else {
+            //fetch all roles from table
+            //to be use it in comparison within loop
+            $deleteRecordFromTempTable = array();
+            $registeredEmailAddress = array("Email" => "", "Password" => "");
+            $isUniqueEmail = true;
+            $roleList = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true, 'SortOrder');
+            $existingUserList = GenericModel::simpleFetchGenericByWhere('user', '=', 'IsActive', true, null);
+
+            try {
+
+                for ($i = 0; $i < $tempUserCount; $i++) {
+
+                    error_log("### ITERATION START ###");
+
+                    //first verifying the unique email address
+                    //and mobile number as well in-case of patient
+
+                    //verifying unique email address
+                    error_log("verifying unique email address");
+
+                    if (strtolower($tempUser[$i]->Role) == env('ROLE_PATIENT')) {
+                        //Role is Patient
+                        error_log("Role is Patient");
+
+                        foreach ($existingUserList as $item) {
+                            if ($item->EmailAddress == $tempUser[$i]->EmailAddress) {
+                                //verifying unique email break
+                                error_log('This email is already exist');
+                                $isUniqueEmail = false;
+                                break;
+                            } else {
+                                //verifying unique email continue
+                                error_log('This email is not exist');
+                            }
+
+                            if ($item->MobileNumber == $tempUser[$i]->MobileNumber) {
+                                //verifying unique mobile number break
+                                error_log('This mobile number is already exist');
+                                $isUniqueEmail = false;
+                                break;
+                            } else {
+                                //verifying unique mobile number continue
+                                error_log('This mobile number is not exist');
+                            }
+                        }
+
+                    } else {
+                        //Role is other an Patient
+                        error_log("Role is other than Patient");
+
+                        foreach ($existingUserList as $item) {
+                            if ($item->EmailAddress == $tempUser[$i]->EmailAddress) {
+                                //verifying unique email break
+                                error_log('This email is already exist');
+                                $isUniqueEmail = false;
+                                break;
+                            } else {
+                                //verifying unique email continue
+                                error_log('This email is not exist');
+                            }
+                        }
+                    }
+
+                    error_log($tempUser[$i]->MiddleName);
+                    error_log($tempUser[$i]->LastName);
+                    error_log($tempUser[$i]->EmailAddress);
+
+                    $defaultPassword = md5(getenv("DEFAULT_PWD"));
+
+                    error_log("isUniqueEmail");
+                    error_log($isUniqueEmail);
+
+                    if ($isUniqueEmail) {
+
+                        $insertData = array(
+                            'FirstName' => $tempUser[$i]->FirstName,
+                            'MiddleName' => $tempUser[$i]->MiddleName,
+                            'LastName' => $tempUser[$i]->LastName,
+                            'EmailAddress' => $tempUser[$i]->EmailAddress,
+                            'CountryPhoneCode' => $tempUser[$i]->CountryPhoneCode,
+                            'MobileNumber' => $tempUser[$i]->MobileNumber,
+                            'IsMobileNumberVerified' => ($tempUser[$i]->MobileNumber == null || "" ? false : true),
+                            'TelephoneNumber' => $tempUser[$i]->TelephoneNumber,
+                            'OfficeAddress' => $tempUser[$i]->OfficeAddress,
+                            'ResidentialAddress' => $tempUser[$i]->ResidentialAddress,
+                            'Password' => $defaultPassword,
+                            'Gender' => $tempUser[$i]->Gender,
+                            'Age' => $tempUser[$i]->Age,
+                            'AccountVerified' => true,
+                            'CreatedBy' => $tempUser[$i]->CreatedBy,
+                            'CreatedOn' => $tempUser[$i]->CreatedOn,
+                            'IsActive' => true,
+                            'ProfileSummary' => $tempUser[$i]->ProfileSummary,
+                            'DateOfBirth' => $tempUser[$i]->DateOfBirth,
+                            'IsBlock' => false,
+                            'PatientUniqueId' => 1, //generate if role is patient
+                            'IsCurrentlyLoggedIn' => false,
+                        );
+                        $insertedUserId = GenericModel::insertGenericAndReturnID('user', $insertData);
+                        error_log($insertedUserId);
+
+                        if ($insertedUserId == 0) {
+                            error_log("Insert Id is zero");
+                        } else {
+                            error_log("Insert Id is :");
+
+                            $newUserId = $insertedUserId;
+                            $roleId = null;
+                            foreach ($roleList as $key) {
+
+                                if (strtolower($key->Name) == strtolower($tempUser[$i]->Role)) {
+                                    $roleId = $key->Id;
+                                    //finding role break
+                                    error_log('finding role break');
+                                    break;
+                                } else {
+                                    //finding role continue
+                                    error_log('finding role continue');
+                                }
+                            }
+
+                            //insert in user_access
+                            $insertUserAccessData = array(
+                                'RoleId' => $roleId,
+                                'UserId' => $newUserId,
+                                'IsActive' => 1
+                            );
+                            GenericModel::insertGenericAndReturnID('user_access', $insertUserAccessData);
+
+                            //checking the possibility of
+                            //User association
+
+                            if (strtolower($tempUser[$i]->Role) == env('ROLE_SUPER_ADMIN') || strtolower($tempUser[$i]->Role) == env('ROLE_SUPPORT_STAFF') || strtolower($tempUser[$i]->Role) == env('ROLE_DOCTOR')) {
+                                error_log("No Need to insert in user_association");
+                            } else if (strtolower($tempUser[$i]->Role) == env('ROLE_PATIENT')) {
+                                error_log("Insert in user_association now");
+
+//                            ASSOCIATION_DOCTOR_PATIENT=doctor_patient
+//                            ASSOCIATION_DOCTOR_FACILITATOR=doctor_facilitator
+
+                                //insert in user_association
+                                $insertUserAssociationData = array(
+                                    'SourceUserId' => $tempUser[$i]->CreatedBy,
+                                    'DestinationUserId' => $newUserId,
+                                    'AssociationType' => env('ASSOCIATION_DOCTOR_PATIENT'),
+                                    'IsActive' => 1
+                                );
+                                GenericModel::insertGenericAndReturnID('user_association', $insertUserAssociationData);
+
+                            } else if (strtolower($tempUser[$i]->Role) == env('ROLE_FACILITATOR')) {
+                                //insert in user_association
+                                $insertUserAssociationData = array(
+                                    'SourceUserId' => $tempUser[$i]->CreatedBy,
+                                    'DestinationUserId' => $newUserId,
+                                    'AssociationType' => env('ASSOCIATION_DOCTOR_FACILITATOR'),
+                                    'IsActive' => 1
+                                );
+                                GenericModel::insertGenericAndReturnID('user_association', $insertUserAssociationData);
+                            } else {
+                                //none
+                                return true;
+                            }
+                        }
+
+                        array_push($registeredEmailAddress, $tempUser[$i]->EmailAddress);
+                    }
+
+                    array_push($deleteRecordFromTempTable, $tempUser[$i]->Id);
+
+                    error_log("### ITERATION ENDS ### -- " . $i);
+
+                    $isUniqueEmail = true;
+                }
+
+                //as import completes
+                //delete the data
+
+                error_log('Deleting Temp records from the table');
+                print_r($deleteRecordFromTempTable);
+
+                DB::table('temp_bulk_user')->whereIn('id', $deleteRecordFromTempTable)->delete();
+
+                error_log('Temp records are deleted');
+
+                error_log("count registered email address");
+                error_log(count($registeredEmailAddress));
+
+                for ($i = 0; $i < count($registeredEmailAddress); $i++) {
+                    error_log("## NOW Sending Email to newly Registered User ##");
+                    UserModel::sendEmail($registeredEmailAddress[$i], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$i]->Role . ' use this password to login ' . 123 . '', null);
+                }
+                error_log("## Here Sending Email to Uploader##");
+                UserModel::sendEmail($tempUser[$i]->CreatedByEmail, "Your Bulk Uploaded Users process is successfully completed you may view them in the link. ", null);
+
+            } catch (Exception $ex) {
+                return response()->json(['data' => null, 'message' => 'Internal Server Error'], 500);
+            }
+
+        }
+        //first insert in user table
+        //then insert in user_access table
+        //if association occurs thn insert in association table as well
+
+
+//        insert into `user` (`FirstName`, `MiddleName`, `LastName`, `EmailAddress`, `CountryPhoneCode`, `MobileNumber`, `IsMobileNumberVerified`, `TelephoneNumber`, `OfficeAddress`, `ResidentialAddress`, `Password`, `Gender`, `Age`, `AccountVerified`, `CreatedBy`, `CreatedOn`, `IsActive`, `ProfileSummary`, `DateOfBirth`, `IsBlock`, `PatientUniqueId`, `IsCurrentlyLoggedIn`) values (Bulk-1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?))
+
+        //generate random pwd
+        //send email to register user
+        //send email to upload by
+
+
+        return response()->json(['data' => null, 'message' => 'Users are successfully uploaded'], 200);
+
     }
 }
