@@ -1524,7 +1524,7 @@ class UserController extends Controller
             //fetch all roles from table
             //to be use it in comparison within loop
             $deleteRecordFromTempTable = array();
-            $registeredEmailAddress = array();
+            $registeredEmailAddress = array("Email" => "", "Password" => "");
             $isUniqueEmail = true;
             $roleList = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true, 'SortOrder');
             $existingUserList = GenericModel::simpleFetchGenericByWhere('user', '=', 'IsActive', true, null);
@@ -1588,7 +1588,7 @@ class UserController extends Controller
                     error_log($tempUser[$i]->LastName);
                     error_log($tempUser[$i]->EmailAddress);
 
-                    $defaultPassword = getenv("DEFAULT_PWD");
+                    $defaultPassword = md5(getenv("DEFAULT_PWD"));
 
                     error_log("isUniqueEmail");
                     error_log($isUniqueEmail);
@@ -1705,11 +1705,19 @@ class UserController extends Controller
 
                 error_log('Temp records are deleted');
 
+                error_log("count registered email address");
+                error_log(count($registeredEmailAddress));
+
+                for ($i = 0; $i < count($registeredEmailAddress); $i++) {
+                    error_log("## NOW Sending Email to newly Registered User ##");
+                    UserModel::sendEmail($registeredEmailAddress[$i], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$i]->Role . ' use this password to login ' . 123 . '', null);
+                }
+                error_log("## Here Sending Email to Uploader##");
+                UserModel::sendEmail($tempUser[$i]->CreatedByEmail, "Your Bulk Uploaded Users process is successfully completed you may view them in the link. ", null);
 
             } catch (Exception $ex) {
                 return response()->json(['data' => null, 'message' => 'Internal Server Error'], 500);
             }
-
 
         }
         //first insert in user table
