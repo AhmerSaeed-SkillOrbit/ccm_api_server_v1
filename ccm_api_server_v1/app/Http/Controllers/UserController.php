@@ -1544,6 +1544,7 @@ class UserController extends Controller
 
                     error_log("### ITERATION START ###");
                     $createdBy = $tempUser[$i]->CreatedBy;
+                    $createdByEmail = $tempUser[$i]->CreatedByEmail;
                     $related = $tempUser[$i]->Role;
 
                     //first verifying the unique email address
@@ -1719,12 +1720,12 @@ class UserController extends Controller
                 error_log("count registered email address");
                 error_log(count($registeredEmailAddress));
 
-                for ($i = 0; $i < count($registeredEmailAddress); $i++) {
+                for ($j = 0; $j < count($registeredEmailAddress); $j++) {
                     error_log("## NOW Sending Email to newly Registered User ##");
-                    UserModel::sendEmail($registeredEmailAddress[$i], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$i]->Role . ' use this password to login ' . getenv("DEFAULT_PWD") . '', null);
+                    UserModel::sendEmail($registeredEmailAddress[$j], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$j]->Role . ' use this password to login ' . getenv("DEFAULT_PWD") . '', null);
                 }
                 error_log("## Here Sending Success Email to Uploader ##");
-                UserModel::sendEmail($tempUser[$i]->CreatedByEmail, "Your Bulk Uploaded Users process is successfully completed. ", null);
+                UserModel::sendEmail($createdByEmail, "Your Bulk Uploaded Users process is successfully completed. ", null);
 
 
             } catch (Exception $ex) {
