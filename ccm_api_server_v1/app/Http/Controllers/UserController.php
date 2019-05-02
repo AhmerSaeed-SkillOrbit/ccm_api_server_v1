@@ -1438,7 +1438,7 @@ class UserController extends Controller
 
         $roleData = UserModel::GetRoleNameViaUserId($createdById);
         if (count($roleData) > 0) {
-            $roleName = $roleData[0]->Name;
+            $roleName = $roleData[0]->CodeName;
             $createdByEmail = $roleData[0]->EmailAddress;
             if ($roleName == env('ROLE_PATIENT') || $roleName == env('ROLE_SUPPORT_STAFF')) {
                 return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
@@ -1644,7 +1644,7 @@ class UserController extends Controller
                             $roleId = null;
                             foreach ($roleList as $key) {
 
-                                if (strtolower($key->Name) == strtolower($tempUser[$i]->Role)) {
+                                if (strtolower($key->CodeName) == strtolower($tempUser[$i]->Role)) {
                                     $roleId = $key->Id;
                                     //finding role break
                                     error_log('finding role break');
