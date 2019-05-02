@@ -858,4 +858,18 @@ class CcmModel
             return 0;
         }
     }
+
+    static public function GetPatientRecordTabPublished($patientId, $tabId)
+    {
+        error_log($patientId);
+        error_log($tabId);
+
+        $query = DB::table('patient_record_tab_publish as prtp')
+            ->select('prtp.IsPublish')
+            ->where('prtp.PatientRecordTabId', '=', $tabId)
+            ->where('prtp.PatientId', '=', $patientId)
+            ->where('prtp.IsActive', '=', true)
+            ->get();
+        return $query;
+    }
 }

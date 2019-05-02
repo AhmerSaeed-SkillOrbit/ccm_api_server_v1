@@ -3205,7 +3205,7 @@ class CcmPlanController extends Controller
                 'FeasibleMessageStartTime' => $checkData->FeasibleMessageStartTime,
                 'FeasibleMessageEndTime' => $checkData->FeasibleMessageEndTime,
                 'FeasibleCallStartTime' => $checkData->FeasibleCallStartTime,
-                'FeasibleCallEndTime' =>$checkData->FeasibleCallEndTime,
+                'FeasibleCallEndTime' => $checkData->FeasibleCallEndTime,
                 'DayTimePhoneNumber' => $checkData->DayTimePhoneNumber,
                 'DayTimeCountryCode' => $checkData->DayTimeCountryCode,
                 'IsNightTimePhoneNumberVerified' => $checkData->IsNightTimePhoneNumberVerified,
@@ -8033,6 +8033,54 @@ class CcmPlanController extends Controller
         } else {
             error_log("code is not exist");
             return response()->json(['data' => null, 'message' => 'Code is not exist'], 400);
+        }
+    }
+
+    function GetPatientRecordTabPublished(Request $request)
+    {
+        error_log('in controller');
+
+        $patientId = $request->get('patientId');
+
+        if ($patientId != null) {
+            $patientRecordTabList = GenericModel::simpleFetchGenericByWhere('patient_record_tab', '=', 'IsActive', true, null);
+            if (count($patientRecordTabList) > 0) {
+                $allTab = array();
+                foreach ($patientRecordTabList as $item) {
+                    $isPublish = false;
+                    $data = CcmModel::GetPatientRecordTabPublished($patientId, $item->Id);
+
+                    error_log("data->IsPublish");
+                    error_log($data);
+
+                    if (count($data) > 0) {
+                        $isPublish = ($data[0]->IsPublish == true ? true : false);
+                    }
+                    $singleTab = array(
+                        'Id' => $item->Id,
+                        'TabName' => $item->TabName,
+                        'TabCode' => $item->TabCode,
+                        'IsActive' => $item->IsActive,
+                        'IsPublish' => $isPublish
+                    );
+                    array_push($allTab, $singleTab);
+                }
+                return response()->json(['data' => $allTab, 'message' => 'Patient Record Tab found'], 200);
+
+            } else {
+                return response()->json(['data' => [], 'message' => 'Patient Record Tab not found'], 200);
+            }
+        } else {
+            return response()->json(['data' => [], 'message' => 'Patient is required'], 400);
+        }
+
+        //Now one by one we will fetch answers and will bind it in Answers array
+        $data = CcmModel::GetPatientRecordTabPublished($patientId);
+
+        if (count($data) > 0) {
+            return response()->json(['data' => $data, 'message' => 'Patient Record Tab found'], 200);
+        } else {
+            return response()->json(['data' => $patientId, 'message' => 'Patient Record Tab not exist'], 200);
         }
     }
 }

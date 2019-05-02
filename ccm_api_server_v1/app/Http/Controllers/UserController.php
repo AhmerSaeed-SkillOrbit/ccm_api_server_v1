@@ -1438,7 +1438,7 @@ class UserController extends Controller
 
         $roleData = UserModel::GetRoleNameViaUserId($createdById);
         if (count($roleData) > 0) {
-            $roleName = $roleData[0]->Name;
+            $roleName = $roleData[0]->CodeName;
             $createdByEmail = $roleData[0]->EmailAddress;
             if ($roleName == env('ROLE_PATIENT') || $roleName == env('ROLE_SUPPORT_STAFF')) {
                 return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
@@ -1457,6 +1457,7 @@ class UserController extends Controller
             try {
                 foreach ($data->toArray() as $key => $value) {
                     $insert_data[] = array(
+                        'PatientUniqueId' => $value['patientuniqueid'],
                         'FirstName' => $value['firstname'],
                         'MiddleName' => $value['middlename'],
                         'LastName' => $value['lastname'],
@@ -1515,6 +1516,14 @@ class UserController extends Controller
         $tempUser = GenericModel::simpleFetchGenericByWhere('temp_bulk_user', '=', 'IsActive', true, null);
         $tempUserCount = count($tempUser);
 
+        //log table variables
+        $exception = "none";
+        $createdBy = "";
+        $uploadStatus = "success";
+        $tempTableRecordDelete = "deleted";
+        $emailSent = "yes";
+        $related = "none";
+
         error_log('User Count');
         error_log($tempUserCount);
 
@@ -1524,7 +1533,7 @@ class UserController extends Controller
             //fetch all roles from table
             //to be use it in comparison within loop
             $deleteRecordFromTempTable = array();
-            $registeredEmailAddress = array("Email" => "", "Password" => "");
+            $registeredEmailAddress = array();
             $isUniqueEmail = true;
             $roleList = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true, 'SortOrder');
             $existingUserList = GenericModel::simpleFetchGenericByWhere('user', '=', 'IsActive', true, null);
@@ -1534,6 +1543,9 @@ class UserController extends Controller
                 for ($i = 0; $i < $tempUserCount; $i++) {
 
                     error_log("### ITERATION START ###");
+                    $createdBy = $tempUser[$i]->CreatedBy;
+                    $createdByEmail = $tempUser[$i]->CreatedByEmail;
+                    $related = $tempUser[$i]->Role;
 
                     //first verifying the unique email address
                     //and mobile number as well in-case of patient
@@ -1596,6 +1608,7 @@ class UserController extends Controller
                     if ($isUniqueEmail) {
 
                         $insertData = array(
+                            'PatientUniqueId' => $tempUser[$i]->PatientUniqueId,
                             'FirstName' => $tempUser[$i]->FirstName,
                             'MiddleName' => $tempUser[$i]->MiddleName,
                             'LastName' => $tempUser[$i]->LastName,
@@ -1631,7 +1644,7 @@ class UserController extends Controller
                             $roleId = null;
                             foreach ($roleList as $key) {
 
-                                if (strtolower($key->Name) == strtolower($tempUser[$i]->Role)) {
+                                if (strtolower($key->CodeName) == strtolower($tempUser[$i]->Role)) {
                                     $roleId = $key->Id;
                                     //finding role break
                                     error_log('finding role break');
@@ -1699,7 +1712,6 @@ class UserController extends Controller
                 //delete the data
 
                 error_log('Deleting Temp records from the table');
-                print_r($deleteRecordFromTempTable);
 
                 DB::table('temp_bulk_user')->whereIn('id', $deleteRecordFromTempTable)->delete();
 
@@ -1708,31 +1720,48 @@ class UserController extends Controller
                 error_log("count registered email address");
                 error_log(count($registeredEmailAddress));
 
-                for ($i = 0; $i < count($registeredEmailAddress); $i++) {
+                for ($j = 0; $j < count($registeredEmailAddress); $j++) {
                     error_log("## NOW Sending Email to newly Registered User ##");
-                    UserModel::sendEmail($registeredEmailAddress[$i], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$i]->Role . ' use this password to login ' . 123 . '', null);
+                    UserModel::sendEmail($registeredEmailAddress[$j], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$j]->Role . ' use this password to login ' . getenv("DEFAULT_PWD") . '', null);
                 }
-                error_log("## Here Sending Email to Uploader##");
-                UserModel::sendEmail($tempUser[$i]->CreatedByEmail, "Your Bulk Uploaded Users process is successfully completed you may view them in the link. ", null);
+                error_log("## Here Sending Success Email to Uploader ##");
+                UserModel::sendEmail($createdByEmail, "Your Bulk Uploaded Users process is successfully completed. ", null);
+
 
             } catch (Exception $ex) {
+                $exception = $ex;
+                $uploadStatus = "failed";
+                $emailSent = "failed";
+                $tempTableRecordDelete = "not required";
+
+                error_log("## Here Sending Failure Email to Uploader ##");
+                UserModel::sendEmail($tempUser[$i]->CreatedByEmail, "Sorry, Your Bulk Uploaded Users process is failed to complete. Please try again ", null);
+
                 return response()->json(['data' => null, 'message' => 'Internal Server Error'], 500);
             }
-
         }
-        //first insert in user table
-        //then insert in user_access table
-        //if association occurs thn insert in association table as well
 
+        $date = HelperModel::getDate();
 
-//        insert into `user` (`FirstName`, `MiddleName`, `LastName`, `EmailAddress`, `CountryPhoneCode`, `MobileNumber`, `IsMobileNumberVerified`, `TelephoneNumber`, `OfficeAddress`, `ResidentialAddress`, `Password`, `Gender`, `Age`, `AccountVerified`, `CreatedBy`, `CreatedOn`, `IsActive`, `ProfileSummary`, `DateOfBirth`, `IsBlock`, `PatientUniqueId`, `IsCurrentlyLoggedIn`) values (Bulk-1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?))
-
-        //generate random pwd
-        //send email to register user
-        //send email to upload by
-
-
-        return response()->json(['data' => null, 'message' => 'Users are successfully uploaded'], 200);
-
+        //Insert into log table now
+        $insertData = array(
+            'TotalRecord' => $tempUserCount,
+            'Exception' => $exception,
+            'UploadStatus' => $uploadStatus,
+            'TempTableRecordDelete' => $tempTableRecordDelete,
+            'EmailSent' => $emailSent,
+            'UploadBy' => $createdBy,
+            'UploadOn' => $date["timestamp"],
+            'Related' => $related,
+            'IsActive' => 1
+        );
+        $insertedUserId = GenericModel::insertGenericAndReturnID('bulk_upload_log', $insertData);
+        if ($insertedUserId > 0) {
+            error_log("## successfully created the log ##");
+            return response()->json(['data' => null, 'message' => 'successfully created the log'], 200);
+        } else {
+            error_log("## failed to create the log ##");
+            return response()->json(['data' => null, 'message' => 'failed to create log'], 500);
+        }
     }
 }
