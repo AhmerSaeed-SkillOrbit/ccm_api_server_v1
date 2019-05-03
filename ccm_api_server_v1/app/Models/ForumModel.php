@@ -46,6 +46,30 @@ class ForumModel
         return $query;
     }
 
+    static public function getFilesViaForumId($topicForumId)
+    {
+        error_log('in model, fetching files via id');
+
+        $query = DB::table('forum_topic_file')
+            ->where('forum_topic_file.ForumTopicId', '=', $topicForumId)
+            ->where('forum_topic_file.IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getFilesViaForumCommentId($forumCommentId)
+    {
+        error_log('in model, fetching files via id');
+
+        $query = DB::table('forum_topic_comment_file')
+            ->where('forum_topic_comment_file.ForumTopicCommentId', '=', $forumCommentId)
+            ->where('forum_topic_comment_file.IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
     static public function getForumTopicViaId($forumTopicId)
     {
         error_log('in model , fetching forum topic');
@@ -132,6 +156,36 @@ class ForumModel
         return $query;
     }
 
+    static public function GetForumTopicFile($forumTopicId)
+    {
+        error_log('in model, fetching comment via comment id');
+
+        $query = DB::table('forum_topic_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'forum_topic_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('forum_topic_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('forum_topic_file.ForumTopicId', '=', $forumTopicId)
+            ->get();
+
+        return $query;
+    }
+
+    static public function GetForumTopicCommentFile($forumTopicCommentId)
+    {
+        error_log('in model, fetching comment via comment id');
+
+        $query = DB::table('forum_topic_comment_file')
+            ->leftjoin('file_upload as file_upload', 'file_upload.Id', 'forum_topic_comment_file.FileUploadId')
+            ->select('file_upload.*')
+            ->where('forum_topic_comment_file.IsActive', '=', true)
+            ->where('file_upload.IsActive', '=', true)
+            ->where('forum_topic_comment_file.ForumTopicCommentId', '=', $forumTopicCommentId)
+            ->get();
+
+        return $query;
+    }
+
     static public function getCommentsViaTopicForumId($pageNo, $limit, $topicForumId)
     {
         error_log('in model, fetching comments via forum topic id');
@@ -192,25 +246,25 @@ class ForumModel
         error_log($diffInSec);
 
         if ($diffInYears > 0) {
-            $formatMessage = $diffInYears . 'Y ago';
+            $formatMessage = $diffInYears . ' y ago';
             return $formatMessage;
         } else if ($diffInMonths > 0) {
-            $formatMessage = $diffInMonths . 'Mon ago';
+            $formatMessage = $diffInMonths . ' mon ago';
             return $formatMessage;
         } else if ($diffInWeeks > 0) {
-            $formatMessage = $diffInWeeks . 'W ago';
+            $formatMessage = $diffInWeeks . ' w ago';
             return $formatMessage;
         } else if ($diffInDays > 0) {
-            $formatMessage = $diffInDays . 'D ago';
+            $formatMessage = $diffInDays . ' d ago';
             return $formatMessage;
         } else if ($diffInHours > 0) {
-            $formatMessage = $diffInHours . 'H ago';
+            $formatMessage = $diffInHours . ' h ago';
             return $formatMessage;
         } else if ($diffInMints > 0) {
-            $formatMessage = $diffInMints . 'Min ago';
+            $formatMessage = $diffInMints . ' min ago';
             return $formatMessage;
         } else if ($diffInSec >= 30) {
-            $formatMessage = $diffInMints . 'Sec ago';
+            $formatMessage = $diffInMints . ' sec ago';
             return $formatMessage;
         } else {
             //seconds

@@ -11,6 +11,8 @@ class GenericModel
     {
         $result = DB::table($tableName)->insert($data);
         return $result;
+
+        error_log($result);
     }
 
     static public function insertGenericAndReturnID($tableName, $data)
@@ -31,13 +33,45 @@ class GenericModel
         return $result;
     }
 
-    static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data, $orderby)
+    static public function simpleFetchGenericByWhere($tableName, $operator, $columnName, $data, $orderby = "Id")
+    {
+        if ($orderby == null) {
+            return DB::table($tableName)
+                ->select('*')
+                ->where($columnName, $operator, $data)
+                ->get();
+        } else {
+            return DB::table($tableName)
+                ->select('*')
+                ->where($columnName, $operator, $data)
+                ->orderBy($orderby, 'ASC')
+                ->get();
+        }
+    }
+
+    static public function simpleFetchGenericAll($tableName)
     {
         return DB::table($tableName)
             ->select('*')
-            ->where($columnName, $operator, $data)
-            ->orderBy($orderby, 'ASC')
+            ->where('IsActive', '=', true)
+            ->orderBy('Id', 'desc')
             ->get();
+    }
+
+    static public function simpleFetchGenericById($tableName, $columnName, $id)
+    {
+//        DB::enableQueryLog();
+
+        $query = DB::table($tableName)
+            ->select('*')
+            ->where($columnName, '=', $id)
+            ->where('IsActive', '=', true)
+            ->first();
+
+//        dd(DB::getQueryLog());
+
+        return $query;
+
     }
 
     static public function simpleFetchGenericWithPaginationByWhereWithSortOrderAndSearchKeyword

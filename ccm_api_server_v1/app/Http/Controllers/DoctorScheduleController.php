@@ -23,6 +23,7 @@ use Carbon\Carbon;
 use phpDocumentor\Reflection\Types\Array_;
 
 
+
 class DoctorScheduleController extends Controller
 {
     function AddDoctorSchedule(Request $request)
@@ -289,7 +290,7 @@ class DoctorScheduleController extends Controller
         $getRange = DoctorScheduleModel::getDoctorScheduleAhmer($doctorId, $request->post('MonthName'), $request->post('YearName'));
 
         if ($getRange != null) {
-            return response()->json(['data' => null, 'message' => 'Schedule of this dr with same time already exists'], 400);
+            return response()->json(['data' => null, 'message' => 'Your Schedule already exist for these dates'], 400);
         }
 
         $date = HelperModel::getDate();
@@ -383,6 +384,9 @@ class DoctorScheduleController extends Controller
                     } else {
                         //now insert dynamic time slots
                         $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($scheduleShift['StartTime'], $scheduleShift['EndTime'], $scheduleShift['NoOfPatientAllowed']);
+
+                        error_log('$timeSlots');
+
                         if (count($timeSlots) > 0) {
                             foreach ($timeSlots as $i) {
                                 $timeSlotsData = array(
@@ -391,12 +395,14 @@ class DoctorScheduleController extends Controller
                                 );
                                 $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
                             }
+                            error_log('yahan');
                         }
                     }
                 }
             }
         }
 
+        error_log('## nahi aya  ##');
         DB::commit();
         return response()->json(['data' => $doctorId, 'message' => 'Doctor schedule created successfully'], 200);
 
@@ -506,6 +512,9 @@ class DoctorScheduleController extends Controller
 
                                 //now insert dynamic time slots
                                 $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($doctorScheduleShiftData['StartTime'], $doctorScheduleShiftData['EndTime'], $doctorScheduleShiftData['NoOfPatientAllowed']);
+
+                                error_log('$timeSlots');
+
                                 if (count($timeSlots) > 0) {
                                     foreach ($timeSlots as $i) {
                                         $timeSlotsData = array(
@@ -532,10 +541,11 @@ class DoctorScheduleController extends Controller
                                 if (count($checkScheduleShiftRecord) > 0) {
                                     error_log('Deleting all shift entries');
                                     $result = GenericModel::deleteGeneric('doctor_schedule_shift', 'DoctorScheduleDetailId', $doctorScheduleDetailId);
-                                    if ($result == false) {
-                                        DB::rollBack();
-                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
-                                    }
+//                                    not required
+//                                    if ($result == false) {
+//                                        DB::rollBack();
+//                                        return response()->json(['data' => null, 'message' => 'Error in deleting schedule shift'], 400);
+//                                    }
                                 }
                             } else {
 
@@ -548,10 +558,36 @@ class DoctorScheduleController extends Controller
                                     "IsActive" => true
                                 );
                                 $update = GenericModel::updateGeneric('doctor_schedule_shift', 'Id', $item['Id'], $dataToUpdate);
-                                if ($update == false) {
-                                    DB::rollBack();
-                                    return response()->json(['data' => null, 'message' => 'Error in updating schedule shift'], 400);
+
+                                //now update the time slots as well
+                                //first delete the existing time slots
+                                //and insert new ones
+
+                                error_log('shift_time_slot are deleted');
+
+                                GenericModel::deleteGeneric('shift_time_slot', 'DoctorScheduleShiftId', $item['Id']);
+
+                                //now insert dynamic time slots
+                                $timeSlots = DoctorScheduleModel::CalculateTimeSlotDynamically($item['StartTime'], $item['EndTime'], $item['NoOfPatientAllowed']);
+
+                                error_log('$timeSlots');
+
+                                if (count($timeSlots) > 0) {
+                                    foreach ($timeSlots as $i) {
+                                        $timeSlotsData = array(
+                                            "DoctorScheduleShiftId" => $item['Id'],
+                                            "TimeSlot" => $i,
+                                        );
+                                        error_log('new shift_time_slot are inserted');
+                                        $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
+                                    }
                                 }
+
+                                //not required
+//                                if ($update == false) {
+//                                    DB::rollBack();
+//                                    return response()->json(['data' => null, 'message' => 'Error in updating schedule shift'], 400);
+//                                }
                             }
                         }
                     }
@@ -732,8 +768,9 @@ class DoctorScheduleController extends Controller
                 $data = array(
                     'Id' => $item->Id,
                     'ScheduleDate' => $item->ScheduleDate,
-                    'NoOfShift' => $item->NoOfShift,
-                    'IsOffDay' => $item->IsOffDay,
+                    'NoOfShift' => (int) $item->NoOfShift,
+//                    'IsOffDay' => (($item->IsOffDay == "0") ? false : true),
+                    'IsOffDay' => (boolean) $item->IsOffDay,
                     'ScheduleShifts' => array()
                 );
 
@@ -1030,8 +1067,7 @@ class DoctorScheduleController extends Controller
                 if ($patientData[0]->MobileNumber != null) {
                     $url = env('WEB_URL') . '/#/';
                     $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $patientData[0]->MobileNumber;
+                    $mobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
                     HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
                 }
@@ -1041,8 +1077,7 @@ class DoctorScheduleController extends Controller
                 if ($DoctorData[0]->MobileNumber != null) {
                     $url = env('WEB_URL') . '/#/';
                     $toNumber = array();
-                    $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                    $mobileNumber = $phoneCode . $DoctorData[0]->MobileNumber;
+                    $mobileNumber = $DoctorData[0]->CountryPhoneCode . $DoctorData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
                     HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
                 }
@@ -1080,7 +1115,8 @@ class DoctorScheduleController extends Controller
                 error_log('login user is not doctor');
                 //Now check if logged in user is doctor or not
                 return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
-            } else {
+            }
+            else {
                 error_log('login user is doctor');
                 //Now get his associated patient ids
 
@@ -1360,8 +1396,7 @@ class DoctorScheduleController extends Controller
             if ($getAppointmentData->PatientMobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
                 $toNumber = array();
-                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                $mobileNumber = $phoneCode . $getAppointmentData->PatientMobileNumber;
+                $mobileNumber = $getAppointmentData->PatientCountryPhoneCode . $getAppointmentData->PatientMobileNumber;
                 array_push($toNumber, $mobileNumber);
                 HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
             }
@@ -1371,8 +1406,7 @@ class DoctorScheduleController extends Controller
             if ($getAppointmentData->DoctorMobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
                 $toNumber = array();
-                $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-                $mobileNumber = $phoneCode . $getAppointmentData->DoctorMobileNumber;
+                $mobileNumber = $getAppointmentData->DoctorCountryPhoneCode . $getAppointmentData->DoctorMobileNumber;
                 array_push($toNumber, $mobileNumber);
                 HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
             }
@@ -1496,6 +1530,9 @@ class DoctorScheduleController extends Controller
 
     function AddTimeSlotDynamically(Request $request)
     {
+//        $response = new Twiml;
+//        $response->message("The Robots are coming! Head for the hills!");
+//        return $response;
 
         $query = DoctorScheduleModel::getTimeSlotTemp();
         $patientAllowed = $request->get('allowed');
@@ -1560,25 +1597,25 @@ class DoctorScheduleController extends Controller
         error_log($diffInSec);
 
         if ($diffInYears > 0) {
-            $formatMessage = $diffInYears . 'Y ago';
+            $formatMessage = $diffInYears . ' y ago';
             return $formatMessage;
         } else if ($diffInMonths > 0) {
-            $formatMessage = $diffInMonths . 'Mon ago';
+            $formatMessage = $diffInMonths . ' mon ago';
             return $formatMessage;
         } else if ($diffInWeeks > 0) {
-            $formatMessage = $diffInWeeks . 'W ago';
+            $formatMessage = $diffInWeeks . ' w ago';
             return $formatMessage;
         } else if ($diffInDays > 0) {
-            $formatMessage = $diffInDays . 'D ago';
+            $formatMessage = $diffInDays . ' d ago';
             return $formatMessage;
         } else if ($diffInHours > 0) {
-            $formatMessage = $diffInHours . 'H ago';
+            $formatMessage = $diffInHours . ' h ago';
             return $formatMessage;
         } else if ($diffInMints > 0) {
-            $formatMessage = $diffInMints . 'Min ago';
+            $formatMessage = $diffInMints . ' min ago';
             return $formatMessage;
         } else if ($diffInSec >= 30) {
-            $formatMessage = $diffInMints . 'Sec ago';
+            $formatMessage = $diffInMints . ' sec ago';
             return $formatMessage;
         } else {
             //seconds

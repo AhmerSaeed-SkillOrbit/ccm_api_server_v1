@@ -342,11 +342,11 @@ class UserModel
         if ($keyword != null && $keyword != "null") {
             error_log('Keyword NOT NULL');
             $query = DB::table('user')
-                ->join('user_access', 'user_access.UserId', 'user.Id')
-                ->join('role', 'user_access.RoleId', 'role.Id')
-                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
-                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
-                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+//                ->join('user_access', 'user_access.UserId', 'user.Id')
+//                ->join('role', 'user_access.RoleId', 'role.Id')
+//                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
+//                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
+//                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                 ->where($tableName . '.' . $columnName, $operator, $data)
                 ->whereIn('user.Id', $destinationUserId)
                 ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
@@ -355,24 +355,19 @@ class UserModel
                 ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
                 ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
                 ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
-                ->groupBy('user.Id')
                 ->count();
 
             error_log($query);
 
             return $query;
         } else {
-            error_log('keyword is NULL');
+            error_log('keyword is NULL ' . count($destinationUserId));
+
             $query = DB::table('user')
-                ->join('user_access', 'user_access.UserId', 'user.Id')
-                ->join('role', 'user_access.RoleId', 'role.Id')
-                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
-                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
-                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
                 ->where($tableName . '.' . $columnName, $operator, $data)
                 ->whereIn('user.Id', $destinationUserId)
-                ->groupBy('user.Id')
                 ->count();
+
 
             error_log($query);
 
@@ -411,8 +406,6 @@ class UserModel
                     ->groupBy('user.Id')
                     ->get();
 
-                error_log($query);
-
                 return $query;
             } else {
                 error_log('keyword is NULL and role is NOT NULL');
@@ -434,7 +427,6 @@ class UserModel
                     ->groupBy('user.Id')
                     ->get();
 
-                error_log($query);
 
                 return $query;
             }
@@ -628,7 +620,9 @@ class UserModel
 
     static public function GetSingleUserViaIdNewFunction($id)
     {
-        error_log('in model');
+        error_log('## in model ##');
+        error_log('## GetSingleUserViaIdNewFunction ##');
+        error_log($id);
 
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')
@@ -641,6 +635,24 @@ class UserModel
                 'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                 'destinationUser.EmailAddress as DestinationUserEmailAddress')
             ->where('user.Id', '=', $id)
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetPatientViaMobileNum($mobileNum, $patientRoleCode)
+    {
+        error_log('in GetUserViaMobileNum function - Model');
+        error_log($mobileNum);
+        error_log($patientRoleCode);
+
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('user.MobileNumber', '=', $mobileNum)
+            ->where('role.CodeName', '=', $patientRoleCode)
+            ->where('user.IsActive', '=', 1)
             ->first();
 
         return $query;
@@ -681,8 +693,8 @@ class UserModel
     static public function getUserList()
     {
         return DB::table('user')
-            ->join('user_access', 'user_access.UserId', 'user.Id')
-            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+            ->leftjoin('role', 'user_access.RoleId', 'role.Id')
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
             ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
@@ -784,10 +796,24 @@ class UserModel
 
     static public function getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $associationType)
     {
-        return DB::table('user_association')
+        error_log('$associationType ' . $associationType);
+
+        $query = DB::table('user_association')
             ->select('DestinationUserId')
             ->where('SourceUserId', '=', $userId)
             ->where('AssociationType', '=', $associationType)
+            ->where('IsActive', '=', true)
+            ->get();
+
+        return $query;
+    }
+
+    static public function getAssociatedPatientViaDoctorId($userId, $associationType, $patientId)
+    {
+        return DB::table('user_association')
+            ->where('SourceUserId', '=', $userId)
+            ->where('AssociationType', '=', $associationType)
+            ->where('DestinationUserId', '=', $patientId)
             ->where('IsActive', '=', true)
             ->get();
     }
@@ -807,6 +833,17 @@ class UserModel
             ->select('DestinationUserId')
             ->whereIn('SourceUserId', $doctorIds)
             ->where('AssociationType', '=', $associationType)
+            ->where('IsActive', '=', true)
+            ->get();
+    }
+
+    static public function getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $associationType, $patientId)
+    {
+        return DB::table('user_association')
+            ->select('DestinationUserId')
+            ->whereIn('SourceUserId', $doctorIds)
+            ->where('AssociationType', '=', $associationType)
+            ->where('DestinationUserId', '=', $patientId)
             ->where('IsActive', '=', true)
             ->get();
     }
@@ -833,7 +870,7 @@ class UserModel
     static public function getMultipleUsers($userIds)
     {
         $result = DB::table('user')
-            ->select('user.EmailAddress', 'user.Id', 'user.FirstName', 'user.LastName', 'user.MobileNumber')
+            ->select('user.EmailAddress', 'user.Id', 'user.FirstName', 'user.LastName', 'user.MobileNumber', 'user.CountryPhoneCode')
             ->whereIn('Id', $userIds)
             ->where('IsActive', '=', true)
             ->get();
@@ -856,6 +893,7 @@ class UserModel
             ->where('DestinationUserId', '=', $userId)
             ->where('AssociationType', '=', $associationType)
             ->first();
+
         return $result;
     }
 
@@ -873,5 +911,32 @@ class UserModel
         error_log($query);
 
         return $query;
+    }
+
+    static public function getPatientLastUniqueId()
+    {
+        error_log('in model, fetching last ticket number');
+
+        $query = DB::table("user")
+            ->select('PatientUniqueId')
+            ->where("IsActive", "=", true)
+            ->where("PatientUniqueId", "!=", 0)
+            ->orderBy('Id', 'desc')
+            ->first();
+
+        return $query;
+    }
+
+    static public function GetRoleNameViaUserId($userId)
+    {
+        error_log("userId");
+        error_log($userId);
+
+        return DB::table('user')
+            ->select('user.Id', 'user.EmailAddress','role.Name','role.CodeName')
+            ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
+            ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
+            ->where('user.Id', '=', $userId)
+            ->get();
     }
 }

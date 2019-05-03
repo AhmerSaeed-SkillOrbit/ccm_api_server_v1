@@ -20,10 +20,9 @@ class ServicesModel
 
     static public function sendInviteTrans(Request $request)
     {
-        $phoneCode = getenv("PAK_NUM_CODE");//fetch from front-end
-
         $email = Input::get('email');
-        $mobileNumber = $phoneCode . Input::get('mobileNumber');
+        $mobileNumber = Input::get('mobileNumber');
+        $countryPhoneCode = Input::get('CountryPhoneCode');
 
         $type = Input::get('type');
         $userId = Input::get('userId');
@@ -64,7 +63,8 @@ class ServicesModel
                 $insertData = array(
                     "ByUserId" => $userId,
                     "ToEmailAddress" => $email,
-                    "ToMobileNumber" => "",
+                    "CountryPhoneCode" => $countryPhoneCode,
+                    "ToMobileNumber" => $mobileNumber,
                     "Status_" => "pending",
                     "Token" => $token,
                     "BelongTo" => $type,
@@ -82,10 +82,11 @@ class ServicesModel
                     ## Preparing Data for SMS  - START ##
                     if ($mobileNumber != null) {
                         $toNumber = array();
-                        $toNumber[0] = $mobileNumber;
+                        $toNumber[0] = $countryPhoneCode . $mobileNumber;
 
                         $content = getenv("ACCOUNT_INVITATION_SMS");
-                        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
+//                        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
+                        $url = url(env('WEB_URL') . '/#/registration') . '?token=' . $token;
                         try {
                             error_log('sms in try block');
                             HelperModel::sendSms($toNumber, $content, $url);
@@ -156,14 +157,16 @@ class ServicesModel
                         ->update($inviteUpdateData);
 
                     if ($inviteUpdate > 0) {
-                        return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                        // return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                        return array("status" => "success", "data" => $checkInvite[0]['ToEmailAddress'], "message" => "Your Invitation is pending");
                     } else {
                         return array("status" => "failed", "data" => null, "message" => "Your Invitation is pending");
                     }
 
                 }
                 if ($checkInvite[0]['Status_'] == "ignored" && $checkInvite[0]['IsActive'] == 0) {
-                    return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                    // return array("status" => "success", "data" => true, "message" => "Your Invitation is pending");
+                    return array("status" => "success", "data" => $checkInvite[0]['ToEmailAddress'], "message" => "Your Invitation is pending");
                 } else if ($checkInvite[0]['Status_'] == "accepted") {
                     return array("status" => "failed", "data" => null, "message" => "Your invitation is accepted");
                 } else if ($checkInvite[0]['Status_'] == "rejected") {
@@ -185,7 +188,8 @@ class ServicesModel
 
     private static function sendEmail($email, $type, $token)
     {
-        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
+//        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
+        $url = url(env('WEB_URL') . '/#/registration') . '?token=' . $token;
         Mail::raw('Invitation URL ' . $url, function ($message) use ($email) {
             $message->to($email)->subject("Invitation");
         });

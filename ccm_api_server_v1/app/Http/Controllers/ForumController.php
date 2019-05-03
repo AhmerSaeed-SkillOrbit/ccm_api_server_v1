@@ -75,6 +75,7 @@ class ForumController extends Controller
         $title = $request->input('Title');
         $description = $request->input('Description');
         $tags = $request->input('Tag');
+//        $fileUpload = $request->input('FileUpload');
 
         //First check if logged if user id is valid or not
 
@@ -126,15 +127,33 @@ class ForumController extends Controller
                     if ($insertForumTopicTagData == 0) {
                         DB::rollBack();
                         return response()->json(['data' => null, 'message' => 'Error in inserting forum topic'], 400);
-                    } else {
-                        error_log('Forum topic tag inserted id ');
-                        DB::commit();
-                        return response()->json(['data' => $insertedData, 'message' => 'Forum topic started successfully'], 200);
                     }
-                } else {
-                    DB::commit();
-                    return response()->json(['data' => $insertedData, 'message' => 'Forum topic started successfully'], 200);
                 }
+
+//                if (count($fileUpload) > 0) {
+//
+//                    $fileUploadData = array();
+//
+//                    foreach ($fileUpload as $item) {
+//
+//                        array_push($fileUploadData,
+//                            array(
+//                                "ForumTopicId" => $insertedData,
+//                                "FileUploadId" => $item['Id'],
+//                                "IsActive" => true
+//                            )
+//                        );
+//                    }
+//
+//                    $insertForumTopicFileUpload = GenericModel::insertGeneric('forum_topic_file', $fileUploadData);
+//                    if ($insertForumTopicFileUpload == 0) {
+//                        DB::rollBack();
+//                        return response()->json(['data' => null, 'message' => 'Error in inserting forum topic file'], 400);
+//                    }
+//                }
+
+                DB::commit();
+                return response()->json(['data' => $insertedData, 'message' => 'Forum topic started successfully'], 200);
             }
         }
     }
@@ -148,6 +167,7 @@ class ForumController extends Controller
         $title = $request->input('Title');
         $description = $request->input('Description');
         $tags = $request->input('Tag');
+//        $fileUpload = $request->input('FileUpload');
 
         //First check if logged if user id is valid or not
 
@@ -198,38 +218,68 @@ class ForumController extends Controller
                 if ($update == false) {
                     DB::rollBack();
                     return response()->json(['data' => null, 'message' => 'Error in updating forum topic'], 400);
-                } else {
+                }
+                //Now we will make data for inserting forum tags
 
-                    //Now we will make data for inserting forum tags
+                if (count($tags) > 0) {
 
-                    if (count($tags) > 0) {
+                    $forumTopicTagData = array();
 
-                        $forumTopicTagData = array();
+                    foreach ($tags as $item) {
 
-                        foreach ($tags as $item) {
+                        array_push($forumTopicTagData,
+                            array(
+                                "ForumTopicId" => $forumTopicId,
+                                "TagId" => $item['Id']
+                            )
+                        );
+                    }
 
-                            array_push($forumTopicTagData,
-                                array(
-                                    "ForumTopicId" => $forumTopicId,
-                                    "TagId" => $item['Id']
-                                )
-                            );
-                        }
-
-                        $insertForumTopicTagData = GenericModel::insertGeneric('forum_topic_tag', $forumTopicTagData);
-                        if ($insertForumTopicTagData == 0) {
-                            DB::rollBack();
-                            return response()->json(['data' => null, 'message' => 'Error in updating forum topic'], 400);
-                        } else {
-                            error_log('Forum topic tag inserted id ');
-                            DB::commit();
-                            return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic updated successfully'], 200);
-                        }
-                    } else {
-                        DB::commit();
-                        return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic updated successfully'], 200);
+                    $insertForumTopicTagData = GenericModel::insertGeneric('forum_topic_tag', $forumTopicTagData);
+                    if ($insertForumTopicTagData == 0) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in updating forum topic'], 400);
                     }
                 }
+
+                $getForumTopicFilesData = ForumModel::getFilesViaForumId($forumTopicId);
+                if (count($getForumTopicFilesData) > 0) {
+
+                    error_log('forum topic file already exists');
+                    error_log('deleting them');
+
+                    $deleteTags = GenericModel::deleteGeneric('forum_topic_file', 'ForumTopicId', $forumTopicId);
+                    if ($deleteTags == false) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in deleting forum topic files'], 400);
+                    }
+                }
+
+//                if (count($fileUpload) > 0) {
+//
+//                    $fileUploadData = array();
+//
+//                    foreach ($fileUpload as $item) {
+//
+//                        array_push($fileUploadData,
+//                            array(
+//                                "ForumTopicId" => $forumTopicId,
+//                                "FileUploadId" => $item['Id'],
+//                                "IsActive" => true
+//                            )
+//                        );
+//                    }
+//
+//                    $insertForumTopicFileUpload = GenericModel::insertGeneric('forum_topic_file', $fileUploadData);
+//                    if ($insertForumTopicFileUpload == 0) {
+//                        DB::rollBack();
+//                        return response()->json(['data' => null, 'message' => 'Error in inserting forum topic file'], 400);
+//                    }
+//                }
+
+                DB::commit();
+                return response()->json(['data' => $forumTopicId, 'message' => 'Forum topic updated successfully'], 200);
+
             }
         }
     }
@@ -239,6 +289,9 @@ class ForumController extends Controller
         $userId = $request->get('userId');
         $forumTopicId = $request->get('forumTopicId');
         $comment = $request->get('comment');
+
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TOPIC_FILE_API_PREFIX');
 
         //First check logged in user data if it is valid or not
         $checkUserData = UserModel::GetSingleUserViaId($userId);
@@ -276,6 +329,8 @@ class ForumController extends Controller
                 $forumTopicData['Role']['Name'] = $getForumTopicData->RoleName;
                 $forumTopicData['Role']['CodeName'] = $getForumTopicData->RoleCodeName;
 
+                $forumTopicData['FileUpload'] = array();
+
                 //After fetching this data
                 //Now we will fetch tags data
 
@@ -300,6 +355,30 @@ class ForumController extends Controller
                 } else {
                     error_log('NO comments');
                     $forumTopicData['Comments'] = array();
+                }
+
+
+                //Now fetching file upload data
+                $fileUpload = array();
+                $fileUploadData = ForumModel::GetForumTopicFile($forumTopicId);
+                if (count($fileUploadData) > 0) {
+                    error_log('files found');
+                    foreach ($fileUploadData as $item) {
+                        $data = array(
+                            'Id' => $item->Id,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension
+                        );
+
+                        array_push($fileUpload, $data);
+                    }
+
+                    $forumTopicData['FileUpload'] = $fileUpload;
+
+                } else {
+                    $forumTopicData['FileUpload'] = null;
                 }
 
                 return response()->json(['data' => $forumTopicData, 'message' => 'Forum topic data found'], 200);
@@ -451,11 +530,11 @@ class ForumController extends Controller
     {
         error_log('in controller');
 
-        $forumCommentId = $request->input('ForumTopicCommentId');
         $forumTopicId = $request->input('ForumTopicId');
         $userId = $request->input('UserId');
 
         $comment = $request->input('Comment');
+//        $fileUpload = $request->input('FileUpload');
 
         //First check if logged if user id is valid or not
 
@@ -485,10 +564,35 @@ class ForumController extends Controller
                     "CreatedOn" => $date["timestamp"]
                 );
 
+                DB::beginTransaction();
                 $insertedData = GenericModel::insertGenericAndReturnID('forum_topic_comment', $forumTopicCommentData);
                 if ($insertedData == false) {
+                    DB::rollBack();
                     return response()->json(['data' => null, 'message' => 'Error in adding comment'], 400);
                 } else {
+
+//                    if (count($fileUpload) > 0) {
+//
+//                        $fileUploadData = array();
+//
+//                        foreach ($fileUpload as $item) {
+//
+//                            array_push($fileUploadData,
+//                                array(
+//                                    "ForumTopicCommentId" => $insertedData,
+//                                    "FileUploadId" => $item['Id'],
+//                                    "IsActive" => true
+//                                )
+//                            );
+//                        }
+//
+//                        $insertForumTopicFileUpload = GenericModel::insertGeneric('forum_topic_comment_file', $fileUploadData);
+//                        if ($insertForumTopicFileUpload == 0) {
+//                            DB::rollBack();
+//                            return response()->json(['data' => null, 'message' => 'Error in inserting forum topic comment file'], 400);
+//                        }
+//                    }
+                    DB::commit();
                     return response()->json(['data' => $insertedData, 'message' => 'Comment given successfully'], 200);
                 }
             }
@@ -503,6 +607,7 @@ class ForumController extends Controller
         $userId = $request->input('UserId');
 
         $comment = $request->input('Comment');
+//        $fileUpload = $request->input('FileUpload');
 
         //First check if logged if user id is valid or not
 
@@ -536,13 +641,53 @@ class ForumController extends Controller
                     "UpdatedOn" => $date["timestamp"]
                 );
 
+                DB::beginTransaction();
+
                 $update = GenericModel::updateGeneric('forum_topic_comment', 'Id', $forumCommentId, $dataToUpdate);
 
                 if ($update == false) {
+                    DB::rollBack();
                     return response()->json(['data' => null, 'message' => 'Error in updating comment'], 400);
-                } else {
-                    return response()->json(['data' => $forumCommentId, 'message' => 'Comment updated successfully'], 200);
                 }
+                $getForumTopicFilesData = ForumModel::getFilesViaForumCommentId($forumCommentId);
+
+                if (count($getForumTopicFilesData) > 0) {
+
+                    error_log('forum topic file already exists');
+                    error_log('deleting them');
+
+                    $deleteTags = GenericModel::deleteGeneric('forum_topic_comment_file', 'ForumTopicCommentId', $forumCommentId);
+                    if ($deleteTags == false) {
+                        DB::rollBack();
+                        return response()->json(['data' => null, 'message' => 'Error in deleting forum topic files'], 400);
+                    }
+                }
+
+//                if (count($fileUpload) > 0) {
+//
+//                    $fileUploadData = array();
+//
+//                    foreach ($fileUpload as $item) {
+//
+//                        array_push($fileUploadData,
+//                            array(
+//                                "ForumTopicCommentId" => $forumCommentId,
+//                                "FileUploadId" => $item['Id'],
+//                                "IsActive" => true
+//                            )
+//                        );
+//                    }
+//
+//                    $insertForumTopicFileUpload = GenericModel::insertGeneric('forum_topic_comment_file', $fileUploadData);
+//                    if ($insertForumTopicFileUpload == 0) {
+//                        DB::rollBack();
+//                        return response()->json(['data' => null, 'message' => 'Error in inserting forum topic comment file'], 400);
+//                    }
+//                }
+
+                DB::commit();
+                return response()->json(['data' => $forumCommentId, 'message' => 'Comment updated successfully'], 200);
+
             }
         }
     }
@@ -602,6 +747,9 @@ class ForumController extends Controller
         $forumCommentId = $request->get('forumTopicCommentId');
         $userId = $request->get('userId');
 
+        $baseUrl = env('BASE_URL');
+        $apiPrefix = env('TOPIC_COMMENT_FILE_API_PREFIX');
+
         //First check if logged if user id is valid or not
 
         $checkUserData = UserModel::GetSingleUserViaId($userId);
@@ -634,6 +782,32 @@ class ForumController extends Controller
                 $data['Role']['Id'] = $getComment->RoleId;
                 $data['Role']['Name'] = $getComment->RoleName;
                 $data['Role']['CodeName'] = $getComment->RoleCodeName;
+
+                $data['FileUpload'] = array();
+
+                //Now fetching file upload data
+                $fileUpload = array();
+                $fileUploadData = ForumModel::GetForumTopicCommentFile($forumCommentId);
+                if (count($fileUploadData) > 0) {
+                    error_log('files found');
+                    foreach ($fileUploadData as $item) {
+                        $fileData = array(
+                            'Id' => $item->Id,
+                            'Path' => $baseUrl . '' . $apiPrefix . '/' . $item->Id . '/' . $item->FileName . '' . $item->FileExtension,
+                            'FileOriginalName' => $item->FileOriginalName,
+                            'FileName' => $item->FileName,
+                            'FileExtension' => $item->FileExtension
+                        );
+
+                        array_push($fileUpload, $fileData);
+                    }
+
+                    $data['FileUpload'] = $fileUpload;
+
+                } else {
+                    error_log('file not found');
+                    $data['FileUpload'] = null;
+                }
 
                 return response()->json(['data' => $data, 'message' => 'Comment found'], 200);
             }

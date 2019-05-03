@@ -102,7 +102,7 @@ class DoctorScheduleModel
         error_log('in model');
 
 //        $query = DB::table('doctor_schedule_detail')
-//            ->select('Id', 'ScheduleDate', 'EndTime', 'ShiftType', 'IsOffDay')
+//            ->select('Id', 'ScheduleDate', 'EndTime', 'ShiftTypeloop iterating for', 'IsOffDay')
 //            ->where('DoctorScheduleId', '=', $doctorScheduleId)
 //            ->where('IsActive', '=', true)
 //            ->get();
@@ -194,6 +194,7 @@ class DoctorScheduleModel
         $query = DB::table("shift_time_slot")
             ->select('Id', 'DoctorScheduleShiftId', 'TimeSlot', 'IsBooked')
             ->where("DoctorScheduleShiftId", "=", $doctorScheduleShiftId)
+            ->orderBy('Id', 'asc')
             ->get();
 
         return $query;
@@ -231,8 +232,8 @@ class DoctorScheduleModel
         $query = DB::table("appointment")
             ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
             ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
+            ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->select('appointment.Id', 'appointment.AppointmentNumber', 'patient.FirstName AS PatientFirstName',
                 'patient.LastName AS PatientLastName', 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
             ->where("appointment.IsActive", "=", true)
@@ -257,7 +258,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
@@ -278,7 +279,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
@@ -304,15 +305,14 @@ class DoctorScheduleModel
     static public function getAppointmentViaDoctorId($doctorId, $searchKeyword, $reqStatus, $pageNo, $limit)
     {
         error_log('in model');
-
         if ($searchKeyword == "null" || $searchKeyword == null) {
             $query = DB::table("appointment")
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
-                ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
+                ->select('appointment.Id', 'appointment.ShiftTimeSlotId', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
                     'patient.MobileNumber AS PatientMobileNumber',
                     'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName',
@@ -331,7 +331,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->select('appointment.Id', 'appointment.RequestStatus', 'appointment.AppointmentNumber',
                     'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
@@ -371,7 +371,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->where("appointment.IsActive", "=", true)
                 ->where("appointment.RequestStatus", "=", $reqStatus)
@@ -401,7 +401,7 @@ class DoctorScheduleModel
                 ->leftjoin('user as doctor', 'appointment.DoctorId', 'doctor.Id')
                 ->leftjoin('user as patient', 'appointment.PatientId', 'patient.Id')
                 ->leftjoin('doctor_schedule_shift as ScheduleShift', 'appointment.DoctorScheduleShiftId', 'ScheduleShift.Id')
-                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
+                ->leftjoin('shift_time_slot as ScheduleShiftTime', 'appointment.ShiftTimeSlotId', 'ScheduleShiftTime.Id')
                 ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
                 ->where("appointment.IsActive", "=", true)
                 ->where("appointment.RequestStatus", "=", $reqStatus)
@@ -425,8 +425,9 @@ class DoctorScheduleModel
             ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
             ->select('appointment.*', 'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
-                'patient.MobileNumber AS PatientMobileNumber',
+                'patient.MobileNumber AS PatientMobileNumber','patient.CountryPhoneCode AS PatientCountryPhoneCode',
                 'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName', 'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
+                'doctor.CountryPhoneCode AS DoctorCountryPhoneCode',
                 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
             ->where("appointment.IsActive", "=", true)
             ->where('appointment.Id', '=', $appointmentId)
@@ -504,7 +505,7 @@ class DoctorScheduleModel
 
         $query = DB::table("doctor_schedule_shift as dsf")
             ->select("dsf.StartTime", 'dsf.EndTime')
-            ->where("dsf.Id", "=", 3548)
+            ->where("dsf.Id", "=", 2899)
             ->first();
 
         return $query;
@@ -593,23 +594,12 @@ class DoctorScheduleModel
 
                 array_push($timeSlots, $range);
             } else {
-                $endSlot2 = (new Carbon($endSlot1))->addMinute($min)->format('H:i:s');
                 error_log("slot is exceed");
-                $range = $endSlot1 . '-' . $endSlot2-1;
-                array_push($timeSlots, $range);
+                error_log($endSlot2);
                 $indexItem = $endSlot2;
             }
         }
-
-//        foreach ($timeSlots as $i) {
-//            $timeSlotsData = array(
-//                "DoctorScheduleShiftId" => 1,
-//                "TimeSlot" => $i,
-//            );
-//            $checkInsertedData = GenericModel::insertGeneric('shift_time_slot', $timeSlotsData);
-//        }
-
-//        return $timeSlots;
-        print_r($timeSlots);
+        error_log("end now");
+        return $timeSlots;
     }
 }
