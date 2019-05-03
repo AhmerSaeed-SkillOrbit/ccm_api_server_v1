@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Models\LoginModel;
 use App\User;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ use App\Models\CcmModel;
 use Symfony\Component\Translation\Tests\Writer\BackupDumper;
 use Twilio\Twiml;
 use Carbon\Carbon;
+use PDF;
 
 
 class CcmPlanController extends Controller
@@ -2582,6 +2584,7 @@ class CcmPlanController extends Controller
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
             $data['ProfileSummary'] = $checkUserData->ProfileSummary;
+            $data['DateOfBirth'] = $checkUserData->DateOfBirth;
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
@@ -2609,6 +2612,7 @@ class CcmPlanController extends Controller
         $gender = $request->post('Gender');
         $age = $request->post('Age');
         $profileSummary = $request->post('ProfileSummary');
+        $dob = $request->post('DateOfBirth');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2618,7 +2622,8 @@ class CcmPlanController extends Controller
             "TelephoneNumber" => $telephoneNumber,
             "Gender" => $gender,
             "Age" => $age,
-            "ProfileSummary" => $profileSummary
+            "ProfileSummary" => $profileSummary,
+            "DateOfBirth" => $dob,
         );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
@@ -2928,7 +2933,7 @@ class CcmPlanController extends Controller
 
         } else if ($checkUserData->RoleCodeName == $superAdminRole) {
             error_log('logged in user is super admin');
-        }  else {
+        } else {
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
         }
 
@@ -2956,8 +2961,16 @@ class CcmPlanController extends Controller
                     'AbleToCall' => (bool)$request->get('AbleToCall'),
                     'FeasibleMessageTime' => $request->get('FeasibleMessageTime'),
                     'FeasibleCallTime' => $request->get('FeasibleCallTime'),
+                    'FeasibleMessageStartTime' => $request->get('FeasibleMessageStartTime'),
+                    'FeasibleMessageEndTime' => $request->get('FeasibleMessageEndTime'),
+                    'FeasibleCallStartTime' => $request->get('FeasibleCallStartTime'),
+                    'FeasibleCallEndTime' => $request->get('FeasibleCallEndTime'),
                     'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
+                    'DayTimeCountryCode' => $request->get('DayTimeCountryCode'),
                     'NightTimePhoneNumber' => $request->get('NightTimePhoneNumber'),
+                    'NightTimeCountryCode' => $request->get('NightTimeCountryCode'),
+                    'IsNightTimePhoneNumberVerified' => false,
+                    'IsDayTimePhoneNumberVerified' => false,
                     'IsInternetAvailable' => (bool)$request->get('IsInternetAvailable'),
                     'IsInternetHelper' => (bool)$request->get('IsInternetHelper'),
                     'CanUseInternet' => (bool)$request->get('CanUseInternet'),
@@ -3027,6 +3040,14 @@ class CcmPlanController extends Controller
                     'FeasibleCallTime' => $request->get('FeasibleCallTime'),
                     'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
                     'NightTimePhoneNumber' => $request->get('NightTimePhoneNumber'),
+                    'FeasibleMessageStartTime' => $request->get('FeasibleMessageStartTime'),
+                    'FeasibleMessageEndTime' => $request->get('FeasibleMessageEndTime'),
+                    'FeasibleCallStartTime' => $request->get('FeasibleCallStartTime'),
+                    'FeasibleCallEndTime' => $request->get('FeasibleCallEndTime'),
+                    'DayTimePhoneNumber' => $request->get('DayTimePhoneNumber'),
+                    'DayTimeCountryCode' => $request->get('DayTimeCountryCode'),
+                    'IsNightTimePhoneNumberVerified' => false,
+                    'IsDayTimePhoneNumberVerified' => false,
                     'IsInternetAvailable' => (bool)$request->get('IsInternetAvailable'),
                     'IsInternetHelper' => (bool)$request->get('IsInternetHelper'),
                     'CanUseInternet' => (bool)$request->get('CanUseInternet'),
@@ -3148,8 +3169,7 @@ class CcmPlanController extends Controller
                 error_log('associated doctor not found');
                 return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
             }
-        }
-        else if ($checkUserData->RoleCodeName == $superAdminRole) {
+        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
             error_log('logged in user is super admin');
         } else if ($checkUserData->RoleCodeName == $patientRole) {
             error_log('logged in user is patient');
@@ -3182,6 +3202,14 @@ class CcmPlanController extends Controller
                 'FeasibleCallTime' => $checkData->FeasibleCallTime,
                 'DayTimePhoneNumber' => $checkData->DayTimePhoneNumber,
                 'NightTimePhoneNumber' => $checkData->NightTimePhoneNumber,
+                'FeasibleMessageStartTime' => $checkData->FeasibleMessageStartTime,
+                'FeasibleMessageEndTime' => $checkData->FeasibleMessageEndTime,
+                'FeasibleCallStartTime' => $checkData->FeasibleCallStartTime,
+                'FeasibleCallEndTime' => $checkData->FeasibleCallEndTime,
+                'DayTimePhoneNumber' => $checkData->DayTimePhoneNumber,
+                'DayTimeCountryCode' => $checkData->DayTimeCountryCode,
+                'IsNightTimePhoneNumberVerified' => $checkData->IsNightTimePhoneNumberVerified,
+                'IsDayTimePhoneNumberVerified' => $checkData->IsDayTimePhoneNumberVerified,
                 'IsInternetAvailable' => (bool)$checkData->IsInternetAvailable,
                 'IsInternetHelper' => (bool)$checkData->IsInternetHelper,
                 'CanUseInternet' => (bool)$checkData->CanUseInternet,
@@ -5999,7 +6027,7 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->ppsId;
-            $data['IsPatientExamined'] = (bool)$checkData->IsOkay;
+            $data['IsOkay'] = (bool)$checkData->IsOkay;
             $data['Description'] = $checkData->ppsDescription;
             $data['IsActive'] = (bool)$checkData->ppsIsActive;
             $data['PsychologicalReviewParam'] = array();
@@ -6105,7 +6133,7 @@ class CcmPlanController extends Controller
                     error_log('data found ');
 
                     $data['Answer']['Id'] = $checkData->ppsId;
-                    $data['Answer']['IsPatientExamined'] = (bool)$checkData->IsOkay;
+                    $data['Answer']['IsOkay'] = (bool)$checkData->IsOkay;
                     $data['Answer']['Description'] = $checkData->ppsDescription;
                     $data['Answer']['IsActive'] = (bool)$checkData->ppsIsActive;
 
@@ -6348,7 +6376,7 @@ class CcmPlanController extends Controller
                     error_log('data found ');
 
                     $data['Answer']['Id'] = $checkData->psrId;
-                    $data['Answer']['IsPatientExamined'] = (bool)$checkData->IsOkay;
+                    $data['Answer']['IsOkay'] = (bool)$checkData->IsOkay;
                     $data['Answer']['Description'] = $checkData->psrDescription;
                     $data['Answer']['IsActive'] = (bool)$checkData->psrIsActive;
                 }
@@ -6443,7 +6471,7 @@ class CcmPlanController extends Controller
             error_log('data found ');
 
             $data['Id'] = $checkData->psrId;
-            $data['IsPatientExamined'] = (bool)$checkData->IsOkay;
+            $data['IsOkay'] = (bool)$checkData->IsOkay;
             $data['Description'] = $checkData->psrDescription;
             $data['IsActive'] = (bool)$checkData->psrIsActive;
             $data['SocialReviewParam'] = array();
@@ -7711,5 +7739,348 @@ class CcmPlanController extends Controller
 
         $getCcmPlanReviewAll = CcmModel::GetAllCCMPlanReviewCount($ccmPlanId, $searchDateFrom, $searchDateTo);
         return response()->json(['data' => $getCcmPlanReviewAll, 'message' => 'Total Count'], 200);
+    }
+
+    static public function PublishTab(Request $request)
+    {
+        error_log('in controller');
+
+        $patientId = $request->get('patientId');
+        $patientRecordTabId = $request->get('patientRecordTabId');
+
+        //Get single active medicine via medicine id
+        $checkData = CcmModel::CheckIfPatientTabExists($patientId, $patientRecordTabId);
+        if ($checkData != null) {
+            if ($checkData->IsPublish == true) {
+                return response()->json(['data' => null, 'message' => 'This tab has already published'], 200);
+            }
+
+            $data = array(
+                'PatientId' => $patientId,
+                'PatientRecordTabId' => $patientRecordTabId,
+                'IsPublish' => true
+            );
+            $updatedData = GenericModel::updateGeneric('patient_record_tab_publish', 'Id', $checkData->Id, $data);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in publishing'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => $checkData->Id, 'message' => 'Tab has been published'], 200);
+            }
+        } else {
+            $data = array(
+                'PatientId' => $patientId,
+                'PatientRecordTabId' => $patientRecordTabId,
+                'IsPublish' => true,
+                'IsActive' => true,
+            );
+
+            $insert = GenericModel::insertGenericAndReturnID('patient_record_tab_publish', $data);
+
+            if ($insert == 0) {
+                error_log('data not inserted');
+                return response()->json(['data' => null, 'message' => 'Error in publishing'], 400);
+            } else {
+                error_log('data inserted');
+                return response()->json(['data' => $insert, 'message' => 'Tab has been published'], 200);
+            }
+        }
+    }
+
+    static public function UnPublishTab(Request $request)
+    {
+        error_log('in controller');
+
+        $patientId = $request->get('patientId');
+        $patientRecordTabId = $request->get('patientRecordTabId');
+
+        //Get single active medicine via medicine id
+        $checkData = CcmModel::CheckIfPatientTabExists($patientId, $patientRecordTabId);
+        if ($checkData != null) {
+            if ($checkData->IsPublish == false) {
+                return response()->json(['data' => null, 'message' => 'This tab has already unpublished'], 200);
+            }
+
+            $data = array(
+                'PatientId' => $patientId,
+                'PatientRecordTabId' => $patientRecordTabId,
+                'IsPublish' => false
+            );
+
+            $updatedData = GenericModel::updateGeneric('patient_record_tab_publish', 'Id', $checkData->Id, $data);
+
+            if ($updatedData == false) {
+                error_log('data not updated');
+                return response()->json(['data' => null, 'message' => 'Error in unpublishing'], 400);
+            } else {
+                error_log('data updated');
+                return response()->json(['data' => $checkData->Id, 'message' => 'Tab has been unpublished'], 200);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'This tab needs to be published first'], 400);
+        }
+    }
+
+    function SendEmailPdfCcmPlanSummary(Request $request)
+    {
+        error_log("SUMMARY API");
+
+        $userId = $request->get('useId');
+        $planId = $request->get('ccmPlanId');
+
+        //extract patient id from ccm plan id
+        //fetch ccm-plan using plan id and create pdf
+
+        try {
+            $summary = DB::table('ccm_plan_summary')
+                ->where('PlanId', '=', $planId)
+                ->get();
+
+            error_log("## summary ##");
+            error_log($summary);
+
+            $pdf = View('list_notes')->with('store', $summary);
+            return $pdf;
+
+        } catch (Exception $exception) {
+            error_log("exception in fetching totalpatient count");
+            error_log($exception);
+            return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
+        }
+
+//        LoginModel::sendEmailAttach("ahmer.saeed.office@gmail.com", "Email Attachment", "This is a sample email", "", "");
+
+        return response()->json(['data' => null, 'message' => 'CCM Plan summary is successfully sent to the patient'], 200);
+
+//        return true;
+//        error_log("Generate Test PDF");
+//
+//        $pdf = PDF::loadView('list_notes');
+//        return $pdf->download('tuts_notes.pdf');
+
+    }
+
+    function SendCodeOnSms(Request $request)
+    {
+        error_log("### Send Code on SMS ###");
+
+        $countryCode = $request->post('CountryCode');
+        $phoneNumber = $request->post('PhoneNumber');
+        $type = $request->post('Type');
+
+        $dayTimePhoneNumType = env('DAY_TIME_PHONE_NUM_TYPE');
+        $nightTimePhoneNumType = env('NIGHT_TIME_PHONE_NUM_TYPE');
+        $mobileNumType = env('MOBILE_NUM_TYPE');
+
+        if ($type == $dayTimePhoneNumType || $type == $nightTimePhoneNumType) {
+            $ifExist = CcmModel::CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type);
+
+            if ($ifExist != null) {
+                //insert in Verification_Token
+                //send SMS here
+
+                $token = mt_rand(100000, 999999);
+
+                $dataToInsert = array(
+                    "UserId" => $ifExist->PatientId,
+                    "Email" => null,
+                    "MobileNumber" => $countryCode . $phoneNumber,
+                    "TokenType" => $type,
+                    "Token" => $token,
+                    "IsActive" => true
+                );
+
+                $insertedRecord = GenericModel::insertGenericAndReturnID('verification_token', $dataToInsert);
+                error_log('Inserted record id ' . $insertedRecord);
+                if ($insertedRecord == 0) {
+                    DB::rollback();
+                    return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                } else {
+                    try {
+                        $toNumber = array();
+                        $mobileNumber = $countryCode . $phoneNumber;
+
+                        array_push($toNumber, $mobileNumber);
+                        HelperModel::sendSms($toNumber, "Enter this Code in the Verification box", $token);
+
+                        return response()->json(['data' => null, 'message' => 'Please place the Code send to the provided number'], 200);
+
+                    } catch (Exception $ex) {
+                        return response()->json(['data' => $insertedRecord, 'message' => 'something went wrong'], 200);
+                    }
+                }
+            } else {
+                return response()->json(['data' => null, 'message' => 'Provided number is not exist'], 200);
+            }
+        } else if ($type == $mobileNumType) {
+            $ifExist = CcmModel::CheckIfPhoneNumberExist($countryCode, $phoneNumber, $type);
+
+            if ($ifExist != null) {
+                //insert in Verification_Token
+                //send SMS here
+
+                $token = mt_rand(100000, 999999);
+
+                $dataToInsert = array(
+                    "UserId" => $ifExist->Id,
+                    "Email" => null,
+                    "MobileNumber" => $countryCode . $phoneNumber,
+                    "TokenType" => $type,
+                    "Token" => $token,
+                    "IsActive" => true
+                );
+
+                $insertedRecord = GenericModel::insertGenericAndReturnID('verification_token', $dataToInsert);
+                error_log('Inserted record id ' . $insertedRecord);
+                if ($insertedRecord == 0) {
+                    DB::rollback();
+                    return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                } else {
+                    try {
+                        $toNumber = array();
+                        $mobileNumber = $countryCode . $phoneNumber;
+
+                        array_push($toNumber, $mobileNumber);
+                        HelperModel::sendSms($toNumber, "Enter this Code in the Verification box", $token);
+
+                        return response()->json(['data' => null, 'message' => 'Please place the Code send to the provided number'], 200);
+
+                    } catch (Exception $ex) {
+                        return response()->json(['data' => $insertedRecord, 'message' => 'something went wrong'], 200);
+                    }
+                }
+            } else {
+                return response()->json(['data' => null, 'message' => 'Provided number is not exist'], 200);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+        }
+    }
+
+    function VerifySmsCode(Request $request)
+    {
+        error_log("### Verify Sms Code ###");
+
+        $code = $request->post('Code');
+        $patientId = $request->post('PatientId');
+        $type = $request->post('Type');
+
+        $dayTimePhoneNumType = env('DAY_TIME_PHONE_NUM_TYPE');
+        $nightTimePhoneNumType = env('NIGHT_TIME_PHONE_NUM_TYPE');
+        $mobileNumType = env('MOBILE_NUM_TYPE');
+
+        $ifExist = LoginModel::checkTokenWithTypeAvailableForResetPass($code, $type);
+
+        if ($ifExist) {
+            error_log("code is exist");
+            if ($ifExist->UserId == $patientId) {
+                error_log("code is exist");
+
+                if ($ifExist->TokenType == $dayTimePhoneNumType) {
+                    error_log($dayTimePhoneNumType);
+                    $dataToUpdate = array(
+                        'IsDayTimePhoneNumberVerified' => 1
+                    );
+                    $updatedData = GenericModel::updateGeneric('patient_assessment', 'PatientId', $patientId, $dataToUpdate);
+
+                    if ($updatedData == 1) {
+                        return response()->json(['data' => null, 'message' => 'Day Time Phone Number is verified'], 200);
+                    } else if ($updatedData == 0) {
+                        return response()->json(['data' => null, 'message' => 'Day Time Phone Number is already verified'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Day Time Phone Number is failed to verified'], 500);
+                    }
+
+                } else if ($ifExist->TokenType == $nightTimePhoneNumType) {
+                    error_log($nightTimePhoneNumType);
+                    $dataToUpdate = array(
+                        'IsNightTimePhoneNumberVerified' => 1,
+                    );
+                    $updatedData = GenericModel::updateGeneric('patient_assessment', 'PatientId', $patientId, $dataToUpdate);
+
+                    if ($updatedData == 1) {
+                        return response()->json(['data' => null, 'message' => 'Night Time Phone Number is verified'], 200);
+                    } else if ($updatedData == 0) {
+                        return response()->json(['data' => null, 'message' => 'Night Time Phone Number is already verified'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Night Time Phone Number is failed to verified'], 500);
+                    }
+                } else if ($ifExist->TokenType == $mobileNumType) {
+                    error_log($mobileNumType);
+                    $dataToUpdate = array(
+                        'IsMobileNumberVerified' => 1,
+                    );
+                    $updatedData = GenericModel::updateGeneric('user', 'Id', $patientId, $dataToUpdate);
+
+                    if ($updatedData == 1) {
+                        return response()->json(['data' => null, 'message' => 'Mobile Number is verified'], 200);
+                    } else if ($updatedData == 0) {
+                        return response()->json(['data' => null, 'message' => 'Mobile Number is already verified'], 200);
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Mobile Number is failed to verified'], 500);
+                    }
+
+                } else {
+                    error_log("invalid");
+                    return response()->json(['data' => null, 'message' => 'Internal Server error occurred'], 500);
+                }
+            } else {
+                error_log("code is exist but invalid");
+                return response()->json(['data' => null, 'message' => 'Code is invalid'], 400);
+            }
+        } else {
+            error_log("code is not exist");
+            return response()->json(['data' => null, 'message' => 'Code is not exist'], 400);
+        }
+    }
+
+    function GetPatientRecordTabPublished(Request $request)
+    {
+        error_log('in controller');
+
+        $patientId = $request->get('patientId');
+
+        if ($patientId != null) {
+            $patientRecordTabList = GenericModel::simpleFetchGenericByWhere('patient_record_tab', '=', 'IsActive', true, null);
+            if (count($patientRecordTabList) > 0) {
+                $allTab = array();
+                foreach ($patientRecordTabList as $item) {
+                    $isPublish = false;
+                    $data = CcmModel::GetPatientRecordTabPublished($patientId, $item->Id);
+
+                    error_log("data->IsPublish");
+                    error_log($data);
+
+                    if (count($data) > 0) {
+                        $isPublish = ($data[0]->IsPublish == true ? true : false);
+                    }
+                    $singleTab = array(
+                        'Id' => $item->Id,
+                        'TabName' => $item->TabName,
+                        'TabCode' => $item->TabCode,
+                        'IsActive' => $item->IsActive,
+                        'IsPublish' => $isPublish
+                    );
+                    array_push($allTab, $singleTab);
+                }
+                return response()->json(['data' => $allTab, 'message' => 'Patient Record Tab found'], 200);
+
+            } else {
+                return response()->json(['data' => [], 'message' => 'Patient Record Tab not found'], 200);
+            }
+        } else {
+            return response()->json(['data' => [], 'message' => 'Patient is required'], 400);
+        }
+
+        //Now one by one we will fetch answers and will bind it in Answers array
+        $data = CcmModel::GetPatientRecordTabPublished($patientId);
+
+        if (count($data) > 0) {
+            return response()->json(['data' => $data, 'message' => 'Patient Record Tab found'], 200);
+        } else {
+            return response()->json(['data' => $patientId, 'message' => 'Patient Record Tab not exist'], 200);
+        }
     }
 }

@@ -406,8 +406,6 @@ class UserModel
                     ->groupBy('user.Id')
                     ->get();
 
-                error_log($query);
-
                 return $query;
             } else {
                 error_log('keyword is NULL and role is NOT NULL');
@@ -429,7 +427,6 @@ class UserModel
                     ->groupBy('user.Id')
                     ->get();
 
-                error_log($query);
 
                 return $query;
             }
@@ -928,5 +925,18 @@ class UserModel
             ->first();
 
         return $query;
+    }
+
+    static public function GetRoleNameViaUserId($userId)
+    {
+        error_log("userId");
+        error_log($userId);
+
+        return DB::table('user')
+            ->select('user.Id', 'user.EmailAddress','role.Name','role.CodeName')
+            ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
+            ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
+            ->where('user.Id', '=', $userId)
+            ->get();
     }
 }
