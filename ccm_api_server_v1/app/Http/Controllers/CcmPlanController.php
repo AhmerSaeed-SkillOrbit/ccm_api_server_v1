@@ -3202,6 +3202,7 @@ class CcmPlanController extends Controller
                 'FeasibleCallTime' => $checkData->FeasibleCallTime,
                 'DayTimePhoneNumber' => $checkData->DayTimePhoneNumber,
                 'NightTimePhoneNumber' => $checkData->NightTimePhoneNumber,
+                'NightTimeCountryCode' => $checkData->NightTimeCountryCode,
                 'FeasibleMessageStartTime' => $checkData->FeasibleMessageStartTime,
                 'FeasibleMessageEndTime' => $checkData->FeasibleMessageEndTime,
                 'FeasibleCallStartTime' => $checkData->FeasibleCallStartTime,
