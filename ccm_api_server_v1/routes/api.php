@@ -493,7 +493,7 @@ Route::post('/verify/sms/code', 'CcmPlanController@VerifySmsCode');
 
 Route::post('/bulk/user/register/', 'UserController@BulkUserRegister');
 
-Route::post('/background/bulk/user/register/', 'UserController@BackgroundBulkUserRegister');
+Route::get('/background/bulk/user/register/', 'UserController@BackgroundBulkUserRegister');
 
 
 
