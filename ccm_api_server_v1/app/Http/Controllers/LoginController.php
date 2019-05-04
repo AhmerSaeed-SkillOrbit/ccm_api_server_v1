@@ -266,10 +266,10 @@ class LoginController extends Controller
 
 //                    return response()->json(['data' => null, 'message' => 'Test Break'], 400);
 //                    //Binding data to variable.
-                    error_log('fectching User Record ');
+                    error_log('fetching User Record ');
 
                     $checkUserData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $checkToken[0]->UserId);
-                    error_log('fectched User Record ' . $checkUserData);
+                    error_log('fetched User Record ' . $checkUserData);
                     if (count($checkUserData) == 0) {
                         return response()->json(['data' => null, 'message' => 'User not found'], 400);
                     } else {
@@ -355,6 +355,76 @@ class LoginController extends Controller
 
     }
 
+    function changePassword(Request $request)
+    {
+        $loginUserId = $request->post('id'); //login user id
+        $oldPassword = $request->post('oldPassword');
+        $newPassword = $request->post('newPassword');
+
+        if ($oldPassword != null && $newPassword != null && $loginUserId != null) {
+            error_log('fetching User Record ');
+
+            $checkUserData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $loginUserId);
+            error_log('fetched User Record ' . $checkUserData);
+            if (count($checkUserData) == 0) {
+                return response()->json(['data' => null, 'message' => 'Invalid User'], 400);
+            } else {
+                $hashedPasswordOld = md5($oldPassword);
+                if ($hashedPasswordOld != $checkUserData[0]->Password) {
+                    return response()->json(['data' => null, 'message' => 'Old Password does not match'], 400);
+                } else {
+                    try {
+                        error_log('In controller');
+                        error_log('comparing old password with user record password');
+
+                        //Now making data for user_access
+                        $dataToUpdate = array(
+                            "Password" => md5($newPassword)
+                        );
+
+                        $updateDataCheck = GenericModel::updateGeneric('user', 'Id', $checkUserData[0]->Id, $dataToUpdate);
+
+                        error_log('password is changed successfully');
+
+                        if ($updateDataCheck >= 0) {
+                            $mobileNumber = $checkUserData[0]->MobileNumber;
+                            $countryPhoneCode = $checkUserData[0]->CountryPhoneCode;
+                            $emailAddress = $checkUserData[0]->EmailAddress;
+                            $emailMessage = "Your password has been changed.";
+
+                            error_log("now sending email and sms");
+
+                            //Now sending email
+                            LoginModel::sendEmail($emailAddress, "Update Password", $emailMessage, "");
+
+                            //Now sending sms
+                            if ($mobileNumber != null) {
+                                $url = env('WEB_URL') . '/#/';
+                                $toNumber = array();
+                                $mobileNumber = $countryPhoneCode . $mobileNumber;
+                                array_push($toNumber, $mobileNumber);
+                                try {
+                                    HelperModel::sendSms($toNumber, 'Your password has been changed.', null);
+                                } catch (Exception $ex) {
+                                    return response()->json(['data' => null, 'message' => 'Your password has been changed'], 200);
+                                }
+                            }
+                            return response()->json(['data' => null, 'message' => 'Your password has been changed'], 200);
+
+                        } else {
+                            return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
+                        }
+
+                    } catch (Exception $e) {
+                        error_log('error ' . $e);
+                        return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+                    }
+                }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'Old password and new password is required'], 400);
+        }
+    }
 
     function adminLogin(Request $request)
     {
@@ -462,8 +532,7 @@ class LoginController extends Controller
                 array_push($loginHistory, $itemArray);
             }
             return response()->json(['data' => $loginHistory, 'message' => 'Login User History'], 200);
-        }
-        else {
+        } else {
             return response()->json(['data' => null, 'message' => 'Login User History is empty'], 200);
         }
     }
