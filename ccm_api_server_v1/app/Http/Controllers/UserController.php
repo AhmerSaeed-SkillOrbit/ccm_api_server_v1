@@ -1543,7 +1543,7 @@ class UserController extends Controller
                 for ($i = 0; $i < $tempUserCount; $i++) {
 
                     error_log("### ITERATION START ###");
-                    $createdBy = $tempUser[$i]->CreatedsBy;
+                    $createdBy = $tempUser[$i]->CreatedBy;
                     $createdByEmail = $tempUser[$i]->CreatedByEmail;
                     $related = $tempUser[$i]->Role;
 
