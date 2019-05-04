@@ -1277,11 +1277,11 @@ class DocumentUploadController extends Controller
                 if ($checkUserData == null) {
                     return response()->json(['data' => null, 'message' => 'User not found'], 400);
                 } else {
-                    if ($checkUserData->RoleCodeName != $doctorRole) {
+                    if ($checkUserData->RoleCodeName == $doctorRole) {
                         $dirAndEnumValue = 'doctor_attachment';
                     } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
                         $dirAndEnumValue = 'facilitator_attachment';
-                    } else if ($checkUserData->RoleCodeName != $patientRole) {
+                    } else if ($checkUserData->RoleCodeName == $patientRole) {
                         $dirAndEnumValue = 'patient_attachment';
                     } else {
                         return response()->json(['data' => null, 'message' => 'Not allowed'], 400);

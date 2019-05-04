@@ -834,18 +834,20 @@ class UserController extends Controller
         $functionalTitle = $request->post('FunctionalTitle');
         $age = $request->post('Age');
         $ageGroup = $request->post('AgeGroup');
+        $profileSummary = $request->post('ProfileSummary');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
             "LastName" => $lastName,
-            "MobileNumber" => $mobileNumber,
+//            "MobileNumber" => $mobileNumber,
             "TelephoneNumber" => $telephoneNumber,
             "OfficeAddress" => $officeAddress,
             "ResidentialAddress" => $residentialAddress,
             "Gender" => $gender,
             "FunctionalTitle" => $functionalTitle,
             "Age" => $age,
-            "AgeGroup" => $ageGroup,
+            "ProfileSummary" => $profileSummary
+//            "AgeGroup" => $ageGroup,
         );
         $emailMessage = "Dear User <br/>Update is made on your records";
 
@@ -877,6 +879,7 @@ class UserController extends Controller
         $userDetails = array();
 
         $userDetails['Id'] = $val->Id;
+        $userDetails['PatientUniqueId'] = $val->PatientUniqueId;
         $userDetails['FirstName'] = $val->FirstName;
         $userDetails['LastName'] = $val->LastName;
         $userDetails['EmailAddress'] = $val->EmailAddress;
@@ -890,6 +893,7 @@ class UserController extends Controller
         $userDetails['AgeGroup'] = $val->AgeGroup;
         $userDetails['IsBlock'] = $val->IsBlock;
         $userDetails['BlockReason'] = $val->BlockReason;
+        $userDetails['ProfileSummary'] = $val->ProfileSummary;
         $userDetails['Role'] = array();
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
@@ -1529,7 +1533,8 @@ class UserController extends Controller
 
         if (count($tempUser) == 0) {
             return response()->json(['data' => null, 'message' => 'Data not exist'], 200);
-        } else {
+        }
+        else {
             //fetch all roles from table
             //to be use it in comparison within loop
             $deleteRecordFromTempTable = array();
