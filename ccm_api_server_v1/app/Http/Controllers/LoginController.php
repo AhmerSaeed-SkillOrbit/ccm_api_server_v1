@@ -406,10 +406,10 @@ class LoginController extends Controller
                                 try {
                                     HelperModel::sendSms($toNumber, 'Your password has been changed.', null);
                                 } catch (Exception $ex) {
-                                    return response()->json(['data' => null, 'message' => 'Your password has been updated. '], 200);
+                                    return response()->json(['data' => null, 'message' => 'Your password has been changed'], 200);
                                 }
                             }
-                            return response()->json(['data' => null, 'message' => 'Your password has been updated.'], 200);
+                            return response()->json(['data' => null, 'message' => 'Your password has been changed'], 200);
 
                         } else {
                             return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
