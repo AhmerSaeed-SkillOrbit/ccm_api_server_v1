@@ -35,7 +35,6 @@ class ServicesController extends Controller
             if ($validator->fails()) {
                 return response()->json(['data' => $data, 'error' => $validator->errors(), 'message' => 'validation failed'], 400);
             } else {
-
                 $check = ServicesModel::sendInviteTrans($request);
 
                 if ($check['status'] == "success") {
@@ -62,7 +61,8 @@ class ServicesController extends Controller
 
                 if ($check['status'] == "success") {
                     // return response()->json(['data' => $check['data'], 'message' => 'Successfully Login'], 200);
-                    return response()->json(['data' => true, 'message' => $check['message']], 200);
+                    // return response()->json(['data' => true, 'message' => $check['message']], 200);
+                    return response()->json(['data' => $check['data'], 'message' => $check['message']], 200);
                 } else if ($check['status'] == "failed") {
                     return response()->json(['data' => false, 'message' => $check['message']], 400);
                 }
@@ -90,7 +90,8 @@ class ServicesController extends Controller
         return Validator::make($data, [
             // 'EmailAddress' => ['required', 'string', 'email', 'max:255', 'unique:user'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'type' => ['required', 'string', 'min:6'],
+            'mobileNumber' => [],
+            'type' => ['required', 'string'],
         ]);
     }
 
