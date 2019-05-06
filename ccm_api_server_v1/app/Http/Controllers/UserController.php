@@ -1460,29 +1460,31 @@ class UserController extends Controller
 
             try {
                 foreach ($data->toArray() as $key => $value) {
-                    $insert_data[] = array(
-                        'PatientUniqueId' => $value['patientuniqueid'],
-                        'FirstName' => $value['firstname'],
-                        'MiddleName' => $value['middlename'],
-                        'LastName' => $value['lastname'],
-                        'EmailAddress' => $value['emailaddress'],
-                        'CountryPhoneCode' => $value['countryphonecode'],
-                        'MobileNumber' => $value['mobilenumber'],
-                        'TelephoneNumber' => $value['telephonenumber'],
-                        'IsMobileNumberVerified' => true,
-                        'OfficeAddress' => $value['officeaddress'],
-                        'ResidentialAddress' => $value['residentialaddress'],
-                        'Gender' => $value['gender'],
-                        'Age' => $value['age'],
-                        'CreatedBy' => $createdById,
-                        'CreatedByEmail' => $createdByEmail,
-                        'CreatedOn' => $date["timestamp"],
-                        'IsActive' => true,
-                        'ProfileSummary' => $value['profilesummary'],
-                        'DateOfBirth' => $value['dateofbirth'],
-                        'Role' => $type,
-                        'CreatedByRole' => $roleName
-                    );
+                    if ($value['emailaddress'] != null && $value['mobilenumber'] != null) {
+                        $insert_data[] = array(
+                            'PatientUniqueId' => $value['patientuniqueid'],
+                            'FirstName' => $value['firstname'],
+                            'MiddleName' => $value['middlename'],
+                            'LastName' => $value['lastname'],
+                            'EmailAddress' => $value['emailaddress'],
+                            'CountryPhoneCode' => $value['countryphonecode'],
+                            'MobileNumber' => $value['mobilenumber'],
+                            'TelephoneNumber' => $value['telephonenumber'],
+                            'IsMobileNumberVerified' => true,
+                            'OfficeAddress' => $value['officeaddress'],
+                            'ResidentialAddress' => $value['residentialaddress'],
+                            'Gender' => $value['gender'],
+                            'Age' => $value['age'],
+                            'CreatedBy' => $createdById,
+                            'CreatedByEmail' => $createdByEmail,
+                            'CreatedOn' => $date["timestamp"],
+                            'IsActive' => true,
+                            'ProfileSummary' => $value['profilesummary'],
+                            'DateOfBirth' => $value['dateofbirth'],
+                            'Role' => $type,
+                            'CreatedByRole' => $roleName
+                        );
+                    }
                 }
             } catch (Exception $ex) {
                 return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
@@ -1533,8 +1535,7 @@ class UserController extends Controller
 
         if (count($tempUser) == 0) {
             return response()->json(['data' => null, 'message' => 'Data not exist'], 200);
-        }
-        else {
+        } else {
             //fetch all roles from table
             //to be use it in comparison within loop
             $deleteRecordFromTempTable = array();
