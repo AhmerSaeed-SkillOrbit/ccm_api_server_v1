@@ -510,6 +510,17 @@ class LoginModel
         return $result;
     }
 
+    static function checkEmailAndMobileAvailable(string $email, string $mobileNumber)
+    {
+        $result = DB::table('user')
+            ->select('*')
+            ->where('IsActive', '=', 1)
+            ->where('EmailAddress', '=', $email)
+            ->orWhere('MobileNumber', '=', $mobileNumber)
+            ->get();
+        return $result;
+    }
+
     static function checkTokenAvailableForResetPass(string $token)
     {
         $result = DB::table('verification_token')
@@ -520,7 +531,7 @@ class LoginModel
         return $result;
     }
 
-    static function checkTokenWithTypeAvailableForResetPass(string $token,$type)
+    static function checkTokenWithTypeAvailableForResetPass(string $token, $type)
     {
         error_log("type");
         error_log($type);
