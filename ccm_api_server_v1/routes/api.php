@@ -394,6 +394,9 @@ Route::get('/ccm/plan/review/all/count', 'CcmPlanController@GetAllCCMPlanReviewC
 Route::post('/publish/tab', 'CcmPlanController@PublishTab');
 Route::post('/unpublish/tab', 'CcmPlanController@UnPublishTab');
 
+///patient/record/tab/published?patientId=logged in patient id
+Route::get('/patient/record/tab/published', 'CcmPlanController@GetPatientRecordTabPublished');
+
 
 Route::get('/', function () {
     return 'Hello';
@@ -415,6 +418,7 @@ Route::post('/login', 'LoginController@login');
 Route::post('/register', 'LoginController@register');
 Route::post('/forgetPass', 'LoginController@forgetPass');
 Route::post('/resetPass', 'LoginController@resetPass');
+Route::post('/change/password', 'LoginController@changePassword');
 Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
 Route::get('/logout', 'LoginController@logout');
@@ -475,9 +479,23 @@ Route::get('/download/default/profile/picture/{imageName}', 'DocumentUploadContr
 //Close ticket
 Route::post('/background/ticket/close', 'TicketController@CloseTicket');
 
-Route::post('/ccm/plan/summary/email/pdf/', 'CcmPlanController@SendEmailPdfCcmPlanSummary');
+Route::get('/ccm/plan/summary/email/pdf/', 'CcmPlanController@SendEmailPdfCcmPlanSummary');
 
+//verify phone numbers
+//post
+//body params
+//countryCode
+//phoneNumber
+//type=daytimenum || nighttimenum || generalnum
 
+Route::post('/send/code/on/sms', 'CcmPlanController@SendCodeOnSms');
 
+Route::post('/verify/sms/code', 'CcmPlanController@VerifySmsCode');
+
+Route::post('/bulk/user/register', 'UserController@BulkUserRegister');
+
+Route::get('/background/bulk/user/register', 'UserController@BackgroundBulkUserRegister');
+
+Route::post('/patient/add', 'LoginController@AddPatientDirect');
 
 

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Models\HelperModel;
 
 use Mail;
+use mysql_xdevapi\Exception;
 
 class UserModel
 {
@@ -658,6 +659,24 @@ class UserModel
         return $query;
     }
 
+    static public function GetPatientViaEmail($email, $patientRoleCode)
+    {
+        error_log('in GetUserViaMobileNum function - Model');
+        error_log($email);
+        error_log($patientRoleCode);
+
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('user.EmailAddress', '=', $email)
+            ->where('role.CodeName', '=', $patientRoleCode)
+            ->where('user.IsActive', '=', 1)
+            ->first();
+
+        return $query;
+    }
+
     static public function isDuplicateEmail($userEmail)
     {
         $isDuplicate = DB::table('user')
@@ -671,13 +690,17 @@ class UserModel
 
     public static function sendEmail($email, $emailMessage, $url)
     {
-        $urlForEmail = url($url);
+        try {
+            $urlForEmail = url($url);
 
-        Mail::raw($emailMessage, function ($message) use ($email) {
-            $message->to($email)->subject("Invitation");
-        });
-
-        return true;
+            Mail::raw($emailMessage, function ($message) use ($email) {
+                $message->from("no-reply@connectcareplus.com")->to($email)->subject("CCM Email");
+            });
+            return true;
+        } catch (Exception $ex) {
+            error_log("Sending Mail Exception");
+            return false;
+        }
     }
 
     public static function getUserCountViaRoleCode($roleCode)
@@ -789,7 +812,7 @@ class UserModel
     static public function GetUserRoleViaUserId($userId)
     {
         return DB::table('user_access')
-            ->select('user_access.RoleId')
+            ->select('user_access.RoleId,user_access.Role')
             ->where('user_access.UserId', '=', $userId)
             ->get();
     }
@@ -899,6 +922,9 @@ class UserModel
 
     static public function GetUserViaRoleCode($roleCode)
     {
+        error_log("Here 2");
+        error_log($roleCode);
+
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')
             ->join('role', 'user_access.RoleId', 'role.Id')
@@ -907,9 +933,6 @@ class UserModel
             ->where('user.IsActive', '=', true)
             ->orderBy('user.Id', 'DESC')
             ->get();
-
-        error_log($query);
-
         return $query;
     }
 
@@ -925,5 +948,29 @@ class UserModel
             ->first();
 
         return $query;
+    }
+
+    static public function GetRoleNameViaUserId($userId)
+    {
+        error_log("userId");
+        error_log($userId);
+
+        return DB::table('user')
+            ->select('user.Id', 'user.EmailAddress', 'role.Name', 'role.CodeName')
+            ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
+            ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
+            ->where('user.Id', '=', $userId)
+            ->get();
+    }
+
+    static public function GetUserCountCountViaRoleCode($roleCode)
+    {
+        return DB::table('user')
+            ->select('user.Id', 'user.EmailAddress', 'role.Name', 'role.CodeName')
+            ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
+            ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
+            ->where('role.CodeName', '=', $roleCode)
+            ->where('user.IsActive', '=', 1)
+            ->count();
     }
 }

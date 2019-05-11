@@ -18,6 +18,7 @@ use App\Models\DocumentUploadModel;
 use App\Models\ForumModel;
 use Config;
 use Carbon\Carbon;
+use Excel;
 
 class UserController extends Controller
 {
@@ -240,8 +241,7 @@ class UserController extends Controller
         $userData = UserModel::GetSingleUserViaId($userId);
         if (count($userData) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
-        }
-        else {
+        } else {
             //Means user data fetched
             //Now checking if user belongs to super admin
             if ($userData[0]->RoleCodeName == $superAdminRole) {
@@ -250,7 +250,7 @@ class UserController extends Controller
                 $val = UserModel::FetchUserWithSearchAndPagination
                 ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
-                foreach ($val as $key){
+                foreach ($val as $key) {
                     $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                     $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                 }
@@ -273,8 +273,7 @@ class UserController extends Controller
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
                 } else if ($roleCode == $doctorRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                }
-                else if ($roleCode == $facilitatorRole) {
+                } else if ($roleCode == $facilitatorRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedFacilitatorId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
 
@@ -289,7 +288,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -304,8 +303,7 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Facilitators not found'], 200);
                     }
-                }
-                else if ($roleCode == $patientRole) {
+                } else if ($roleCode == $patientRole) {
                     //Getting ids of associated facilitator
                     $getAssociatedPatientId = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($userId, $doctorPatientAssociation);
 
@@ -320,7 +318,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -344,8 +342,7 @@ class UserController extends Controller
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
                 } else if ($roleCode == $facilitatorRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
-                }
-                else if ($roleCode == $doctorRole) {
+                } else if ($roleCode == $doctorRole) {
                     $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($userId);
 
                     if (count($getAssociatedDoctorsId) == 0) {
@@ -359,7 +356,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -374,8 +371,7 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Doctors not found'], 200);
                     }
-                }
-                else if ($roleCode == $patientRole) {
+                } else if ($roleCode == $patientRole) {
                     //First get associated doctors id.
                     $getAssociatedDoctorsId = UserModel::getSourceUserIdViaLoggedInUserId($userId);
 
@@ -400,7 +396,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $patientIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -415,12 +411,10 @@ class UserController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'Patients not found'], 200);
                     }
-                }
-                else {
+                } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $patientRole) {
+            } else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -455,7 +449,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $facilitatorIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -484,7 +478,7 @@ class UserController extends Controller
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
                     ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
 
-                    foreach ($val as $key){
+                    foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -502,8 +496,7 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            }
-            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
@@ -515,7 +508,7 @@ class UserController extends Controller
                         $val = UserModel::FetchUserWithSearchAndPagination
                         ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $roleCode);
 
-                        foreach ($val as $key){
+                        foreach ($val as $key) {
                             $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                             $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                         }
@@ -841,18 +834,20 @@ class UserController extends Controller
         $functionalTitle = $request->post('FunctionalTitle');
         $age = $request->post('Age');
         $ageGroup = $request->post('AgeGroup');
+        $profileSummary = $request->post('ProfileSummary');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
             "LastName" => $lastName,
-            "MobileNumber" => $mobileNumber,
+//            "MobileNumber" => $mobileNumber,
             "TelephoneNumber" => $telephoneNumber,
             "OfficeAddress" => $officeAddress,
             "ResidentialAddress" => $residentialAddress,
             "Gender" => $gender,
             "FunctionalTitle" => $functionalTitle,
             "Age" => $age,
-            "AgeGroup" => $ageGroup,
+            "ProfileSummary" => $profileSummary
+//            "AgeGroup" => $ageGroup,
         );
         $emailMessage = "Dear User <br/>Update is made on your records";
 
@@ -884,6 +879,7 @@ class UserController extends Controller
         $userDetails = array();
 
         $userDetails['Id'] = $val->Id;
+        $userDetails['PatientUniqueId'] = $val->PatientUniqueId;
         $userDetails['FirstName'] = $val->FirstName;
         $userDetails['LastName'] = $val->LastName;
         $userDetails['EmailAddress'] = $val->EmailAddress;
@@ -897,6 +893,7 @@ class UserController extends Controller
         $userDetails['AgeGroup'] = $val->AgeGroup;
         $userDetails['IsBlock'] = $val->IsBlock;
         $userDetails['BlockReason'] = $val->BlockReason;
+        $userDetails['ProfileSummary'] = $val->ProfileSummary;
         $userDetails['Role'] = array();
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
@@ -1074,7 +1071,7 @@ class UserController extends Controller
 
         $insertUserAccessRecord = GenericModel::insertGenericAndReturnID('user_access', $userAccessData);
 
-        $emailMessage = "Welcome, You are successfully registered to CCM as ' .$roleName. ', use this password to login ' . $defaultPassword";
+        $emailMessage = "Welcome, You are successfully registered to CCM as .' '. $roleName.' '., use this password to login .' '. $defaultPassword";
 
         if ($insertUserAccessRecord == 0) {
             DB::rollback();
@@ -1104,39 +1101,75 @@ class UserController extends Controller
     {
         error_log('in controller');
         $id = $request->get('id');
-
-        $superAdminRole = env('ROLE_SUPER_ADMIN');
-
         //First get and check if record exists or not
-        $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+        //$getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
-        if ($getUser == null) {
-            return response()->json(['data' => null, 'message' => 'User not found'], 400);
-        }
+        //verifying the provided sourceUserId is of super admin or not
+        //as we have to stop the super admin
+        //to delete if num of super admin is 1 only
+        $roleData = UserModel::GetRoleNameViaUserId($id);
+        if (count($roleData) > 0) {
+            error_log("Role Code exist");
+            if ($roleData[0]->CodeName == env('ROLE_SUPER_ADMIN')) {
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $userCount = UserModel::GetUserCountCountViaRoleCode($roleData[0]->CodeName);
+                if ($userCount <= 1) {
+                    error_log("Super Admin count is less than equals to 1");
+                    return response()->json(['data' => null, 'message' => 'Not Allowed, There should be at-least 1 Super Admin user'], 400);
+                } else {
+                    error_log("Super Admin count is more than 1");
+                    //Binding data to variable.
+                    $dataToUpdate = array(
+                        "IsActive" => false
+                    );
 
-        //Now checking if super admin role user is going to delete
+                    $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        if ($getUser->RoleCodeName == $superAdminRole) {
-            error_log('logged in user is super admin');
-            return response()->json(['data' => null, 'message' => 'Super admin cannot be deleted'], 400);
-        }
+                    error_log($update);
 
-        //Binding data to variable.
-        $dataToUpdate = array(
-            "IsActive" => false
-        );
+                    if ($update == 1) {
+                        error_log("Super Admin deleted successfully");
+                        return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                    } else if ($update == 0) {
+                        error_log("Super Admin already deleted");
+                        return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                    } else if ($update > 1) {
+                        error_log("Super Admin fails to delete");
+                        return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                    }
+                }
+            } else {
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
-        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+                if ($getUser == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                }
+                //Binding data to variable.
+                $dataToUpdate = array(
+                    "IsActive" => false
+                );
 
-        //now delete the account_invitation
-        //of this email
+                $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        $updateAccountInvitation = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+                //now delete the account_invitation
+                //of this email
 
-        if ($update == true) {
-            return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+
+                error_log($update);
+
+                if ($update == 1) {
+                    return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                } else if ($update == 0) {
+                    return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                } else if ($update > 1) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                }
+            }
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in deleting'], 400);
+            error_log("Role Code not exist");
+            return response()->json(['data' => null, 'message' => 'Invalid User'], 400);
         }
     }
 
@@ -1427,6 +1460,357 @@ class UserController extends Controller
             } else {
                 return response()->json(['data' => null, 'message' => 'No Facilitator associated with the Doctor'], 200);
             }
+        }
+    }
+
+    function BulkUserRegister(Request $request)
+    {
+        error_log("### BULK REGISTER PATIENTS");
+
+//        $this->validate($request, [
+//            'file' => 'required|mimes:xls,xlsx,csv'
+//        ]);
+        $date = HelperModel::getDate();
+        $createdById = $request->post('id');
+        $type = $request->post('type');
+        $path = $request->file('file')->getRealPath();
+        $data = Excel::load($path)->get();
+
+        $roleData = UserModel::GetRoleNameViaUserId($createdById);
+        if (count($roleData) > 0) {
+            $roleName = $roleData[0]->CodeName;
+            $createdByEmail = $roleData[0]->EmailAddress;
+            if ($roleName == env('ROLE_PATIENT') || $roleName == env('ROLE_SUPPORT_STAFF')) {
+                return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => ' Not Allowed'], 400);
+        }
+
+        if ($type != env('ROLE_SUPER_ADMIN') && $type != env('ROLE_PATIENT') && $type != env('ROLE_DOCTOR') && $type != env('ROLE_FACILITATOR') && $type != env('ROLE_SUPPORT_STAFF')) {
+            return response()->json(['data' => null, 'message' => 'Not Allowed'], 400);
+        }
+
+        if ($data->count() > 0) {
+            error_log("count is greater than zero");
+
+            try {
+                foreach ($data->toArray() as $key => $value) {
+
+                    if ($value['emailaddress'] != null && $value['mobilenumber'] != null) {
+
+                        error_log("check mobile number");
+                        error_log($value['mobilenumber']);
+
+                        $insert_data[] = array(
+                            'PatientUniqueId' => $value['patientuniqueid'],
+                            'FirstName' => $value['firstname'],
+                            'MiddleName' => $value['middlename'],
+                            'LastName' => $value['lastname'],
+                            'EmailAddress' => $value['emailaddress'],
+                            'CountryPhoneCode' => $value['countryphonecode'],
+                            'MobileNumber' => $value['mobilenumber'],
+                            'TelephoneNumber' => $value['telephonenumber'],
+                            'IsMobileNumberVerified' => true,
+                            'OfficeAddress' => $value['officeaddress'],
+                            'ResidentialAddress' => $value['residentialaddress'],
+                            'Gender' => $value['gender'],
+                            'Age' => $value['age'],
+                            'CreatedBy' => $createdById,
+                            'CreatedByEmail' => $createdByEmail,
+                            'CreatedOn' => $date["timestamp"],
+                            'IsActive' => true,
+                            'ProfileSummary' => $value['profilesummary'],
+                            'DateOfBirth' => $value['dateofbirth'],
+                            'Role' => $type,
+                            'CreatedByRole' => $roleName
+                        );
+                    }
+                }
+            } catch (Exception $ex) {
+                error_log("Exception occur in add in temp bulk upload");
+                error_log($ex);
+                return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
+            }
+        }
+
+        try {
+            DB::table('temp_bulk_user')->insert($insert_data);
+            return response()->json(['data' => null, 'message' => 'Bulk User file is successfully uploaded,background operation is in process once users are updated you will receive an email on your registered email address'], 200);
+        } catch (\Illuminate\Database\QueryException $exception) {
+            return response()->json(['data' => null, 'message' => "Email Address and Mobile Number should be unique"], 500);
+        }
+
+        //            Bulk-1
+//                    One
+//                     Person
+//                     bulk.1@xyz.com
+//                     92
+//                    3122410823
+//                    211234567
+//                    XYZ Street
+//                     ABC Street
+//                     Male
+//                     69
+//                    2019-04-29 00:00:00
+//                    Lorem Ipsum is simply dummy text of the printing
+    }
+
+    function BackgroundBulkUserRegister()
+    {
+        //first fetch record from temp table
+        //if record exist move ahead
+        //other wise stop here
+
+        $tempUser = GenericModel::simpleFetchGenericByWhere('temp_bulk_user', '=', 'IsActive', true, null);
+        $tempUserCount = count($tempUser);
+
+        //log table variables
+        $exception = "none";
+        $createdBy = "";
+        $uploadStatus = "success";
+        $tempTableRecordDelete = "deleted";
+        $emailSent = "yes";
+        $related = "none";
+
+        error_log('User Count');
+        error_log($tempUserCount);
+
+        if (count($tempUser) == 0) {
+            return response()->json(['data' => null, 'message' => 'Data not exist'], 200);
+        } else {
+            //fetch all roles from table
+            //to be use it in comparison within loop
+            $deleteRecordFromTempTable = array();
+            $registeredEmailAddress = array();
+            $isUniqueEmail = true;
+            $roleList = GenericModel::simpleFetchGenericByWhere('role', '=', 'IsActive', true, 'SortOrder');
+            $existingUserList = GenericModel::simpleFetchGenericByWhere('user', '=', 'IsActive', true, null);
+
+            try {
+
+                for ($i = 0; $i < $tempUserCount; $i++) {
+
+                    error_log("### ITERATION START ###");
+                    $createdBy = $tempUser[$i]->CreatedBy;
+                    $createdByEmail = $tempUser[$i]->CreatedByEmail;
+                    $related = $tempUser[$i]->Role;
+
+                    //first verifying the unique email address
+                    //and mobile number as well in-case of patient
+
+                    //verifying unique email address
+                    error_log("verifying unique email address");
+
+                    if (strtolower($tempUser[$i]->Role) == env('ROLE_PATIENT')) {
+                        //Role is Patient
+                        error_log("Role is Patient");
+
+                        foreach ($existingUserList as $item) {
+                            if ($item->EmailAddress == $tempUser[$i]->EmailAddress) {
+                                //verifying unique email break
+                                error_log('This email is already exist');
+                                $isUniqueEmail = false;
+                                break;
+                            } else {
+                                //verifying unique email continue
+                                error_log('This email is not exist');
+                            }
+
+                            if ($item->MobileNumber == $tempUser[$i]->MobileNumber) {
+                                //verifying unique mobile number break
+                                error_log('This mobile number is already exist');
+                                $isUniqueEmail = false;
+                                break;
+                            } else {
+                                //verifying unique mobile number continue
+                                error_log('This mobile number is not exist');
+                            }
+                        }
+
+                    } else {
+                        //Role is other an Patient
+                        error_log("Role is other than Patient");
+
+                        foreach ($existingUserList as $item) {
+                            if ($item->EmailAddress == $tempUser[$i]->EmailAddress) {
+                                //verifying unique email break
+                                error_log('This email is already exist');
+                                $isUniqueEmail = false;
+                                break;
+                            } else {
+                                //verifying unique email continue
+                                error_log('This email is not exist');
+                            }
+                        }
+                    }
+
+                    error_log($tempUser[$i]->MiddleName);
+                    error_log($tempUser[$i]->LastName);
+                    error_log($tempUser[$i]->EmailAddress);
+
+                    $defaultPassword = md5(getenv("DEFAULT_PWD"));
+
+                    error_log("isUniqueEmail");
+                    error_log($isUniqueEmail);
+
+                    if ($isUniqueEmail) {
+
+                        $insertData = array(
+                            'PatientUniqueId' => $tempUser[$i]->PatientUniqueId,
+                            'FirstName' => $tempUser[$i]->FirstName,
+                            'MiddleName' => $tempUser[$i]->MiddleName,
+                            'LastName' => $tempUser[$i]->LastName,
+                            'EmailAddress' => $tempUser[$i]->EmailAddress,
+                            'CountryPhoneCode' => $tempUser[$i]->CountryPhoneCode,
+                            'MobileNumber' => $tempUser[$i]->MobileNumber,
+                            'IsMobileNumberVerified' => ($tempUser[$i]->MobileNumber == null || "" ? false : true),
+                            'TelephoneNumber' => $tempUser[$i]->TelephoneNumber,
+                            'OfficeAddress' => $tempUser[$i]->OfficeAddress,
+                            'ResidentialAddress' => $tempUser[$i]->ResidentialAddress,
+                            'Password' => $defaultPassword,
+                            'Gender' => $tempUser[$i]->Gender,
+                            'Age' => $tempUser[$i]->Age,
+                            'AccountVerified' => true,
+                            'CreatedBy' => $tempUser[$i]->CreatedBy,
+                            'CreatedOn' => $tempUser[$i]->CreatedOn,
+                            'IsActive' => true,
+                            'ProfileSummary' => $tempUser[$i]->ProfileSummary,
+                            'DateOfBirth' => $tempUser[$i]->DateOfBirth,
+                            'IsBlock' => false,
+                            'PatientUniqueId' => 1, //generate if role is patient
+                            'IsCurrentlyLoggedIn' => false,
+                        );
+                        $insertedUserId = GenericModel::insertGenericAndReturnID('user', $insertData);
+                        error_log($insertedUserId);
+
+                        if ($insertedUserId == 0) {
+                            error_log("Insert Id is zero");
+                        } else {
+                            error_log("Insert Id is :");
+
+                            $newUserId = $insertedUserId;
+                            $roleId = null;
+                            foreach ($roleList as $key) {
+
+                                if (strtolower($key->CodeName) == strtolower($tempUser[$i]->Role)) {
+                                    $roleId = $key->Id;
+                                    //finding role break
+                                    error_log('finding role break');
+                                    break;
+                                } else {
+                                    //finding role continue
+                                    error_log('finding role continue');
+                                }
+                            }
+
+                            //insert in user_access
+                            $insertUserAccessData = array(
+                                'RoleId' => $roleId,
+                                'UserId' => $newUserId,
+                                'IsActive' => 1
+                            );
+                            GenericModel::insertGenericAndReturnID('user_access', $insertUserAccessData);
+
+                            //checking the possibility of
+                            //User association
+
+                            if (strtolower($tempUser[$i]->Role) == env('ROLE_SUPER_ADMIN') || strtolower($tempUser[$i]->Role) == env('ROLE_SUPPORT_STAFF') || strtolower($tempUser[$i]->Role) == env('ROLE_DOCTOR')) {
+                                error_log("No Need to insert in user_association");
+                            } else if (strtolower($tempUser[$i]->Role) == env('ROLE_PATIENT')) {
+                                error_log("Insert in user_association now");
+
+//                            ASSOCIATION_DOCTOR_PATIENT=doctor_patient
+//                            ASSOCIATION_DOCTOR_FACILITATOR=doctor_facilitator
+
+                                //insert in user_association
+                                $insertUserAssociationData = array(
+                                    'SourceUserId' => $tempUser[$i]->CreatedBy,
+                                    'DestinationUserId' => $newUserId,
+                                    'AssociationType' => env('ASSOCIATION_DOCTOR_PATIENT'),
+                                    'IsActive' => 1
+                                );
+                                GenericModel::insertGenericAndReturnID('user_association', $insertUserAssociationData);
+
+                            } else if (strtolower($tempUser[$i]->Role) == env('ROLE_FACILITATOR')) {
+                                //insert in user_association
+                                $insertUserAssociationData = array(
+                                    'SourceUserId' => $tempUser[$i]->CreatedBy,
+                                    'DestinationUserId' => $newUserId,
+                                    'AssociationType' => env('ASSOCIATION_DOCTOR_FACILITATOR'),
+                                    'IsActive' => 1
+                                );
+                                GenericModel::insertGenericAndReturnID('user_association', $insertUserAssociationData);
+                            } else {
+                                //none
+                                return true;
+                            }
+                        }
+
+                        array_push($registeredEmailAddress, $tempUser[$i]->EmailAddress);
+                    }
+
+                    array_push($deleteRecordFromTempTable, $tempUser[$i]->Id);
+
+                    error_log("### ITERATION ENDS ### -- " . $i);
+
+                    $isUniqueEmail = true;
+                }
+
+                //as import completes
+                //delete the data
+
+                error_log('Deleting Temp records from the table');
+
+                DB::table('temp_bulk_user')->whereIn('id', $deleteRecordFromTempTable)->delete();
+
+                error_log('Temp records are deleted');
+
+                error_log("count registered email address");
+                error_log(count($registeredEmailAddress));
+
+                for ($j = 0; $j < count($registeredEmailAddress); $j++) {
+                    error_log("## NOW Sending Email to newly Registered User ##");
+                    UserModel::sendEmail($registeredEmailAddress[$j], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$j]->Role . ' use this password to login ' . getenv("DEFAULT_PWD") . '', null);
+                }
+                error_log("## Here Sending Success Email to Uploader ##");
+                UserModel::sendEmail($createdByEmail, "Your Bulk Uploaded Users process is successfully completed. ", null);
+
+
+            } catch (Exception $ex) {
+                $exception = $ex;
+                $uploadStatus = "failed";
+                $emailSent = "failed";
+                $tempTableRecordDelete = "not required";
+
+                error_log("## Here Sending Failure Email to Uploader ##");
+                UserModel::sendEmail($tempUser[$i]->CreatedByEmail, "Sorry, Your Bulk Uploaded Users process is failed to complete. Please try again ", null);
+
+                return response()->json(['data' => null, 'message' => 'Internal Server Error'], 500);
+            }
+        }
+
+        $date = HelperModel::getDate();
+
+        //Insert into log table now
+        $insertData = array(
+            'TotalRecord' => $tempUserCount,
+            'Exception' => $exception,
+            'UploadStatus' => $uploadStatus,
+            'TempTableRecordDelete' => $tempTableRecordDelete,
+            'EmailSent' => $emailSent,
+            'UploadBy' => $createdBy,
+            'UploadOn' => $date["timestamp"],
+            'Related' => $related,
+            'IsActive' => 1
+        );
+        $insertedUserId = GenericModel::insertGenericAndReturnID('bulk_upload_log', $insertData);
+        if ($insertedUserId > 0) {
+            error_log("## successfully created the log ##");
+            return response()->json(['data' => null, 'message' => 'successfully created the log'], 200);
+        } else {
+            error_log("## failed to create the log ##");
+            return response()->json(['data' => null, 'message' => 'failed to create log'], 500);
         }
     }
 }

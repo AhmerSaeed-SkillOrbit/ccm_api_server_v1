@@ -510,6 +510,21 @@ class LoginModel
         return $result;
     }
 
+    static function checkEmailAndMobileAvailable(string $email, string $mobileNumber)
+    {
+        error_log("Here 1");
+        error_log($email);
+        error_log($mobileNumber);
+
+        $result = DB::table('user')
+            ->select('*')
+            ->where('IsActive', '=', 1)
+            ->where('EmailAddress', '=', $email)
+            ->orWhere('MobileNumber', '=', $mobileNumber)
+            ->get();
+        return $result;
+    }
+
     static function checkTokenAvailableForResetPass(string $token)
     {
         $result = DB::table('verification_token')
@@ -517,6 +532,20 @@ class LoginModel
             ->where('Token', '=', $token)
             ->where('IsActive', '=', 1)
             ->get();
+        return $result;
+    }
+
+    static function checkTokenWithTypeAvailableForResetPass(string $token, $type)
+    {
+        error_log("type");
+        error_log($type);
+
+        $result = DB::table('verification_token')
+            ->select('*')
+            ->where('Token', '=', $token)
+            ->where('TokenType', '=', $type)
+            ->where('IsActive', '=', 1)
+            ->first();
         return $result;
     }
 
@@ -556,7 +585,6 @@ class LoginModel
 
         return $query;
     }
-
 
     public static function FetchLoginHistoryListViaPagination($userId, $offset, $limit)
     {

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\UserRolesModel;
 use Carbon\Carbon;
+use mysql_xdevapi\Exception;
 use Session;
 use Twilio\Rest\Client as TwilioClient;
 
@@ -116,17 +117,21 @@ class HelperModel
 
         foreach ($toNumbers as $number) {
             $twilioClient = new TwilioClient($twilioAccountSid, $twilioAuthToken);
-            $twilioClient->messages->create(
-                $number,
-                array(
-                    "from" => $myTwilioNumber,
-                    "body" => $content . " " . $data
-                )
-            );
+
+            try {
+                $twilioClient->messages->create(
+                    $number,
+                    array(
+                        "from" => $myTwilioNumber,
+                        "body" => $content . " " . $data
+                    )
+                );
+                error_log("sms sent");
+            } catch (Exception $ex) {
+                error_log("sms failed to sent exception is");
+                error_log($ex);
+            }
         }
-
-        error_log("sms sent");
-
         return true;
     }
 
