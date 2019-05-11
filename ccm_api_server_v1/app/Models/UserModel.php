@@ -945,4 +945,15 @@ class UserModel
             ->where('user.Id', '=', $userId)
             ->get();
     }
+
+    static public function GetUserCountCountViaRoleCode($roleCode)
+    {
+        return DB::table('user')
+            ->select('user.Id', 'user.EmailAddress', 'role.Name', 'role.CodeName')
+            ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
+            ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
+            ->where('role.CodeName', '=', $roleCode)
+            ->where('user.IsActive', '=', 1)
+            ->count();
+    }
 }
