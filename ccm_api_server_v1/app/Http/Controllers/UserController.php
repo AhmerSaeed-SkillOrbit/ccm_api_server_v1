@@ -1460,7 +1460,12 @@ class UserController extends Controller
 
             try {
                 foreach ($data->toArray() as $key => $value) {
+
                     if ($value['emailaddress'] != null && $value['mobilenumber'] != null) {
+
+                        error_log("check mobile number");
+                        error_log($value['mobilenumber']);
+
                         $insert_data[] = array(
                             'PatientUniqueId' => $value['patientuniqueid'],
                             'FirstName' => $value['firstname'],
@@ -1487,6 +1492,8 @@ class UserController extends Controller
                     }
                 }
             } catch (Exception $ex) {
+                error_log("Exception occur in add in temp bulk upload");
+                error_log($ex);
                 return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
             }
         }
@@ -1494,8 +1501,8 @@ class UserController extends Controller
         try {
             DB::table('temp_bulk_user')->insert($insert_data);
             return response()->json(['data' => null, 'message' => 'Bulk User file is successfully uploaded,background operation is in process once users are updated you will receive an email on your registered email address'], 200);
-        } catch (Exception $exception) {
-            return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
+        } catch (\Illuminate\Database\QueryException $exception) {
+            return response()->json(['data' => null, 'message' => "Email Address and Mobile Number should be unique"], 500);
         }
 
         //            Bulk-1
