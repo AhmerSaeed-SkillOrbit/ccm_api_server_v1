@@ -492,9 +492,10 @@ Route::post('/send/code/on/sms', 'CcmPlanController@SendCodeOnSms');
 
 Route::post('/verify/sms/code', 'CcmPlanController@VerifySmsCode');
 
-Route::post('/bulk/user/register/', 'UserController@BulkUserRegister');
+Route::post('/bulk/user/register', 'UserController@BulkUserRegister');
 
-Route::get('/background/bulk/user/register/', 'UserController@BackgroundBulkUserRegister');
+Route::get('/background/bulk/user/register', 'UserController@BackgroundBulkUserRegister');
 
+Route::post('/patient/add', 'LoginController@AddPatientDirect');
 
 

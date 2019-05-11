@@ -460,7 +460,7 @@ class LoginController extends Controller
     function registerValidator(array $data)
     {
         return Validator::make($data, [
-            'EmailAddress' => ['required', 'string', 'email', 'max:255'],
+            'EmailAddress' => ['required', 'string', 'email', 'max:255']
 //            'BelongTo' => ['required'],
         ]);
     }
@@ -534,6 +534,133 @@ class LoginController extends Controller
             return response()->json(['data' => $loginHistory, 'message' => 'Login User History'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Login User History is empty'], 200);
+        }
+    }
+
+    function AddPatientDirect(Request $request)
+    {
+        try {
+
+            error_log("add patient direct");
+            $data = $request->all();
+
+            $validator = LoginController::registerValidator($data);
+
+            if ($validator->fails()) {
+                return response()->json(['data' => $data, 'error' => $validator->errors(), 'message' => 'validation failed'], 400);
+            } else {
+
+                //custom check for
+                //email n mobile already exist
+
+                $data = LoginModel::checkEmailAndMobileAvailable($request->EmailAddress, $request->post('MobileNumber'));
+                if (count($data) > 0) {
+                    if ($data[0]->EmailAddress == $request->EmailAddress) {
+                        $message = "Email Address already exist";
+                        return response()->json(['data' => null, 'message' => $message], 400);
+                    }
+                    if ($data[0]->MobileNumber == $request->post('MobileNumber')) {
+                        $message = "Mobile Number already exist";
+                        return response()->json(['data' => null, 'message' => $message], 400);
+                    }
+                }
+
+                //verifying the provided RoleCode is of patient
+                $roleData = UserModel::getRoleViaRoleCode($request->RoleCode);
+                if (count($roleData) > 0) {
+                    $roleName = $roleData[0]->CodeName;
+                    if ($roleName == env('ROLE_PATIENT')) {
+                        $roleId = $roleData[0]->Id;
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Not Allowed, The User to be added is not Patient'], 400);
+                    }
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Not Allowed, The User to be added is not Patient'], 400);
+                }
+
+                //verifying the provided sourceUserId is of Doctor or not
+                $roleData = UserModel::GetRoleNameViaUserId($request->SourceUserId);
+                if (count($roleData) > 0) {
+                    $roleName = $roleData[0]->CodeName;
+                    if ($roleName != env('ROLE_DOCTOR')) {
+                        return response()->json(['data' => null, 'message' => 'Not Allowed, Only Doctor can add Patient'], 400);
+                    }
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Not Allowed, Only Doctor can add Patient'], 400);
+                }
+
+                //means patient is registering
+                //so generate Patient unique id here
+                //calling table view
+                $patientUniqueId = 0;
+                try {
+                    $getPatientCountResult = DB::table('get_patient_count_view')
+                        ->select('TotalPatient')
+                        ->take(1)
+                        ->get();
+                    if (count($getPatientCountResult) == 1) {
+                        $getPatientCountResult = $getPatientCountResult[0]->TotalPatient;
+                        if ($getPatientCountResult > 0) {
+                            $patientUniqueId = $getPatientCountResult + 1;
+                        }
+                    }
+
+                    $hashedPassword = md5(env('DEFAULT_PWD'));
+                    $date = HelperModel::getDate();
+
+                    $insertData = array(
+                        "PatientUniqueId" => $patientUniqueId,
+                        "FirstName" => $request->FirstName,
+                        "LastName" => $request->LastName,
+                        "EmailAddress" => $request->EmailAddress,
+                        "CountryPhoneCode" => $request->CountryPhoneCode,
+                        "MobileNumber" => $request->MobileNumber,
+                        "IsMobileNumberVerified" => 1,
+                        "AccountVerified" => 1,
+                        "TelephoneNumber" => $request->TelephoneNumber,
+                        "OfficeAddress" => $request->OfficeAddress,
+                        "ResidentialAddress" => $request->ResidentialAddress,
+                        "Password" => $hashedPassword,
+                        "Gender" => $request->Gender,
+                        "FunctionalTitle" => $request->FunctionalTitle,
+                        "Age" => $request->Age,
+                        "AgeGroup" => $request->AgeGroup,
+                        "CreatedOn" => $date["timestamp"],
+                        "CreatedBy" => $request->SourceUserId,
+                        "IsActive" => 1
+                    );
+
+                    $checkInsertUserId = DB::table("user")->insertGetId($insertData);
+
+                    if ($checkInsertUserId) {
+                        $insertUserAssociationData = array(
+                            "SourceUserId" => $request->SourceUserId,
+                            "DestinationUserId" => $checkInsertUserId,
+                            "AssociationType" => env('ASSOCIATION_DOCTOR_PATIENT'),
+                            "IsActive" => 1
+                        );
+
+                        DB::table("user_association")->insertGetId($insertUserAssociationData);
+                    }
+
+                    $insertRoleData = array(
+                        "UserId" => $checkInsertUserId,
+                        "RoleId" => $roleId,
+                        "IsActive" => 1
+                    );
+
+                    DB::table("user_access")->insertGetId($insertRoleData);
+
+                    return response()->json(['data' => $checkInsertUserId, 'message' => 'Patient successfully added'], 200);
+
+                } catch (Exception $exception) {
+                    error_log($exception);
+                    return response()->json(['data' => $checkInsertUserId, 'message' => 'Failed to add Patient'], 500);
+                }
+            }
+
+        } catch (Exception $e) {
+            return response()->json(['data' => null, 'message' => 'Internal server error'], 500);
         }
     }
 }
