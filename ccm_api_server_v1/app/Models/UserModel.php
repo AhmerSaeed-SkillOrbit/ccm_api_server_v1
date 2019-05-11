@@ -659,6 +659,24 @@ class UserModel
         return $query;
     }
 
+    static public function GetPatientViaEmail($email, $patientRoleCode)
+    {
+        error_log('in GetUserViaMobileNum function - Model');
+        error_log($email);
+        error_log($patientRoleCode);
+
+        $query = DB::table('user')
+            ->join('user_access', 'user_access.UserId', 'user.Id')
+            ->join('role', 'user_access.RoleId', 'role.Id')
+            ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
+            ->where('user.EmailAddress', '=', $email)
+            ->where('role.CodeName', '=', $patientRoleCode)
+            ->where('user.IsActive', '=', 1)
+            ->first();
+
+        return $query;
+    }
+
     static public function isDuplicateEmail($userEmail)
     {
         $isDuplicate = DB::table('user')
@@ -676,12 +694,11 @@ class UserModel
             $urlForEmail = url($url);
 
             Mail::raw($emailMessage, function ($message) use ($email) {
-                $message->to($email)->subject("Invitation");
+                $message->from("no-reply@connectcareplus.com")->to($email)->subject("CCM Email");
             });
             return true;
         } catch (Exception $ex) {
             error_log("Sending Mail Exception");
-            error_log($ex);
             return false;
         }
     }
