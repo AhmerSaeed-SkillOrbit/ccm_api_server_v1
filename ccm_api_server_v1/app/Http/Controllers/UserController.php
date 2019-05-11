@@ -1101,39 +1101,75 @@ class UserController extends Controller
     {
         error_log('in controller');
         $id = $request->get('id');
-
-        $superAdminRole = env('ROLE_SUPER_ADMIN');
-
         //First get and check if record exists or not
-        $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+        //$getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
-        if ($getUser == null) {
-            return response()->json(['data' => null, 'message' => 'User not found'], 400);
-        }
+        //verifying the provided sourceUserId is of super admin or not
+        //as we have to stop the super admin
+        //to delete if num of super admin is 1 only
+        $roleData = UserModel::GetRoleNameViaUserId($id);
+        if (count($roleData) > 0) {
+            error_log("Role Code exist");
+            if ($roleData[0]->CodeName == env('ROLE_SUPER_ADMIN')) {
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $userCount = UserModel::GetUserCountCountViaRoleCode($roleData[0]->CodeName);
+                if ($userCount <= 1) {
+                    error_log("Super Admin count is less than equals to 1");
+                    return response()->json(['data' => null, 'message' => 'Not Allowed, There should be at-least 1 Super Admin user'], 400);
+                } else {
+                    error_log("Super Admin count is more than 1");
+                    //Binding data to variable.
+                    $dataToUpdate = array(
+                        "IsActive" => false
+                    );
 
-        //Now checking if super admin role user is going to delete
+                    $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        if ($getUser->RoleCodeName == $superAdminRole) {
-            error_log('logged in user is super admin');
-            return response()->json(['data' => null, 'message' => 'Super admin cannot be deleted'], 400);
-        }
+                    error_log($update);
 
-        //Binding data to variable.
-        $dataToUpdate = array(
-            "IsActive" => false
-        );
+                    if ($update == 1) {
+                        error_log("Super Admin deleted successfully");
+                        return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                    } else if ($update == 0) {
+                        error_log("Super Admin already deleted");
+                        return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                    } else if ($update > 1) {
+                        error_log("Super Admin fails to delete");
+                        return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                    }
+                }
+            } else {
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
-        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+                if ($getUser == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                }
+                //Binding data to variable.
+                $dataToUpdate = array(
+                    "IsActive" => false
+                );
 
-        //now delete the account_invitation
-        //of this email
+                $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        $updateAccountInvitation = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+                //now delete the account_invitation
+                //of this email
 
-        if ($update == true) {
-            return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+
+                error_log($update);
+
+                if ($update == 1) {
+                    return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                } else if ($update == 0) {
+                    return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                } else if ($update > 1) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                }
+            }
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in deleting'], 400);
+            error_log("Role Code not exist");
+            return response()->json(['data' => null, 'message' => 'Invalid User'], 400);
         }
     }
 
