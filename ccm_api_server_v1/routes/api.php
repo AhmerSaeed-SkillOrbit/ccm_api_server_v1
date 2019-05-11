@@ -418,6 +418,7 @@ Route::post('/login', 'LoginController@login');
 Route::post('/register', 'LoginController@register');
 Route::post('/forgetPass', 'LoginController@forgetPass');
 Route::post('/resetPass', 'LoginController@resetPass');
+Route::post('/change/password', 'LoginController@changePassword');
 Route::post('/invite', 'ServicesController@invite');
 Route::post('/invite/update', 'ServicesController@inviteUpdate');
 Route::get('/logout', 'LoginController@logout');
@@ -491,9 +492,10 @@ Route::post('/send/code/on/sms', 'CcmPlanController@SendCodeOnSms');
 
 Route::post('/verify/sms/code', 'CcmPlanController@VerifySmsCode');
 
-Route::post('/bulk/user/register/', 'UserController@BulkUserRegister');
+Route::post('/bulk/user/register', 'UserController@BulkUserRegister');
 
-Route::get('/background/bulk/user/register/', 'UserController@BackgroundBulkUserRegister');
+Route::get('/background/bulk/user/register', 'UserController@BackgroundBulkUserRegister');
 
+Route::post('/patient/add', 'LoginController@AddPatientDirect');
 
 

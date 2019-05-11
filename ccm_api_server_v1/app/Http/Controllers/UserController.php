@@ -834,18 +834,20 @@ class UserController extends Controller
         $functionalTitle = $request->post('FunctionalTitle');
         $age = $request->post('Age');
         $ageGroup = $request->post('AgeGroup');
+        $profileSummary = $request->post('ProfileSummary');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
             "LastName" => $lastName,
-            "MobileNumber" => $mobileNumber,
+//            "MobileNumber" => $mobileNumber,
             "TelephoneNumber" => $telephoneNumber,
             "OfficeAddress" => $officeAddress,
             "ResidentialAddress" => $residentialAddress,
             "Gender" => $gender,
             "FunctionalTitle" => $functionalTitle,
             "Age" => $age,
-            "AgeGroup" => $ageGroup,
+            "ProfileSummary" => $profileSummary
+//            "AgeGroup" => $ageGroup,
         );
         $emailMessage = "Dear User <br/>Update is made on your records";
 
@@ -877,6 +879,7 @@ class UserController extends Controller
         $userDetails = array();
 
         $userDetails['Id'] = $val->Id;
+        $userDetails['PatientUniqueId'] = $val->PatientUniqueId;
         $userDetails['FirstName'] = $val->FirstName;
         $userDetails['LastName'] = $val->LastName;
         $userDetails['EmailAddress'] = $val->EmailAddress;
@@ -890,6 +893,7 @@ class UserController extends Controller
         $userDetails['AgeGroup'] = $val->AgeGroup;
         $userDetails['IsBlock'] = $val->IsBlock;
         $userDetails['BlockReason'] = $val->BlockReason;
+        $userDetails['ProfileSummary'] = $val->ProfileSummary;
         $userDetails['Role'] = array();
         $userDetails['Role']['Id'] = $val->RoleId;
         $userDetails['Role']['RoleName'] = $val->RoleName;
@@ -1097,39 +1101,75 @@ class UserController extends Controller
     {
         error_log('in controller');
         $id = $request->get('id');
-
-        $superAdminRole = env('ROLE_SUPER_ADMIN');
-
         //First get and check if record exists or not
-        $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+        //$getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
-        if ($getUser == null) {
-            return response()->json(['data' => null, 'message' => 'User not found'], 400);
-        }
+        //verifying the provided sourceUserId is of super admin or not
+        //as we have to stop the super admin
+        //to delete if num of super admin is 1 only
+        $roleData = UserModel::GetRoleNameViaUserId($id);
+        if (count($roleData) > 0) {
+            error_log("Role Code exist");
+            if ($roleData[0]->CodeName == env('ROLE_SUPER_ADMIN')) {
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $userCount = UserModel::GetUserCountCountViaRoleCode($roleData[0]->CodeName);
+                if ($userCount <= 1) {
+                    error_log("Super Admin count is less than equals to 1");
+                    return response()->json(['data' => null, 'message' => 'Not Allowed, There should be at-least 1 Super Admin user'], 400);
+                } else {
+                    error_log("Super Admin count is more than 1");
+                    //Binding data to variable.
+                    $dataToUpdate = array(
+                        "IsActive" => false
+                    );
 
-        //Now checking if super admin role user is going to delete
+                    $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        if ($getUser->RoleCodeName == $superAdminRole) {
-            error_log('logged in user is super admin');
-            return response()->json(['data' => null, 'message' => 'Super admin cannot be deleted'], 400);
-        }
+                    error_log($update);
 
-        //Binding data to variable.
-        $dataToUpdate = array(
-            "IsActive" => false
-        );
+                    if ($update == 1) {
+                        error_log("Super Admin deleted successfully");
+                        return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                    } else if ($update == 0) {
+                        error_log("Super Admin already deleted");
+                        return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                    } else if ($update > 1) {
+                        error_log("Super Admin fails to delete");
+                        return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                    }
+                }
+            } else {
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
-        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+                if ($getUser == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                }
+                //Binding data to variable.
+                $dataToUpdate = array(
+                    "IsActive" => false
+                );
 
-        //now delete the account_invitation
-        //of this email
+                $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        $updateAccountInvitation = GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+                //now delete the account_invitation
+                //of this email
 
-        if ($update == true) {
-            return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+
+                error_log($update);
+
+                if ($update == 1) {
+                    return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                } else if ($update == 0) {
+                    return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                } else if ($update > 1) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                }
+            }
         } else {
-            return response()->json(['data' => null, 'message' => 'Error in deleting'], 400);
+            error_log("Role Code not exist");
+            return response()->json(['data' => null, 'message' => 'Invalid User'], 400);
         }
     }
 
@@ -1456,31 +1496,40 @@ class UserController extends Controller
 
             try {
                 foreach ($data->toArray() as $key => $value) {
-                    $insert_data[] = array(
-                        'PatientUniqueId' => $value['patientuniqueid'],
-                        'FirstName' => $value['firstname'],
-                        'MiddleName' => $value['middlename'],
-                        'LastName' => $value['lastname'],
-                        'EmailAddress' => $value['emailaddress'],
-                        'CountryPhoneCode' => $value['countryphonecode'],
-                        'MobileNumber' => $value['mobilenumber'],
-                        'TelephoneNumber' => $value['telephonenumber'],
-                        'IsMobileNumberVerified' => true,
-                        'OfficeAddress' => $value['officeaddress'],
-                        'ResidentialAddress' => $value['residentialaddress'],
-                        'Gender' => $value['gender'],
-                        'Age' => $value['age'],
-                        'CreatedBy' => $createdById,
-                        'CreatedByEmail' => $createdByEmail,
-                        'CreatedOn' => $date["timestamp"],
-                        'IsActive' => true,
-                        'ProfileSummary' => $value['profilesummary'],
-                        'DateOfBirth' => $value['dateofbirth'],
-                        'Role' => $type,
-                        'CreatedByRole' => $roleName
-                    );
+
+                    if ($value['emailaddress'] != null && $value['mobilenumber'] != null) {
+
+                        error_log("check mobile number");
+                        error_log($value['mobilenumber']);
+
+                        $insert_data[] = array(
+                            'PatientUniqueId' => $value['patientuniqueid'],
+                            'FirstName' => $value['firstname'],
+                            'MiddleName' => $value['middlename'],
+                            'LastName' => $value['lastname'],
+                            'EmailAddress' => $value['emailaddress'],
+                            'CountryPhoneCode' => $value['countryphonecode'],
+                            'MobileNumber' => $value['mobilenumber'],
+                            'TelephoneNumber' => $value['telephonenumber'],
+                            'IsMobileNumberVerified' => true,
+                            'OfficeAddress' => $value['officeaddress'],
+                            'ResidentialAddress' => $value['residentialaddress'],
+                            'Gender' => $value['gender'],
+                            'Age' => $value['age'],
+                            'CreatedBy' => $createdById,
+                            'CreatedByEmail' => $createdByEmail,
+                            'CreatedOn' => $date["timestamp"],
+                            'IsActive' => true,
+                            'ProfileSummary' => $value['profilesummary'],
+                            'DateOfBirth' => $value['dateofbirth'],
+                            'Role' => $type,
+                            'CreatedByRole' => $roleName
+                        );
+                    }
                 }
             } catch (Exception $ex) {
+                error_log("Exception occur in add in temp bulk upload");
+                error_log($ex);
                 return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
             }
         }
@@ -1488,8 +1537,8 @@ class UserController extends Controller
         try {
             DB::table('temp_bulk_user')->insert($insert_data);
             return response()->json(['data' => null, 'message' => 'Bulk User file is successfully uploaded,background operation is in process once users are updated you will receive an email on your registered email address'], 200);
-        } catch (Exception $exception) {
-            return response()->json(['data' => null, 'message' => 'Internal Server Error occurred'], 500);
+        } catch (\Illuminate\Database\QueryException $exception) {
+            return response()->json(['data' => null, 'message' => "Email Address and Mobile Number should be unique"], 500);
         }
 
         //            Bulk-1
@@ -1543,7 +1592,7 @@ class UserController extends Controller
                 for ($i = 0; $i < $tempUserCount; $i++) {
 
                     error_log("### ITERATION START ###");
-                    $createdBy = $tempUser[$i]->CreatedsBy;
+                    $createdBy = $tempUser[$i]->CreatedBy;
                     $createdByEmail = $tempUser[$i]->CreatedByEmail;
                     $related = $tempUser[$i]->Role;
 

@@ -266,10 +266,10 @@ class LoginController extends Controller
 
 //                    return response()->json(['data' => null, 'message' => 'Test Break'], 400);
 //                    //Binding data to variable.
-                    error_log('fectching User Record ');
+                    error_log('fetching User Record ');
 
                     $checkUserData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $checkToken[0]->UserId);
-                    error_log('fectched User Record ' . $checkUserData);
+                    error_log('fetched User Record ' . $checkUserData);
                     if (count($checkUserData) == 0) {
                         return response()->json(['data' => null, 'message' => 'User not found'], 400);
                     } else {
@@ -355,6 +355,76 @@ class LoginController extends Controller
 
     }
 
+    function changePassword(Request $request)
+    {
+        $loginUserId = $request->post('id'); //login user id
+        $oldPassword = $request->post('oldPassword');
+        $newPassword = $request->post('newPassword');
+
+        if ($oldPassword != null && $newPassword != null && $loginUserId != null) {
+            error_log('fetching User Record ');
+
+            $checkUserData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $loginUserId);
+            error_log('fetched User Record ' . $checkUserData);
+            if (count($checkUserData) == 0) {
+                return response()->json(['data' => null, 'message' => 'Invalid User'], 400);
+            } else {
+                $hashedPasswordOld = md5($oldPassword);
+                if ($hashedPasswordOld != $checkUserData[0]->Password) {
+                    return response()->json(['data' => null, 'message' => 'Old Password does not match'], 400);
+                } else {
+                    try {
+                        error_log('In controller');
+                        error_log('comparing old password with user record password');
+
+                        //Now making data for user_access
+                        $dataToUpdate = array(
+                            "Password" => md5($newPassword)
+                        );
+
+                        $updateDataCheck = GenericModel::updateGeneric('user', 'Id', $checkUserData[0]->Id, $dataToUpdate);
+
+                        error_log('password is changed successfully');
+
+                        if ($updateDataCheck >= 0) {
+                            $mobileNumber = $checkUserData[0]->MobileNumber;
+                            $countryPhoneCode = $checkUserData[0]->CountryPhoneCode;
+                            $emailAddress = $checkUserData[0]->EmailAddress;
+                            $emailMessage = "Your password has been changed.";
+
+                            error_log("now sending email and sms");
+
+                            //Now sending email
+                            LoginModel::sendEmail($emailAddress, "Update Password", $emailMessage, "");
+
+                            //Now sending sms
+                            if ($mobileNumber != null) {
+                                $url = env('WEB_URL') . '/#/';
+                                $toNumber = array();
+                                $mobileNumber = $countryPhoneCode . $mobileNumber;
+                                array_push($toNumber, $mobileNumber);
+                                try {
+                                    HelperModel::sendSms($toNumber, 'Your password has been changed.', null);
+                                } catch (Exception $ex) {
+                                    return response()->json(['data' => null, 'message' => 'Your password has been changed'], 200);
+                                }
+                            }
+                            return response()->json(['data' => null, 'message' => 'Your password has been changed'], 200);
+
+                        } else {
+                            return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
+                        }
+
+                    } catch (Exception $e) {
+                        error_log('error ' . $e);
+                        return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+                    }
+                }
+            }
+        } else {
+            return response()->json(['data' => null, 'message' => 'Old password and new password is required'], 400);
+        }
+    }
 
     function adminLogin(Request $request)
     {
@@ -390,7 +460,7 @@ class LoginController extends Controller
     function registerValidator(array $data)
     {
         return Validator::make($data, [
-            'EmailAddress' => ['required', 'string', 'email', 'max:255'],
+            'EmailAddress' => ['required', 'string', 'email', 'max:255']
 //            'BelongTo' => ['required'],
         ]);
     }
@@ -462,9 +532,135 @@ class LoginController extends Controller
                 array_push($loginHistory, $itemArray);
             }
             return response()->json(['data' => $loginHistory, 'message' => 'Login User History'], 200);
-        }
-        else {
+        } else {
             return response()->json(['data' => null, 'message' => 'Login User History is empty'], 200);
+        }
+    }
+
+    function AddPatientDirect(Request $request)
+    {
+        try {
+
+            error_log("add patient direct");
+            $data = $request->all();
+
+            $validator = LoginController::registerValidator($data);
+
+            if ($validator->fails()) {
+                return response()->json(['data' => $data, 'error' => $validator->errors(), 'message' => 'validation failed'], 400);
+            } else {
+
+                //custom check for
+                //email n mobile already exist
+
+                $data = LoginModel::checkEmailAndMobileAvailable($request->EmailAddress, $request->post('MobileNumber'));
+                if (count($data) > 0) {
+                    if ($data[0]->EmailAddress == $request->EmailAddress) {
+                        $message = "Email Address already exist";
+                        return response()->json(['data' => null, 'message' => $message], 400);
+                    }
+                    if ($data[0]->MobileNumber == $request->post('MobileNumber')) {
+                        $message = "Mobile Number already exist";
+                        return response()->json(['data' => null, 'message' => $message], 400);
+                    }
+                }
+
+                //verifying the provided RoleCode is of patient
+                $roleData = UserModel::getRoleViaRoleCode($request->RoleCode);
+                if (count($roleData) > 0) {
+                    $roleName = $roleData[0]->CodeName;
+                    if ($roleName == env('ROLE_PATIENT')) {
+                        $roleId = $roleData[0]->Id;
+                    } else {
+                        return response()->json(['data' => null, 'message' => 'Not Allowed, The User to be added is not Patient'], 400);
+                    }
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Not Allowed, The User to be added is not Patient'], 400);
+                }
+
+                //verifying the provided sourceUserId is of Doctor or not
+                $roleData = UserModel::GetRoleNameViaUserId($request->SourceUserId);
+                if (count($roleData) > 0) {
+                    $roleName = $roleData[0]->CodeName;
+                    if ($roleName != env('ROLE_DOCTOR')) {
+                        return response()->json(['data' => null, 'message' => 'Not Allowed, Only Doctor can add Patient'], 400);
+                    }
+                } else {
+                    return response()->json(['data' => null, 'message' => 'Not Allowed, Only Doctor can add Patient'], 400);
+                }
+
+                //means patient is registering
+                //so generate Patient unique id here
+                //calling table view
+                $patientUniqueId = 0;
+                try {
+                    $getPatientCountResult = DB::table('get_patient_count_view')
+                        ->select('TotalPatient')
+                        ->take(1)
+                        ->get();
+                    if (count($getPatientCountResult) == 1) {
+                        $getPatientCountResult = $getPatientCountResult[0]->TotalPatient;
+                        if ($getPatientCountResult > 0) {
+                            $patientUniqueId = $getPatientCountResult + 1;
+                        }
+                    }
+
+                    $hashedPassword = md5(env('DEFAULT_PWD'));
+                    $date = HelperModel::getDate();
+
+                    $insertData = array(
+                        "PatientUniqueId" => $patientUniqueId,
+                        "FirstName" => $request->FirstName,
+                        "LastName" => $request->LastName,
+                        "EmailAddress" => $request->EmailAddress,
+                        "CountryPhoneCode" => $request->CountryPhoneCode,
+                        "MobileNumber" => $request->MobileNumber,
+                        "IsMobileNumberVerified" => 1,
+                        "AccountVerified" => 1,
+                        "TelephoneNumber" => $request->TelephoneNumber,
+                        "OfficeAddress" => $request->OfficeAddress,
+                        "ResidentialAddress" => $request->ResidentialAddress,
+                        "Password" => $hashedPassword,
+                        "Gender" => $request->Gender,
+                        "FunctionalTitle" => $request->FunctionalTitle,
+                        "Age" => $request->Age,
+                        "AgeGroup" => $request->AgeGroup,
+                        "CreatedOn" => $date["timestamp"],
+                        "CreatedBy" => $request->SourceUserId,
+                        "IsActive" => 1
+                    );
+
+                    $checkInsertUserId = DB::table("user")->insertGetId($insertData);
+
+                    if ($checkInsertUserId) {
+                        $insertUserAssociationData = array(
+                            "SourceUserId" => $request->SourceUserId,
+                            "DestinationUserId" => $checkInsertUserId,
+                            "AssociationType" => env('ASSOCIATION_DOCTOR_PATIENT'),
+                            "IsActive" => 1
+                        );
+
+                        DB::table("user_association")->insertGetId($insertUserAssociationData);
+                    }
+
+                    $insertRoleData = array(
+                        "UserId" => $checkInsertUserId,
+                        "RoleId" => $roleId,
+                        "IsActive" => 1
+                    );
+
+                    DB::table("user_access")->insertGetId($insertRoleData);
+
+                    return response()->json(['data' => $checkInsertUserId, 'message' => 'Patient successfully added'], 200);
+
+                } catch (Exception $exception) {
+                    error_log($exception);
+                    return response()->json(['data' => $checkInsertUserId, 'message' => 'Failed to add Patient'], 500);
+                }
+            }
+
+        } catch (Exception $e) {
+            return response()->json(['data' => null, 'message' => 'Internal server error'], 500);
         }
     }
 }
