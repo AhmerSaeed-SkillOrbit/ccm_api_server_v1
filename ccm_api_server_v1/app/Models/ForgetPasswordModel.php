@@ -88,7 +88,7 @@ class ForgetPasswordModel
     {
         $url = url('reset_password') . '?token=' . $token;
         Mail::raw('Forget Password URL ' . $url, function ($message) use ($email) {
-            $message->from("no-reply@careconnectplus.com")->to($email)->subject("Forget Password");
+            $message->from("no-reply@connectcareplus.com")->to($email)->subject("Forget Password");
         });
 
         return true;
