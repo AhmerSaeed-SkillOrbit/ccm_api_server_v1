@@ -905,6 +905,9 @@ class UserModel
 
     static public function GetUserViaRoleCode($roleCode)
     {
+        error_log("Here 2");
+        error_log($roleCode);
+
         $query = DB::table('user')
             ->join('user_access', 'user_access.UserId', 'user.Id')
             ->join('role', 'user_access.RoleId', 'role.Id')
@@ -913,9 +916,6 @@ class UserModel
             ->where('user.IsActive', '=', true)
             ->orderBy('user.Id', 'DESC')
             ->get();
-
-        error_log($query);
-
         return $query;
     }
 

@@ -557,15 +557,16 @@ class LoginController extends Controller
                 if (count($data) > 0) {
                     if ($data[0]->EmailAddress == $request->EmailAddress) {
                         $message = "Email Address already exist";
+                        return response()->json(['data' => null, 'message' => $message], 400);
                     }
                     if ($data[0]->MobileNumber == $request->post('MobileNumber')) {
                         $message = "Mobile Number already exist";
+                        return response()->json(['data' => null, 'message' => $message], 400);
                     }
-                    return response()->json(['data' => null, 'message' => $message], 400);
                 }
 
                 //verifying the provided RoleCode is of patient
-                $roleData = UserModel::GetUserViaRoleCode($request->RoleCode);
+                $roleData = UserModel::getRoleViaRoleCode($request->RoleCode);
                 if (count($roleData) > 0) {
                     $roleName = $roleData[0]->CodeName;
                     if ($roleName == env('ROLE_PATIENT')) {
@@ -578,7 +579,7 @@ class LoginController extends Controller
                 }
 
                 //verifying the provided sourceUserId is of Doctor or not
-                $roleData = UserModel::GetRoleNameViaUserId($request->SourceId);
+                $roleData = UserModel::GetRoleNameViaUserId($request->SourceUserId);
                 if (count($roleData) > 0) {
                     $roleName = $roleData[0]->CodeName;
                     if ($roleName != env('ROLE_DOCTOR')) {
@@ -609,20 +610,23 @@ class LoginController extends Controller
 
                     $insertData = array(
                         "PatientUniqueId" => $patientUniqueId,
-                        "FirstName" => $data["FirstName"],
-                        "LastName" => $data["LastName"],
-                        "EmailAddress" => $data["EmailAddress"],
-                        "CountryPhoneCode" => $data["CountryPhoneCode"],
-                        "MobileNumber" => $data["MobileNumber"],
-                        "TelephoneNumber" => $data["TelephoneNumber"],
-                        "OfficeAddress" => $data["OfficeAddress"],
-                        "ResidentialAddress" => $data["ResidentialAddress"],
+                        "FirstName" => $request->FirstName,
+                        "LastName" => $request->LastName,
+                        "EmailAddress" => $request->EmailAddress,
+                        "CountryPhoneCode" => $request->CountryPhoneCode,
+                        "MobileNumber" => $request->MobileNumber,
+                        "IsMobileNumberVerified" => 1,
+                        "AccountVerified" => 1,
+                        "TelephoneNumber" => $request->TelephoneNumber,
+                        "OfficeAddress" => $request->OfficeAddress,
+                        "ResidentialAddress" => $request->ResidentialAddress,
                         "Password" => $hashedPassword,
-                        "Gender" => $data["Gender"],
-                        "FunctionalTitle" => $data["FunctionalTitle"],
-                        "Age" => $data["Age"],
-                        "AgeGroup" => $data["AgeGroup"],
+                        "Gender" => $request->Gender,
+                        "FunctionalTitle" => $request->FunctionalTitle,
+                        "Age" => $request->Age,
+                        "AgeGroup" => $request->AgeGroup,
                         "CreatedOn" => $date["timestamp"],
+                        "CreatedBy" => $request->SourceUserId,
                         "IsActive" => 1
                     );
 
@@ -647,17 +651,16 @@ class LoginController extends Controller
 
                     DB::table("user_access")->insertGetId($insertRoleData);
 
-                    return response()->json(['data' => null, 'message' => 'Patient successfully added'], 200);
+                    return response()->json(['data' => $checkInsertUserId, 'message' => 'Patient successfully added'], 200);
 
                 } catch (Exception $exception) {
-                    error_log("exception in fetching totalpatient count");
                     error_log($exception);
-                    return array("status" => "failed", "data" => null, "message" => "Failed to add Patient");
+                    return response()->json(['data' => $checkInsertUserId, 'message' => 'Failed to add Patient'], 500);
                 }
             }
 
         } catch (Exception $e) {
-            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+            return response()->json(['data' => null, 'message' => 'Internal server error'], 500);
         }
     }
 }

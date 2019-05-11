@@ -512,6 +512,10 @@ class LoginModel
 
     static function checkEmailAndMobileAvailable(string $email, string $mobileNumber)
     {
+        error_log("Here 1");
+        error_log($email);
+        error_log($mobileNumber);
+
         $result = DB::table('user')
             ->select('*')
             ->where('IsActive', '=', 1)
