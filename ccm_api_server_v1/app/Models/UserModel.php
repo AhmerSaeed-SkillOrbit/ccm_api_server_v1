@@ -812,7 +812,7 @@ class UserModel
     static public function GetUserRoleViaUserId($userId)
     {
         return DB::table('user_access')
-            ->select('user_access.RoleId,user_access.Role')
+            ->select('user_access.RoleId')
             ->where('user_access.UserId', '=', $userId)
             ->get();
     }
