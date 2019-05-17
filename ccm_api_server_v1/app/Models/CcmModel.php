@@ -872,4 +872,16 @@ class CcmModel
             ->get();
         return $query;
     }
+
+    static public function getAllCcmCptOptionViaPatientId($id)
+    {
+        error_log('in model');
+
+        $query = DB::table('patient_ccm_cpt_option')
+            ->where('IsActive', '=', true)
+            ->where('PatientId', '=', $id)
+            ->get();
+
+        return $query;
+    }
 }

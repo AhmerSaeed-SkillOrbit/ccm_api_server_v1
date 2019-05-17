@@ -400,6 +400,8 @@ Route::get('/patient/record/tab/published', 'CcmPlanController@GetPatientRecordT
 Route::get('/patient/type/all', 'CcmPlanController@GetAllPatientType');
 Route::get('/ccm/cpt/option/all', 'CcmPlanController@GetAllCCMCptOption');
 
+Route::post('/add/patient/ccm/cpt/option', 'CcmPlanController@AddPatientCCMCptOption');
+
 
 Route::get('/', function () {
     return 'Hello';
