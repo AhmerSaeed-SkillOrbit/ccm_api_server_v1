@@ -2585,6 +2585,11 @@ class CcmPlanController extends Controller
             $data['AgeGroup'] = $checkUserData->AgeGroup;
             $data['ProfileSummary'] = $checkUserData->ProfileSummary;
             $data['DateOfBirth'] = $checkUserData->DateOfBirth;
+            $data['PatientType'] = array();
+
+            $data['PatientType']['Id'] = $checkUserData->PatientTypeId;
+            $data['PatientType']['Name'] = $checkUserData->Name;
+            $data['PatientType']['Code'] = $checkUserData->Code;
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
@@ -2613,6 +2618,7 @@ class CcmPlanController extends Controller
         $age = $request->post('Age');
         $profileSummary = $request->post('ProfileSummary');
         $dob = $request->post('DateOfBirth');
+        $patientTypeId = $request->post('PatientTypeId');
 
         $dataToUpdate = array(
             "FirstName" => $firstName,
@@ -2624,6 +2630,7 @@ class CcmPlanController extends Controller
             "Age" => $age,
             "ProfileSummary" => $profileSummary,
             "DateOfBirth" => $dob,
+            "PatientTypeId" => $patientTypeId
         );
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
@@ -8082,6 +8089,32 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $data, 'message' => 'Patient Record Tab found'], 200);
         } else {
             return response()->json(['data' => $patientId, 'message' => 'Patient Record Tab not exist'], 200);
+        }
+    }
+
+    static public function GetAllPatientType(Request $request)
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('patient_type');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Code' => $item->Code
+                );
+
+                array_push($finalData, $data);
+            }
+
+            return response()->json(['data' => $finalData, 'message' => 'Patient type list found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'Patient type list not found'], 200);
         }
     }
 }

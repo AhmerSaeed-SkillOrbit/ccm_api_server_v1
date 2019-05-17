@@ -397,6 +397,8 @@ Route::post('/unpublish/tab', 'CcmPlanController@UnPublishTab');
 ///patient/record/tab/published?patientId=logged in patient id
 Route::get('/patient/record/tab/published', 'CcmPlanController@GetPatientRecordTabPublished');
 
+Route::get('/patient/type/all', 'CcmPlanController@GetAllPatientType');
+
 
 Route::get('/', function () {
     return 'Hello';

@@ -631,10 +631,11 @@ class UserModel
             ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
             ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
             ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+            ->leftjoin('patient_type as ps', 'ps.Id', 'user.PatientTypeId')
             ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
                 'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                 'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
-                'destinationUser.EmailAddress as DestinationUserEmailAddress')
+                'destinationUser.EmailAddress as DestinationUserEmailAddress', 'ps.Id as PatientTypeId' ,'ps.Name', 'ps.Code')
             ->where('user.Id', '=', $id)
             ->first();
 
