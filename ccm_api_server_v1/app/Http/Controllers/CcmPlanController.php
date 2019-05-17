@@ -8092,7 +8092,7 @@ class CcmPlanController extends Controller
         }
     }
 
-    static public function GetAllPatientType(Request $request)
+    static public function GetAllPatientType()
     {
         error_log('in controller');
 
@@ -8115,6 +8115,33 @@ class CcmPlanController extends Controller
             return response()->json(['data' => $finalData, 'message' => 'Patient type list found'], 200);
         } else {
             return response()->json(['data' => null, 'message' => 'Patient type list not found'], 200);
+        }
+    }
+
+    static public function GetAllCCMCptOption()
+    {
+        error_log('in controller');
+
+        //Get all active medicine via patient id
+        $dataList = GenericModel::simpleFetchGenericAll('ccm_cpt_option');
+
+        $finalData = array();
+
+        if (count($dataList) > 0) {
+            foreach ($dataList as $item) {
+                $data = array(
+                    'Id' => $item->Id,
+                    'Name' => $item->Name,
+                    'Code' => $item->Code,
+                    'Description' => $item->Description
+                );
+
+                array_push($finalData, $data);
+            }
+
+            return response()->json(['data' => $finalData, 'message' => 'CCM cpt option found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'CCM cpt option not found'], 200);
         }
     }
 }

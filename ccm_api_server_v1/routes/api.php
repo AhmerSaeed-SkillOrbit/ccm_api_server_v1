@@ -398,6 +398,7 @@ Route::post('/unpublish/tab', 'CcmPlanController@UnPublishTab');
 Route::get('/patient/record/tab/published', 'CcmPlanController@GetPatientRecordTabPublished');
 
 Route::get('/patient/type/all', 'CcmPlanController@GetAllPatientType');
+Route::get('/ccm/cpt/option/all', 'CcmPlanController@GetAllCCMCptOption');
 
 
 Route::get('/', function () {
