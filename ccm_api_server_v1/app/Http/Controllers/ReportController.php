@@ -35,94 +35,84 @@ class ReportController
     {
         error_log('in controller');
 
-        $userId = $request->get('userId');
-        $patientId = $request->get('patientId');
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
         $startDate = $request->get('startDate');
         $endDate = $request->get('endDate');
 
-        $doctorRole = env('ROLE_DOCTOR');
-        $facilitatorRole = env('ROLE_FACILITATOR');
-        $superAdminRole = env('ROLE_SUPER_ADMIN');
-        $patientRole = env('ROLE_PATIENT');
+        $searchStartDate = "null";
+        $searchEndDate = "null";
 
-        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $registeredDirectly = env('REGISTERED_DIRECT');
+        $registeredViaInvitation = env('REGISTERED_VIA_INVITATION');
+
         $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
-
-        //First check if logged in user belongs to facilitator
-        //if it is facilitator then check it's doctor association
-        //And then check if that patient is associated with dr or not
-
-        $checkUserData = UserModel::GetSingleUserViaIdNewFunction($userId);
-
-        if ($checkUserData->RoleCodeName == $doctorRole) {
-            error_log('logged in user role is doctor');
-            error_log('Now fetching its associated patients');
-
-            $checkAssociatedPatient = UserModel::getAssociatedPatientViaDoctorId($userId, $doctorPatientAssociation, $patientId);
-            if (count($checkAssociatedPatient) <= 0) {
-                return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
-            }
-
-        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
-            error_log('logged in user role is facilitator');
-            error_log('Now first get facilitator association with doctor');
-
-            $getAssociatedDoctors = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
-            if (count($getAssociatedDoctors) > 0) {
-                error_log('this facilitator is associated to doctor');
-                $doctorIds = array();
-                foreach ($getAssociatedDoctors as $item) {
-                    array_push($doctorIds, $item->SourceUserId);
-                }
-
-                //Now we will get associated patient with respect to these doctors.
-                //If there will be no data then we will throw an error message that this patient is not associated to doctor
-
-                $checkAssociatedPatient = UserModel::getAssociatedPatientWithRespectToMultipleDoctorIds($doctorIds, $doctorPatientAssociation, $patientId);
-                if (count($checkAssociatedPatient) <= 0) {
-                    return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
-                }
-
-            } else {
-                error_log('associated doctor not found');
-                return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
-            }
-
-        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
-            error_log('logged in user is super admin');
-        } else {
-            return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
-        }
 
         if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
             return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
         }
+        if ($startDate != "null" && $endDate != null) {
 
-        $finalData = array();
+            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $searchStartDate = $timestamp;
 
-        //Now check if this ccm cpt option for this patient already exists
-        //If exists then delete it
+            $timestamp = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $searchEndDate = $timestamp;
+        }
 
-        $getData = CcmModel::getAllCcmCptOptionViaPatientId($patientId);
-        if (count($getData) > 0) {
-            foreach ($getData as $item) {
-                $data = array(
-                    'Id' => (int) $item->cptId,
-                    'Name' => $item->Name,
-                    'Code' => $item->Code,
-                    'Description' => $item->Description
-                );
+        $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+        error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+        if (count($getAssociatedPatients) > 0) {
+            //Means associated patients are there
+            $getAssociatedPatientsIds = array();
+            foreach ($getAssociatedPatients as $item) {
+                array_push($getAssociatedPatientsIds, $item->DestinationUserId);
+            };
+            $userDetails['TotalRegisteredPatients'] = null;
+            //Now fetching patients count who are registered directly
+            $getDirectlyRegisteredPatientsData = ReportModel::getUsersViaRegisteredAs($getAssociatedPatientsIds, $registeredDirectly, $searchStartDate, $searchEndDate);
+            $userDetails['DirectlyRegisteredPatients'] = count($getDirectlyRegisteredPatientsData);
 
-                array_push($finalData, $data);
+            //Now getting patients count who got registered via invitation
+            $getInvitedPatientsData = ReportModel::getUsersViaRegisteredAs($getAssociatedPatientsIds, $registeredViaInvitation, $searchStartDate, $searchEndDate);
+            $userDetails['InvitedPatientsPatients'] = count($getInvitedPatientsData);
+
+            $userDetails['PatientData'] = array();
+
+            //Now fetching patients data
+            $getAssociatedPatientsData = ReportModel::getMultipleUsersViaPagination($getAssociatedPatientsIds, $pageNo, $limit, $searchStartDate, $searchEndDate);
+
+            if (count($getAssociatedPatientsData) > 0) {
+
+                $userDetails['TotalRegisteredPatients'] = count($getAssociatedPatientsData);
+
+                $userData = array();
+
+                foreach ($getAssociatedPatientsData as $item) {
+                    $data = array(
+                        'Id' => (int)$item->Id,
+                        'PatientUniqueId' => $item->PatientUniqueId,
+                        'FirstName' => $item->FirstName,
+                        'LastName' => $item->LastName,
+                        'MiddleName' => $item->MiddleName,
+                        'DateOfBirth' => $item->DateOfBirth,
+                        'RegisteredOn' => date("d-M-Y h:m a", strtotime($item->CreatedOn)),
+                        'Registered' => $item->RegisteredAs,
+                    );
+                    array_push($userData, $data);
+                }
+                $userDetails['PatientData'] = $userData;
+            } else {
+                $userDetails['PatientData'] = null;
             }
 
-            return response()->json(['data' => $finalData, 'message' => 'Ccm cpt option for this patient found'], 200);
-
+            return response()->json(['data' => $userDetails, 'message' => 'Patient registered data found'], 200);
         } else {
-            error_log('ccm cpt option not assigned');
-            return response()->json(['data' => null, 'message' => 'Ccm cpt option not assigned to this patient yet'], 200);
+            error_log('No patient associated');
+            return response()->json(['data' => null, 'message' => 'No patient(s) has been associated with this doctor'], 200);
         }
     }
 }

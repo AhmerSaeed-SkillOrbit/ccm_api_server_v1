@@ -17,16 +17,58 @@ use App\Models\HelperModel;
 
 class ReportModel
 {
-    static public function getQuestionList()
+
+    static public function getMultipleUsersViaPagination($userIds, $pageNo, $limit, $searchStartDate, $searchEndDate)
     {
-        error_log('in model, fetching question list');
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
 
-        $query = DB::table('ccm_question')
-            ->select('Id', 'Question', 'Type')
-            ->where('IsActive', '=', true)
-            ->orderBy('Id', 'desc')
-            ->get();
+            error_log('search date is not null');
 
-        return $query;
+            $result = DB::table('user')
+                ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
+                    'user.CreatedOn', 'user.RegisteredAs')
+                ->whereIn('Id', $userIds)
+                ->where('IsActive', '=', true)
+                ->where('CreatedOn', '>=', $searchStartDate)
+                ->where('CreatedOn', '<=', $searchEndDate)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+            return $result;
+        } else {
+            error_log('search date is null');
+            $result = DB::table('user')
+                ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
+                    'user.CreatedOn', 'user.RegisteredAs')
+                ->whereIn('Id', $userIds)
+                ->where('IsActive', '=', true)
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+            return $result;
+        }
+    }
+
+    static public function getUsersViaRegisteredAs($userIds, $registeredAs, $searchStartDate, $searchEndDate)
+    {
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            $result = DB::table('user')
+                ->whereIn('Id', $userIds)
+                ->where('IsActive', '=', true)
+                ->where('CreatedOn', '>=', $searchStartDate)
+                ->where('CreatedOn', '<=', $searchEndDate)
+                ->where('RegisteredAs', '=', $registeredAs)
+                ->get();
+            return $result;
+        } else {
+
+            $result = DB::table('user')
+                ->whereIn('Id', $userIds)
+                ->where('IsActive', '=', true)
+                ->where('RegisteredAs', '=', $registeredAs)
+                ->get();
+            return $result;
+        }
     }
 }
