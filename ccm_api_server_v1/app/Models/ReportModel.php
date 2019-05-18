@@ -49,6 +49,29 @@ class ReportModel
         }
     }
 
+    static public function getMultipleUsersCount($userIds, $searchStartDate, $searchEndDate)
+    {
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            error_log('search date is not null');
+
+            $result = DB::table('user')
+                ->whereIn('Id', $userIds)
+                ->where('IsActive', '=', true)
+                ->where('CreatedOn', '>=', $searchStartDate)
+                ->where('CreatedOn', '<=', $searchEndDate)
+                ->count();
+            return $result;
+        } else {
+            error_log('search date is null');
+            $result = DB::table('user')
+                ->whereIn('Id', $userIds)
+                ->where('IsActive', '=', true)
+                ->count();
+            return $result;
+        }
+    }
+
     static public function getUsersViaRegisteredAs($userIds, $registeredAs, $searchStartDate, $searchEndDate)
     {
         if ($searchStartDate != "null" && $searchEndDate != "null") {

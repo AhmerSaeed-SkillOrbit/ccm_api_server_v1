@@ -31,7 +31,7 @@ use Carbon\Carbon;
 
 class ReportController
 {
-    static public function GetInvitedPatientReport(Request $request)
+    static public function GetPatientRegisteredReport(Request $request)
     {
         error_log('in controller');
 
@@ -59,8 +59,10 @@ class ReportController
             $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
-            $searchEndDate = $timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $searchEndDate = $timeStampEndDate;
+
+            error_log($timestamp);
         }
 
         $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
@@ -71,7 +73,7 @@ class ReportController
             foreach ($getAssociatedPatients as $item) {
                 array_push($getAssociatedPatientsIds, $item->DestinationUserId);
             };
-            $userDetails['TotalRegisteredPatients'] = null;
+            $userDetails['TotalRegisteredPatients'] = 0;
             //Now fetching patients count who are registered directly
             $getDirectlyRegisteredPatientsData = ReportModel::getUsersViaRegisteredAs($getAssociatedPatientsIds, $registeredDirectly, $searchStartDate, $searchEndDate);
             $userDetails['DirectlyRegisteredPatients'] = count($getDirectlyRegisteredPatientsData);
@@ -99,7 +101,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y h:m a", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
                         'Registered' => $item->RegisteredAs,
                     );
                     array_push($userData, $data);
@@ -110,6 +112,59 @@ class ReportController
             }
 
             return response()->json(['data' => $userDetails, 'message' => 'Patient registered data found'], 200);
+        } else {
+            error_log('No patient associated');
+            return response()->json(['data' => null, 'message' => 'No patient(s) has been associated with this doctor'], 200);
+        }
+    }
+
+    static public function GetPatientRegisteredReportCount(Request $request)
+    {
+        error_log('in controller');
+
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
+
+        $searchStartDate = "null";
+        $searchEndDate = "null";
+
+        $registeredDirectly = env('REGISTERED_DIRECT');
+        $registeredViaInvitation = env('REGISTERED_VIA_INVITATION');
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+        if ($startDate != "null" && $endDate != null) {
+
+            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $searchStartDate = $timestamp;
+
+            $timestampForEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $searchEndDate = $timestampForEndDate;
+
+            error_log($searchEndDate);
+        }
+
+        $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+        error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+        if (count($getAssociatedPatients) > 0) {
+            //Means associated patients are there
+            $getAssociatedPatientsIds = array();
+            foreach ($getAssociatedPatients as $item) {
+                array_push($getAssociatedPatientsIds, $item->DestinationUserId);
+            };
+
+            //Now fetching patients data
+            $getAssociatedPatientsData = ReportModel::getMultipleUsersCount($getAssociatedPatientsIds, $searchStartDate, $searchEndDate);
+
+            return response()->json(['data' => $getAssociatedPatientsData, 'message' => 'Patient registered report count'], 200);
         } else {
             error_log('No patient associated');
             return response()->json(['data' => null, 'message' => 'No patient(s) has been associated with this doctor'], 200);
