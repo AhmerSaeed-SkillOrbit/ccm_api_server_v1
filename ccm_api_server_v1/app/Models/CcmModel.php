@@ -878,8 +878,10 @@ class CcmModel
         error_log('in model');
 
         $query = DB::table('patient_ccm_cpt_option')
-            ->where('IsActive', '=', true)
-            ->where('PatientId', '=', $id)
+            ->leftjoin('ccm_cpt_option as ccm_cpt_option', 'patient_ccm_cpt_option.CcmCptOptionId', 'ccm_cpt_option.Id')
+            ->select('ccm_cpt_option.Id as cptId', 'ccm_cpt_option.Name', 'ccm_cpt_option.Code', 'ccm_cpt_option.Description')
+            ->where('patient_ccm_cpt_option.IsActive', '=', true)
+            ->where('patient_ccm_cpt_option.PatientId', '=', $id)
             ->get();
 
         return $query;

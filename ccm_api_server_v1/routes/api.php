@@ -401,6 +401,10 @@ Route::get('/patient/type/all', 'CcmPlanController@GetAllPatientType');
 Route::get('/ccm/cpt/option/all', 'CcmPlanController@GetAllCCMCptOption');
 
 Route::post('/save/patient/ccm/cpt/option', 'CcmPlanController@AddPatientCCMCptOption');
+Route::get('/patient/ccm/cpt/option/all', 'CcmPlanController@GetPatientCcmCptOption');
+Route::get('/doctor/list', 'CcmPlanController@GetDoctorList');
+
+Route::get('/report/patient/registered', 'ReportController@GetInvitedPatientReport');
 
 
 Route::get('/', function () {
