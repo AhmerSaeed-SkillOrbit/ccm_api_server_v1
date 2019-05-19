@@ -407,6 +407,9 @@ Route::get('/doctor/list', 'CcmPlanController@GetDoctorList');
 Route::get('/patient/registered/report', 'ReportController@GetPatientRegisteredReport');
 Route::get('/patient/registered/report/count', 'ReportController@GetPatientRegisteredReportCount');
 
+Route::get('/patient/invitation/report', 'ReportController@GetPatientInvitationReport');
+Route::get('/patient/invitation/report/count', 'ReportController@GetPatientInvitationReportCount');
+
 
 Route::get('/', function () {
     return 'Hello';

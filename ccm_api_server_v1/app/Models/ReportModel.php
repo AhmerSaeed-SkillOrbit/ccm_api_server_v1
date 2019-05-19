@@ -94,4 +94,80 @@ class ReportModel
             return $result;
         }
     }
+
+    static public function getUsersInvitationViaInvitedType($userId, $invitedVia, $searchStartDate, $searchEndDate)
+    {
+        error_log('in model ' . $invitedVia);
+
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            $result = DB::table('account_invitation')
+                ->where('ByUserId', '=', $userId)
+                ->where('IsActive', '=', true)
+                ->where('CreatedOn', '>=', $searchStartDate)
+                ->where('CreatedOn', '<=', $searchEndDate)
+                ->where('Status_', '=', $invitedVia)
+                ->get();
+            return $result;
+        } else {
+
+            $result = DB::table('account_invitation')
+                ->where('ByUserId', '=', $userId)
+                ->where('IsActive', '=', true)
+                ->where('Status_', '=', $invitedVia)
+                ->get();
+            return $result;
+        }
+    }
+
+    static public function getAllUsersInvitation($userId, $searchStartDate, $searchEndDate, $doctorPatientAssociation)
+    {
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            $result = DB::table('account_invitation')
+                ->where('ByUserId', '=', $userId)
+                ->where('IsActive', '=', true)
+                ->where('CreatedOn', '>=', $searchStartDate)
+                ->where('CreatedOn', '<=', $searchEndDate)
+                ->where('BelongTo', '=', $doctorPatientAssociation)
+                ->get();
+            return $result;
+        } else {
+
+            $result = DB::table('account_invitation')
+                ->where('ByUserId', '=', $userId)
+                ->where('IsActive', '=', true)
+                ->where('BelongTo', '=', $doctorPatientAssociation)
+                ->get();
+            return $result;
+        }
+    }
+
+    static public function getMultipleUsersViaEmailAddressesAndPagination($emailAddresses, $pageNo, $limit)
+    {
+
+        error_log('in model');
+
+        $result = DB::table('user')
+            ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
+                'user.CreatedOn', 'user.RegisteredAs')
+            ->whereIn('EmailAddress', $emailAddresses)
+            ->where('IsActive', '=', true)
+            ->skip($pageNo * $limit)
+            ->take($limit)
+            ->get();
+        return $result;
+    }
+
+    static public function getMultipleUsersCountViaEmailAddreses($emailAddresses)
+    {
+
+        error_log('in model');
+
+        $result = DB::table('user')
+            ->whereIn('EmailAddress', $emailAddresses)
+            ->where('IsActive', '=', true)
+            ->count();
+        return $result;
+    }
 }

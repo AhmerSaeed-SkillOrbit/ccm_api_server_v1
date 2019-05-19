@@ -80,7 +80,7 @@ class ReportController
 
             //Now getting patients count who got registered via invitation
             $getInvitedPatientsData = ReportModel::getUsersViaRegisteredAs($getAssociatedPatientsIds, $registeredViaInvitation, $searchStartDate, $searchEndDate);
-            $userDetails['InvitedPatientsPatients'] = count($getInvitedPatientsData);
+            $userDetails['InvitedPatients'] = count($getInvitedPatientsData);
 
             $userDetails['PatientData'] = array();
 
@@ -168,6 +168,157 @@ class ReportController
         } else {
             error_log('No patient associated');
             return response()->json(['data' => null, 'message' => 'No patient(s) has been associated with this doctor'], 200);
+        }
+    }
+
+    static public function GetPatientInvitationReport(Request $request)
+    {
+        error_log('in controller');
+
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
+
+        $searchStartDate = "null";
+        $searchEndDate = "null";
+
+        $invitationAccepted = env('INVITATION_ACCEPTED');
+        $invitationPending = env('INVITATION_PENDING');
+        $invitationRejected = env('INVITATION_REJECTED');
+        $invitationIgnored = env('INVITATION_IGNORED');
+
+
+        if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+        if ($startDate != "null" && $endDate != null) {
+
+            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $searchStartDate = $timestamp;
+
+            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $searchEndDate = $timeStampEndDate;
+
+            error_log($timestamp);
+        }
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First get all users which are invited
+        $allInvitedPatientsData = ReportModel::getAllUsersInvitation($doctorId, $searchStartDate, $searchEndDate, $doctorPatientAssociation);
+
+        error_log('count of $getAssociatedPatients is ' . count($allInvitedPatientsData));
+
+        if (count($allInvitedPatientsData) > 0) {
+            //Means associated patients are there
+            $getEmailAddresses = array();
+            foreach ($allInvitedPatientsData as $item) {
+                array_push($getEmailAddresses, $item->ToEmailAddress);
+            };
+            $userDetails['TotalPatientsInvitation'] = count($allInvitedPatientsData);
+            //Now fetching patients count who are accepted
+            $getAcceptedInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationAccepted, $searchStartDate, $searchEndDate);
+            $userDetails['AcceptedPatientsInvitation'] = count($getAcceptedInvitationData);
+
+            //Now getting patients count who are in pending
+            $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, $searchStartDate, $searchEndDate);
+            $userDetails['PendingPatientsInvitation'] = count($getPendingInvitationData);
+
+            //Now getting patients count who are in pending
+            $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationRejected, $searchStartDate, $searchEndDate);
+            $userDetails['RejectedPatientsInvitation'] = count($getPendingInvitationData);
+
+            //Now getting patients count who are ignored
+            $getIgnoredInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationIgnored, $searchStartDate, $searchEndDate);
+            $userDetails['IgnoredPatientsInvitation'] = count($getIgnoredInvitationData);
+
+            $userDetails['PatientData'] = array();
+
+            //Now fetching patients data
+            $getInvitedPatientsData = ReportModel::getMultipleUsersViaEmailAddressesAndPagination($getEmailAddresses, $pageNo, $limit);
+
+            if (count($getInvitedPatientsData) > 0) {
+
+                $userData = array();
+
+                foreach ($getInvitedPatientsData as $item) {
+                    $data = array(
+                        'Id' => (int)$item->Id,
+                        'PatientUniqueId' => $item->PatientUniqueId,
+                        'FirstName' => $item->FirstName,
+                        'LastName' => $item->LastName,
+                        'MiddleName' => $item->MiddleName,
+                        'DateOfBirth' => $item->DateOfBirth,
+//                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'Registered' => $item->RegisteredAs,
+                    );
+                    array_push($userData, $data);
+                }
+                $userDetails['PatientData'] = $userData;
+            } else {
+                $userDetails['PatientData'] = null;
+            }
+
+            return response()->json(['data' => $userDetails, 'message' => 'Patient invited data found'], 200);
+        } else {
+            error_log('No patient associated');
+            return response()->json(['data' => null, 'message' => 'No patient(s) has been invited by this doctor'], 200);
+        }
+    }
+
+    static public function GetPatientInvitationReportCount(Request $request)
+    {
+        error_log('in controller');
+
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
+
+        $searchStartDate = "null";
+        $searchEndDate = "null";
+
+
+        if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+        if ($startDate != "null" && $endDate != null) {
+
+            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $searchStartDate = $timestamp;
+
+            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $searchEndDate = $timeStampEndDate;
+
+            error_log($timestamp);
+        }
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        //First get all users which are invited
+        $allInvitedPatientsData = ReportModel::getAllUsersInvitation($doctorId, $searchStartDate, $searchEndDate, $doctorPatientAssociation);
+
+        error_log('count of $getAssociatedPatients is ' . count($allInvitedPatientsData));
+
+        if (count($allInvitedPatientsData) > 0) {
+            //Means associated patients are there
+            $getEmailAddresses = array();
+            foreach ($allInvitedPatientsData as $item) {
+                array_push($getEmailAddresses, $item->ToEmailAddress);
+            };
+
+            //Now fetching patients data count
+            $getInvitedPatientsDataCount = ReportModel::getMultipleUsersCountViaEmailAddreses($getEmailAddresses);
+
+            return response()->json(['data' => $getInvitedPatientsDataCount, 'message' => 'Patient invited data count'], 200);
+        } else {
+            error_log('No patient associated');
+            return response()->json(['data' => null, 'message' => 'No patient(s) has been invited by this doctor'], 200);
         }
     }
 }
