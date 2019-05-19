@@ -325,7 +325,7 @@ class ReportController
         $startDate = $request->get('startDate');
         $endDate = $request->get('endDate');
 
-        $ccmCptOptionCode = $request->get('CcmCptOptionCode');
+        $ccmCptOptionCode = $request->post('CcmCptOptionCode');
 
         $ccmCptOptionCodeIds = array();
 
@@ -412,7 +412,7 @@ class ReportController
         $startDate = $request->get('startDate');
         $endDate = $request->get('endDate');
 
-        $ccmCptOptionCode = $request->get('CcmCptOptionCode');
+        $ccmCptOptionCode = $request->post('CcmCptOptionCode');
 
         $ccmCptOptionCodeIds = array();
 

@@ -410,8 +410,8 @@ Route::get('/patient/registered/report/count', 'ReportController@GetPatientRegis
 Route::get('/patient/invitation/report', 'ReportController@GetPatientInvitationReport');
 Route::get('/patient/invitation/report/count', 'ReportController@GetPatientInvitationReportCount');
 
-Route::get('/patient/ccm/cpt/report', 'ReportController@GetPatientCcmCptReport');
-Route::get('/patient/ccm/cpt/report/count', 'ReportController@GetPatientCcmCptReportCount');
+Route::post('/patient/ccm/cpt/report', 'ReportController@GetPatientCcmCptReport');
+Route::post('/patient/ccm/cpt/report/count', 'ReportController@GetPatientCcmCptReportCount');
 
 
 Route::get('/', function () {
