@@ -59,10 +59,10 @@ class TicketController extends Controller
         $requestType = $request->get('requestType');
         $fromNum = $request->get('From');
         $messageBody = $request->get('Body');
-//        $fileUpload = $request->get('FileUpload');
         $defaultTicketNumber = env('DEFAULT_TICKET_NUMBER');
         $smsRequestType = env('REQUEST_TYPE_SMS');
         $portalRequestType = env('REQUEST_TYPE_PORTAL');
+        $emailRequestType = env('REQUEST_TYPE_EMAIL');
 
         DB::beginTransaction();
         //check request status type
@@ -184,7 +184,106 @@ class TicketController extends Controller
                 }
             }
 
-        } else if ($requestType == $portalRequestType) {
+        }
+        else if($requestType == $emailRequestType){
+            error_log('Request type is of EMAIL');
+
+//            print_r($_POST);
+
+            $patientRoleCode = env('ROLE_PATIENT');
+            return response()->json(['data' => $request->get('From'), 'message' => 'Ticket created from Email'], 200);
+            //first check the fromNumber is
+            //registered on our platform
+            //if yes the proceed as follow
+            //otherwise reply back with
+            //Not Allowed
+
+            //verifying the fromNumber
+            //eliminating the country code
+            //from the number
+
+            //this extraction of fromNumb
+            //will be remove once we
+            //complete the country code
+            //task on user add form
+
+            $eliminatedNumOne = substr($fromNum, 0, 2);
+            $eliminatedNumTwo = 0;
+
+            error_log("eliminatedNumberOne-1");
+            error_log($eliminatedNumOne);
+
+            if ($eliminatedNumOne == '+1') {
+                $eliminatedNumTwo = substr($fromNum, 2);
+            }
+            else {
+                $eliminatedNumOne = substr($fromNum, 0, 3);
+                error_log("eliminatedNumberOne-2");
+                error_log($eliminatedNumOne);
+                if ($eliminatedNumOne == "+92") {
+                    error_log('yes +92');
+                    $eliminatedNumTwo = substr($fromNum, 3);
+                }
+            }
+
+            error_log("eliminatedNumberTwo");
+            error_log($eliminatedNumTwo);
+
+            //as fromNum is extracted
+            //now verifying the fromNum
+            //is registered or not
+            $checkUserData = UserModel::GetPatientViaEmail($fromNum, $patientRoleCode);
+
+            if ($checkUserData == null) {
+                error_log('Patient record not found');
+                return response()->json(['data' => null, 'message' => 'Error in inserting ticket'], 400);
+            }
+            else {
+                error_log('Patient record found with this Mobile number');
+
+                //fetching last generated ticket number
+                $getLastTicketNumber = TicketModel::getLastTicket();
+                $ticketPriorityHigh = env('TICKET_PRIORITY_1');
+                if ($getLastTicketNumber != null) {
+                    error_log('ticket number found');
+                    $getTicketNumber = 0000 . $getLastTicketNumber->TicketNumber + 1;
+                } else {
+                    error_log('ticket number not found');
+                    $getTicketNumber = $defaultTicketNumber;
+                }
+
+                //Now we will make data and will insert it
+                $ticketData = array(
+                    "TicketNumber" => $getTicketNumber,
+                    "RaiseById" => $checkUserData->Id,
+                    "Title" => "Ticket via SMS",
+                    "Description" => $messageBody,
+                    "Priority" => $ticketPriorityHigh,
+                    "TrackStatus" => "open",
+                    "OtherType" => null,
+                    "Type" => null,
+                    "RaisedFrom" => $requestType,
+                    "CreatedBy" => $checkUserData->Id,
+                    "CreatedOn" => $date["timestamp"],
+                    "IsActive" => true
+                );
+
+                $insertedDataId = GenericModel::insertGenericAndReturnID('ticket', $ticketData);
+
+                if ($insertedDataId == 0) {
+                    DB::rollBack();
+                    error_log('Dear Patient, Problem in creating Ticket. Sorry for inconvenience, Please can you try again Thanks CCM - Support Staff !!!');
+//                    $response->message('Dear Patient, Problem in creating Ticket. Sorry for inconvenience, Please can you try again Thanks CCM - Support Staff !!!');
+//                    return $response;
+                } else {
+                    DB::commit();
+                    error_log('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
+//                    $response->message('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
+//                    return $response;
+                }
+            }
+        }
+        else if ($requestType == $portalRequestType) {
 
             //fetching last generated ticket number
             $getLastTicketNumber = TicketModel::getLastTicket();
@@ -249,7 +348,8 @@ class TicketController extends Controller
                     return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully created'], 200);
                 }
             }
-        } else {
+        }
+        else {
             return response()->json(['data' => null, 'message' => 'Invalid request type'], 400);
         }
     }
