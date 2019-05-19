@@ -49,6 +49,73 @@ class ReportModel
         }
     }
 
+    static public function getMultipleUsersViaPaginationAndCcmCptCode($userIds, $pageNo, $limit, $searchStartDate, $searchEndDate, $ccmCptIds)
+    {
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            error_log('search date is not null');
+
+            $result = DB::table('user')
+                ->leftjoin('patient_ccm_cpt_option', 'patient_ccm_cpt_option.PatientId', '=', 'user.Id')
+                ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
+                    'user.CreatedOn', 'user.RegisteredAs')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('patient_ccm_cpt_option.CcmCptOptionId', $ccmCptIds)
+                ->where('user.IsActive', '=', true)
+                ->where('user.CreatedOn', '>=', $searchStartDate)
+                ->where('user.CreatedOn', '<=', $searchEndDate)
+                ->groupBy('user.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+            return $result;
+        } else {
+            error_log('search date is null');
+            $result = DB::table('user')
+                ->leftjoin('patient_ccm_cpt_option', 'patient_ccm_cpt_option.PatientId', '=', 'user.Id')
+                ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
+                    'user.CreatedOn', 'user.RegisteredAs')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('patient_ccm_cpt_option.CcmCptOptionId', $ccmCptIds)
+                ->where('user.IsActive', '=', true)
+                ->groupBy('user.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+            return $result;
+        }
+    }
+
+    static public function getMultipleUsersViaCcmCptCodeCount($userIds, $searchStartDate, $searchEndDate, $ccmCptIds)
+    {
+        error_log('here in ccm cpt code count model');
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            error_log('search date is not null');
+
+            $result = DB::table('user')
+                ->leftjoin('patient_ccm_cpt_option', 'patient_ccm_cpt_option.PatientId', '=', 'user.Id')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('patient_ccm_cpt_option.CcmCptOptionId', $ccmCptIds)
+                ->where('user.IsActive', '=', true)
+                ->where('user.CreatedOn', '>=', $searchStartDate)
+                ->where('user.CreatedOn', '<=', $searchEndDate)
+                ->groupBy('user.Id')
+                ->get();
+            return $result;
+        } else {
+            error_log('search date is null');
+            $result = DB::table('user')
+                ->leftjoin('patient_ccm_cpt_option', 'patient_ccm_cpt_option.PatientId', '=', 'user.Id')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('patient_ccm_cpt_option.CcmCptOptionId', $ccmCptIds)
+                ->where('user.IsActive', '=', true)
+                ->groupBy('user.Id')
+                ->get();
+            return $result;
+        }
+    }
+
     static public function getMultipleUsersCount($userIds, $searchStartDate, $searchEndDate)
     {
         if ($searchStartDate != "null" && $searchEndDate != "null") {
