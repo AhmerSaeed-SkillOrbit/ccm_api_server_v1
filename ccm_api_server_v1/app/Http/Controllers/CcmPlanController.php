@@ -2584,7 +2584,7 @@ class CcmPlanController extends Controller
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
             $data['ProfileSummary'] = $checkUserData->ProfileSummary;
-            $data['DateOfBirth'] = $checkUserData->DateOfBirth;
+            $data['DateOfBirth'] = date('d-M-Y', $checkUserData->DateOfBirth);
 
             return response()->json(['data' => $data, 'message' => 'Patient general information found'], 200);
         } else {
