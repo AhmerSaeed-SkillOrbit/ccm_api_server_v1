@@ -1138,7 +1138,8 @@ class UserController extends Controller
                         return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
                     }
                 }
-            } else {
+            }
+            else if($roleData[0]->CodeName == env('ROLE_FACILITATOR') || $roleData[0]->CodeName == env('ROLE_PATIENT')){
                 error_log("User Role is " . $roleData[0]->CodeName);
                 $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
@@ -1156,6 +1157,61 @@ class UserController extends Controller
                 //of this email
 
                 GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+                GenericModel::updateGeneric('user_association', 'DestinationUserId', $id, $dataToUpdate);
+
+                error_log($update);
+
+                if ($update == 1) {
+                    return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                } else if ($update == 0) {
+                    return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                } else if ($update > 1) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                }
+            }
+            else if($roleData[0]->CodeName == env('ROLE_DOCTOR')){
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+
+                if ($getUser == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                }
+                //Binding data to variable.
+                $dataToUpdate = array(
+                    "IsActive" => false
+                );
+
+                $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+                //now delete the account_invitation
+                //of this email
+
+                GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+
+                error_log($update);
+
+                if ($update == 1) {
+                    return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                } else if ($update == 0) {
+                    return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                } else if ($update > 1) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                }
+            }
+            else {
+                //means role is Support Staff
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+
+                if ($getUser == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                }
+                //Binding data to variable.
+                $dataToUpdate = array(
+                    "IsActive" => false
+                );
+
+                $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
                 error_log($update);
 
