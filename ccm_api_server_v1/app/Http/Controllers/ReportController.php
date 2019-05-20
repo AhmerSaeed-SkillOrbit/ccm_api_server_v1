@@ -247,7 +247,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'InvitedOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
                     );
                     array_push($userData, $data);
                 }
