@@ -413,6 +413,9 @@ Route::get('/patient/invitation/report/count', 'ReportController@GetPatientInvit
 Route::post('/patient/ccm/cpt/report', 'ReportController@GetPatientCcmCptReport');
 Route::post('/patient/ccm/cpt/report/count', 'ReportController@GetPatientCcmCptReportCount');
 
+Route::post('/patient/type/report', 'ReportController@GetPatientTypeReport');
+Route::post('/patient/type/report/count', 'ReportController@GetPatientTypeReportCount');
+
 
 Route::get('/', function () {
     return 'Hello';

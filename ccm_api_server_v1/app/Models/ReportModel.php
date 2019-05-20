@@ -25,8 +25,9 @@ class ReportModel
             error_log('search date is not null');
 
             $result = DB::table('user')
+                ->leftjoin('patient_type', 'patient_type.Id', '=', 'user.PatientTypeId')
                 ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
-                    'user.CreatedOn', 'user.RegisteredAs')
+                    'user.CreatedOn', 'user.RegisteredAs', 'patient_type.Id as PatientTypeId', 'patient_type.Code', 'patient_type.Name')
                 ->whereIn('Id', $userIds)
                 ->where('IsActive', '=', true)
                 ->where('CreatedOn', '>=', $searchStartDate)
@@ -38,8 +39,9 @@ class ReportModel
         } else {
             error_log('search date is null');
             $result = DB::table('user')
+                ->leftjoin('patient_type', 'patient_type.Id', '=', 'user.PatientTypeId')
                 ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
-                    'user.CreatedOn', 'user.RegisteredAs')
+                    'user.CreatedOn', 'user.RegisteredAs', 'patient_type.Id as PatientTypeId', 'patient_type.Code', 'patient_type.Name')
                 ->whereIn('Id', $userIds)
                 ->where('IsActive', '=', true)
                 ->skip($pageNo * $limit)
@@ -82,6 +84,68 @@ class ReportModel
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
+            return $result;
+        }
+    }
+
+    static public function getMultipleUsersViaPaginationAndPatientType($userIds, $pageNo, $limit, $searchStartDate, $searchEndDate, $patientTypeIds)
+    {
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            error_log('search date is not null');
+
+            $result = DB::table('user')
+                ->leftjoin('patient_type', 'patient_type.Id', '=', 'user.PatientTypeId')
+                ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
+                    'user.CreatedOn', 'user.RegisteredAs', 'patient_type.Id as PatientTypeId', 'patient_type.Code', 'patient_type.Name')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('user.PatientTypeId', $patientTypeIds)
+                ->where('user.IsActive', '=', true)
+                ->where('user.CreatedOn', '>=', $searchStartDate)
+                ->where('user.CreatedOn', '<=', $searchEndDate)
+                ->groupBy('user.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+            return $result;
+        } else {
+            error_log('search date is null');
+            $result = DB::table('user')
+                ->leftjoin('patient_type', 'patient_type.Id', '=', 'user.PatientTypeId')
+                ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
+                    'user.CreatedOn', 'user.RegisteredAs', 'patient_type.Id as PatientTypeId', 'patient_type.Code', 'patient_type.Name')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('user.PatientTypeId', $patientTypeIds)
+                ->where('user.IsActive', '=', true)
+                ->groupBy('user.Id')
+                ->skip($pageNo * $limit)
+                ->take($limit)
+                ->get();
+            return $result;
+        }
+    }
+
+    static public function getMultipleUsersCountViaPatientType($userIds, $searchStartDate, $searchEndDate, $patientTypeIds)
+    {
+        if ($searchStartDate != "null" && $searchEndDate != "null") {
+
+            error_log('search date is not null');
+
+            $result = DB::table('user')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('user.PatientTypeId', $patientTypeIds)
+                ->where('user.IsActive', '=', true)
+                ->where('user.CreatedOn', '>=', $searchStartDate)
+                ->where('user.CreatedOn', '<=', $searchEndDate)
+                ->count();
+            return $result;
+        } else {
+            error_log('search date is null');
+            $result = DB::table('user')
+                ->whereIn('user.Id', $userIds)
+                ->whereIn('user.PatientTypeId', $patientTypeIds)
+                ->where('user.IsActive', '=', true)
+                ->count();
             return $result;
         }
     }

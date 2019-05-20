@@ -469,4 +469,167 @@ class ReportController
             return response()->json(['data' => null, 'message' => 'No patient(s) has been associated with this doctor'], 200);
         }
     }
+
+    static public function GetPatientTypeReport(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
+
+        $patientType = $request->post('PatientType');
+
+        $patientTypeIds = array();
+
+        if (count($patientType) > 0) {
+            error_log('patient type id is given');
+            foreach ($patientType as $item) {
+                array_push($patientTypeIds, (int)$item['Id']);
+            }
+        }
+
+        $searchStartDate = "null";
+        $searchEndDate = "null";
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+        if ($startDate != "null" && $endDate != null) {
+
+            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $searchStartDate = $timestamp;
+
+            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $searchEndDate = $timeStampEndDate;
+
+            error_log($timestamp);
+        }
+
+        $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+        error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+        if (count($getAssociatedPatients) > 0) {
+            //Means associated patients are there
+            $getAssociatedPatientsIds = array();
+            foreach ($getAssociatedPatients as $item) {
+                array_push($getAssociatedPatientsIds, $item->DestinationUserId);
+            };
+
+            $userDetails['PatientData'] = array();
+
+            $getAssociatedPatientsData = null;
+
+            //Now fetching patients data
+            if (count($patientTypeIds) > 0) {
+                $getAssociatedPatientsData = ReportModel::getMultipleUsersViaPaginationAndPatientType($getAssociatedPatientsIds, $pageNo, $limit, $searchStartDate, $searchEndDate, $patientTypeIds);
+            } else {
+                error_log('ccm cpt option code is not given');
+                $getAssociatedPatientsData = ReportModel::getMultipleUsersViaPagination($getAssociatedPatientsIds, $pageNo, $limit, $searchStartDate, $searchEndDate);
+            }
+
+            if (count($getAssociatedPatientsData) > 0) {
+
+                $userData = array();
+
+                foreach ($getAssociatedPatientsData as $item) {
+                    $data = array(
+                        'Id' => (int)$item->Id,
+                        'PatientUniqueId' => $item->PatientUniqueId,
+                        'FirstName' => $item->FirstName,
+                        'LastName' => $item->LastName,
+                        'MiddleName' => $item->MiddleName,
+                        'DateOfBirth' => $item->DateOfBirth,
+                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'PatientType' => array()
+                    );
+
+                    $data['PatientType']['Id'] = $item->PatientTypeId;
+                    $data['PatientType']['Name'] = $item->Name;
+                    $data['PatientType']['Code'] = $item->Code;
+
+                    array_push($userData, $data);
+                }
+                $userDetails['PatientData'] = $userData;
+            } else {
+                $userDetails['PatientData'] = null;
+            }
+
+            return response()->json(['data' => $userDetails, 'message' => 'Patient type report data found'], 200);
+        } else {
+            error_log('No patient associated');
+            return response()->json(['data' => null, 'message' => 'No patient(s) has been associated with this doctor'], 200);
+        }
+    }
+
+    static public function GetPatientTypeReportCount(Request $request)
+    {
+        error_log('in controller');
+
+        $doctorId = $request->get('doctorId');
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $startDate = $request->get('startDate');
+        $endDate = $request->get('endDate');
+
+        $patientType = $request->post('PatientType');
+
+        $patientTypeIds = array();
+
+        if (count($patientType) > 0) {
+            error_log('patient type id is given');
+            foreach ($patientType as $item) {
+                array_push($patientTypeIds, (int)$item['Id']);
+            }
+        }
+
+        $searchStartDate = "null";
+        $searchEndDate = "null";
+
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+
+        if ($startDate == "null" && $endDate != "null" || $startDate != "null" && $endDate == "null") {
+            return response()->json(['data' => null, 'message' => 'One of the search date is empty'], 400);
+        }
+        if ($startDate != "null" && $endDate != null) {
+
+            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $searchStartDate = $timestamp;
+
+            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $searchEndDate = $timeStampEndDate;
+
+            error_log($timestamp);
+        }
+
+        $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+        error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+        if (count($getAssociatedPatients) > 0) {
+            //Means associated patients are there
+            $getAssociatedPatientsIds = array();
+            foreach ($getAssociatedPatients as $item) {
+                array_push($getAssociatedPatientsIds, $item->DestinationUserId);
+            };
+
+            $userDetails['PatientData'] = array();
+
+            $getAssociatedPatientsData = 0;
+
+            //Now fetching patients data
+            if (count($patientTypeIds) > 0) {
+                $getAssociatedPatientsData = ReportModel::getMultipleUsersCountViaPatientType($getAssociatedPatientsIds, $searchStartDate, $searchEndDate, $patientTypeIds);
+            } else {
+                error_log('ccm cpt option code is not given');
+                $getAssociatedPatientsData = ReportModel::getMultipleUsersCount($getAssociatedPatientsIds, $searchStartDate, $searchEndDate);
+            }
+
+            return response()->json(['data' => $getAssociatedPatientsData, 'message' => 'Patient type report data count'], 200);
+        } else {
+            error_log('No patient associated');
+            return response()->json(['data' => null, 'message' => 'No patient(s) has been associated with this doctor'], 200);
+        }
+    }
 }
