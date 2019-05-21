@@ -615,7 +615,7 @@ class ReportController
             };
 
             $userDetails['PatientData'] = array();
-
+ 
             $getAssociatedPatientsData = 0;
 
             //Now fetching patients data
