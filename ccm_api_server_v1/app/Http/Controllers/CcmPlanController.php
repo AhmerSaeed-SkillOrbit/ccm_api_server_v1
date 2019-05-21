@@ -2559,6 +2559,8 @@ class CcmPlanController extends Controller
         if ($checkUserData != null) {
             error_log('data found ');
 
+            error_log($checkUserData->DateOfBirth);
+
             $data['Id'] = $checkUserData->Id;
             $data['FirstName'] = $checkUserData->FirstName;
             $data['LastName'] = $checkUserData->LastName;
@@ -2574,6 +2576,7 @@ class CcmPlanController extends Controller
             $data['Age'] = $checkUserData->Age;
             $data['AgeGroup'] = $checkUserData->AgeGroup;
             $data['ProfileSummary'] = $checkUserData->ProfileSummary;
+//            $data['DateOfBirth'] = date('d-M-Y', $checkUserData->DateOfBirth);
             $data['DateOfBirth'] = $checkUserData->DateOfBirth;
             $data['PatientType'] = array();
 

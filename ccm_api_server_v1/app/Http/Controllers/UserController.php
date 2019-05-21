@@ -263,7 +263,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Users not found'], 200);
                 }
-            } //Now checking if user belongs to doctor
+            }
+            //Now checking if user belongs to doctor
             else if ($userData[0]->RoleCodeName == $doctorRole) {
                 error_log('logged in user role is doctor');
 
@@ -286,7 +287,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
-                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds,$roleCode);
 
                     foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
@@ -316,9 +317,10 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
-                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds);
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $destinationIds,$roleCode);
 
                     foreach ($val as $key) {
+                        $key->IsActive = (bool)$key->IsActive;
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
                         $key->LastLoggedIn = ForumModel::calculateTopicAnCommentTime($key->LastLoggedIn);
                     }
@@ -333,7 +335,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
@@ -354,7 +357,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
-                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds,$roleCode);
 
                     foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
@@ -394,7 +397,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
-                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $patientIds);
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $patientIds,$roleCode);
 
                     foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
@@ -414,7 +417,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $patientRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -447,7 +451,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
-                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $facilitatorIds);
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $facilitatorIds,$roleCode);
 
                     foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
@@ -476,7 +480,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchAndPagination
-                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds);
+                    ('user', '=', 'IsActive', true, $offset, $limit, 'Id', $keyword, $doctorIds,$roleCode);
 
                     foreach ($val as $key) {
                         $key->IsCurrentlyLoggedIn = ((bool)$key->IsCurrentlyLoggedIn ? true : false);
@@ -496,7 +500,8 @@ class UserController extends Controller
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
@@ -634,7 +639,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchCount
-                    ('user', '=', 'IsActive', true, $keyword, $destinationIds);
+                    ('user', '=', 'IsActive', true, $keyword, $destinationIds,$roleCode);
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
                 } else if ($roleCode == $patientRole) {
                     //Getting ids of associated facilitator
@@ -649,13 +654,14 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchCount
-                    ('user', '=', 'IsActive', true, $keyword, $destinationIds);
+                    ('user', '=', 'IsActive', true, $keyword, $destinationIds,$roleCode);
 
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $facilitatorRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $facilitatorRole) {
                 error_log('logged in user role is facilitator');
 
                 if ($roleCode == $superAdminRole) {
@@ -676,7 +682,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchCount
-                    ('user', '=', 'IsActive', true, $keyword, $doctorIds);
+                    ('user', '=', 'IsActive', true, $keyword, $doctorIds,$roleCode);
 
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
                 } else if ($roleCode == $patientRole) {
@@ -702,13 +708,14 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchCount
-                    ('user', '=', 'IsActive', true, $keyword, $patientIds);
+                    ('user', '=', 'IsActive', true, $keyword, $patientIds,$roleCode);
 
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $patientRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $patientRole) {
                 error_log('logged in user role is patient');
 
                 if ($roleCode == $superAdminRole) {
@@ -741,7 +748,7 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchCount
-                    ('user', '=', 'IsActive', true, $keyword, $facilitatorIds);
+                    ('user', '=', 'IsActive', true, $keyword, $facilitatorIds,$roleCode);
 
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
                 } else if ($roleCode == $doctorRole) {
@@ -756,13 +763,14 @@ class UserController extends Controller
                     }
 
                     $val = UserModel::FetchUserFacilitatorListForDoctorWithSearchCount
-                    ('user', '=', 'IsActive', true, $keyword, $doctorIds);
+                    ('user', '=', 'IsActive', true, $keyword, $doctorIds,$roleCode);
 
                     return response()->json(['data' => $val, 'message' => 'Users count'], 200);
                 } else {
                     return response()->json(['data' => null, 'message' => 'Invalid user role'], 400);
                 }
-            } else if ($userData[0]->RoleCodeName == $supportStaffRole) {
+            }
+            else if ($userData[0]->RoleCodeName == $supportStaffRole) {
                 error_log('logged in user role is support staff');
                 if ($roleCode == $superAdminRole) {
                     return response()->json(['data' => null, 'message' => 'Not allowed'], 400);
@@ -1138,7 +1146,8 @@ class UserController extends Controller
                         return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
                     }
                 }
-            } else {
+            }
+            else if($roleData[0]->CodeName == env('ROLE_FACILITATOR') || $roleData[0]->CodeName == env('ROLE_PATIENT')){
                 error_log("User Role is " . $roleData[0]->CodeName);
                 $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
 
@@ -1156,6 +1165,61 @@ class UserController extends Controller
                 //of this email
 
                 GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+                GenericModel::updateGeneric('user_association', 'DestinationUserId', $id, $dataToUpdate);
+
+                error_log($update);
+
+                if ($update == 1) {
+                    return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                } else if ($update == 0) {
+                    return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                } else if ($update > 1) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                }
+            }
+            else if($roleData[0]->CodeName == env('ROLE_DOCTOR')){
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+
+                if ($getUser == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                }
+                //Binding data to variable.
+                $dataToUpdate = array(
+                    "IsActive" => false
+                );
+
+                $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+                //now delete the account_invitation
+                //of this email
+
+                GenericModel::updateGeneric('account_invitation', 'ToEmailAddress', $getUser->EmailAddress, $dataToUpdate);
+
+                error_log($update);
+
+                if ($update == 1) {
+                    return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
+                } else if ($update == 0) {
+                    return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
+                } else if ($update > 1) {
+                    return response()->json(['data' => null, 'message' => 'Error in deleting'], 500);
+                }
+            }
+            else {
+                //means role is Support Staff
+                error_log("User Role is " . $roleData[0]->CodeName);
+                $getUser = UserModel::GetSingleUserViaIdNewFunction($id);
+
+                if ($getUser == null) {
+                    return response()->json(['data' => null, 'message' => 'User not found'], 400);
+                }
+                //Binding data to variable.
+                $dataToUpdate = array(
+                    "IsActive" => false
+                );
+
+                $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
                 error_log($update);
 
