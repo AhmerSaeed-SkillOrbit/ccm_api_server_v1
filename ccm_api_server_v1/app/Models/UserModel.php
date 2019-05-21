@@ -276,7 +276,7 @@ class UserModel
     }
 
     static public function FetchUserFacilitatorListForDoctorWithSearchAndPagination
-    ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $destinationUserId)
+    ($tableName, $operator, $columnName, $data, $offset, $limit, $orderBy, $keyword, $destinationUserId, $roleCode)
     {
         error_log('in model ');
         if ($keyword != null && $keyword != "null") {
@@ -291,23 +291,36 @@ class UserModel
                     'sourceUser.FirstName as SourceUserFirstName', 'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                     'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                     'destinationUser.EmailAddress as DestinationUserEmailAddress')
+//                ->where($tableName . '.' . $columnName, $operator, $data)
+//                ->whereIn('user.Id', $destinationUserId)
+//                ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+//                ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+//                ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+//                ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+//                ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+//                ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+//                ->orderBy($tableName . '.' . $orderBy, 'DESC')
+//                ->groupBy('user.Id')
+////                ->offset($offset)->limit($limit)
+//                ->skip($offset * $limit)->take($limit)
+//                ->groupBy('user.Id')
+//                ->get();
+
                 ->where($tableName . '.' . $columnName, $operator, $data)
+                ->where('role.CodeName', '=', $roleCode)
                 ->whereIn('user.Id', $destinationUserId)
-                ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                ->where(function ($query) use ($tableName, $keyword) {
+                    $query->where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%');
+                })
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
                 ->groupBy('user.Id')
-//                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
-                ->groupBy('user.Id')
                 ->get();
-
-            error_log($query);
-
             return $query;
         } else {
             error_log('keyword is NULL');
@@ -322,56 +335,49 @@ class UserModel
                     'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                     'destinationUser.EmailAddress as DestinationUserEmailAddress')
                 ->where($tableName . '.' . $columnName, $operator, $data)
+                ->where('role.CodeName', '=', $roleCode)
                 ->whereIn('user.Id', $destinationUserId)
                 ->groupBy('user.Id')
                 ->orderBy($tableName . '.' . $orderBy, 'DESC')
-//                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
-                ->groupBy('user.Id')
                 ->get();
-
-            error_log($query);
 
             return $query;
         }
     }
 
     static public function FetchUserFacilitatorListForDoctorWithSearchCount
-    ($tableName, $operator, $columnName, $data, $keyword, $destinationUserId)
+    ($tableName, $operator, $columnName, $data, $keyword, $destinationUserId, $roleCode)
     {
         error_log('in model ');
         if ($keyword != null && $keyword != "null") {
             error_log('Keyword NOT NULL');
             $query = DB::table('user')
-//                ->join('user_access', 'user_access.UserId', 'user.Id')
-//                ->join('role', 'user_access.RoleId', 'role.Id')
-//                ->leftjoin('user_association', 'user_association.DestinationUserId', 'user.Id')
-//                ->leftjoin('user as sourceUser', 'user_association.SourceUserId', 'sourceUser.Id')
-//                ->leftjoin('user as destinationUser', 'user_association.DestinationUserId', 'destinationUser.Id')
+                ->join('user_access', 'user_access.UserId', 'user.Id')
+                ->join('role', 'user_access.RoleId', 'role.Id')
                 ->where($tableName . '.' . $columnName, $operator, $data)
+                ->where('role.CodeName', '=', $roleCode)
                 ->whereIn('user.Id', $destinationUserId)
-                ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
-                ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                ->where(function ($query) use ($tableName, $keyword) {
+                    $query->where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%');
+                })
                 ->count();
-
-            error_log($query);
-
             return $query;
         } else {
             error_log('keyword is NULL ' . count($destinationUserId));
 
             $query = DB::table('user')
+                ->join('user_access', 'user_access.UserId', 'user.Id')
+                ->join('role', 'user_access.RoleId', 'role.Id')
                 ->where($tableName . '.' . $columnName, $operator, $data)
+                ->where('role.CodeName', '=', $roleCode)
                 ->whereIn('user.Id', $destinationUserId)
                 ->count();
-
-
-            error_log($query);
-
             return $query;
         }
     }
@@ -394,18 +400,27 @@ class UserModel
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where($tableName . '.' . $columnName, $operator, $data)
-                    ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
                     ->where('role.CodeName', '=', $roleCode)
-//                    ->offset($offset)->limit($limit)
+                    ->where(function ($query) use ($tableName, $keyword) {
+                        $query->where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%');
+                    })
+//                    ->where($tableName . '.' . $columnName, $operator, $data)
+//                    ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
                     ->groupBy('user.Id')
                     ->get();
+
 
                 return $query;
             } else {
@@ -422,7 +437,6 @@ class UserModel
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
-//                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($tableName . '.' . $orderBy, 'DESC')
                     ->groupBy('user.Id')
@@ -444,14 +458,21 @@ class UserModel
                         'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
-                    ->where('user.IsActive', '=', true)
-                    ->Where('FirstName', 'like', '%' . $keyword . '%')
-                    ->orWhere('LastName', 'like', '%' . $keyword . '%')
-                    ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
-                    ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere('FunctionalTitle', 'like', '%' . $keyword . '%')
-//                    ->offset($offset)->limit($limit)
+                    ->where($tableName . '.' . $columnName, $operator, $data)
+                    ->where(function ($query) use ($tableName, $keyword) {
+                        $query->where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%');
+                    })
+//                    ->Where('FirstName', 'like', '%' . $keyword . '%')
+//                    ->orWhere('LastName', 'like', '%' . $keyword . '%')
+//                    ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
+//                    ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
+//                    ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
+//                    ->orWhere('FunctionalTitle', 'like', '%' . $keyword . '%')
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
                     ->groupBy('user.Id')
@@ -470,7 +491,6 @@ class UserModel
                         'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
                         'destinationUser.EmailAddress as DestinationUserEmailAddress')
                     ->where('user.IsActive', '=', true)
-//                    ->offset($offset)->limit($limit)
                     ->skip($offset * $limit)->take($limit)
                     ->orderBy($orderBy, 'DESC')
                     ->groupBy('user.Id')
@@ -549,16 +569,21 @@ class UserModel
                     ->join('role', 'user_access.RoleId', '=', 'role.Id')
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
-                    ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
+                    ->where(function ($query) use ($tableName, $keyword) {
+                        $query->where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%');
+                    })
+//                    ->Where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+//                    ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%')
                     ->count();
-
-                error_log($query);
-
                 return $query;
             } else {
                 error_log('role code not null and keyword null');
@@ -568,9 +593,6 @@ class UserModel
                     ->where($tableName . '.' . $columnName, $operator, $data)
                     ->where('role.CodeName', '=', $roleCode)
                     ->count();
-
-                error_log($query);
-
                 return $query;
             }
         } else {
@@ -578,12 +600,14 @@ class UserModel
                 error_log('Role NULL and keyword not null');
                 return DB::table($tableName)
                     ->where($columnName, $operator, $data)
-                    ->Where('FirstName', 'like', '%' . $keyword . '%')
-                    ->orWhere('LastName', 'like', '%' . $keyword . '%')
-                    ->orWhere('EmailAddress', 'like', '%' . $keyword . '%')
-                    ->orWhere('MobileNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere('TelephoneNumber', 'like', '%' . $keyword . '%')
-                    ->orWhere('FunctionalTitle', 'like', '%' . $keyword . '%')
+                    ->where(function ($query) use ($tableName, $keyword) {
+                        $query->where($tableName . '.FirstName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.LastName', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.EmailAddress', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.MobileNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.TelephoneNumber', 'like', '%' . $keyword . '%')
+                            ->orWhere($tableName . '.FunctionalTitle', 'like', '%' . $keyword . '%');
+                    })
                     ->count();
 
             } else {
