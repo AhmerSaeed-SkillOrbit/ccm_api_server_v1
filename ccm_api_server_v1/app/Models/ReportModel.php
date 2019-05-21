@@ -28,10 +28,10 @@ class ReportModel
                 ->leftjoin('patient_type', 'patient_type.Id', '=', 'user.PatientTypeId')
                 ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
                     'user.CreatedOn', 'user.RegisteredAs', 'patient_type.Id as PatientTypeId', 'patient_type.Code', 'patient_type.Name')
-                ->whereIn('Id', $userIds)
-                ->where('IsActive', '=', true)
-                ->where('CreatedOn', '>=', $searchStartDate)
-                ->where('CreatedOn', '<=', $searchEndDate)
+                ->whereIn('user.Id', $userIds)
+                ->where('user.IsActive', '=', true)
+                ->where('user.CreatedOn', '>=', $searchStartDate)
+                ->where('user.CreatedOn', '<=', $searchEndDate)
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
@@ -42,8 +42,8 @@ class ReportModel
                 ->leftjoin('patient_type', 'patient_type.Id', '=', 'user.PatientTypeId')
                 ->select('user.Id', 'user.PatientUniqueId', 'user.FirstName', 'user.LastName', 'user.MiddleName', 'user.DateOfBirth',
                     'user.CreatedOn', 'user.RegisteredAs', 'patient_type.Id as PatientTypeId', 'patient_type.Code', 'patient_type.Name')
-                ->whereIn('Id', $userIds)
-                ->where('IsActive', '=', true)
+                ->whereIn('user.Id', $userIds)
+                ->where('user.IsActive', '=', true)
                 ->skip($pageNo * $limit)
                 ->take($limit)
                 ->get();
