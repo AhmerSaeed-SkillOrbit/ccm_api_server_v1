@@ -99,7 +99,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn),
                         'RegisteredAs' => $item->RegisteredAs,
                     );
                     array_push($userData, $data);
@@ -240,6 +240,10 @@ class ReportController
                 $userData = array();
 
                 foreach ($getInvitedPatientsData as $item) {
+
+                    error_log("Timestamp");
+                    error_log(Carbon::createFromDate($item->CreatedOn));
+
                     $data = array(
                         'Id' => (int)$item->Id,
                         'PatientUniqueId' => $item->PatientUniqueId,
@@ -247,7 +251,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn)
                     );
                     array_push($userData, $data);
                 }
@@ -388,7 +392,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' =>(string) Carbon::createFromTimestampUTC($item->CreatedOn),
                     );
                     array_push($userData, $data);
                 }
@@ -543,7 +547,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn),
                         'PatientType' => array()
                     );
 
