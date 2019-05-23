@@ -56,6 +56,14 @@ Route::post('/associate/doctor/facilitator', 'UserController@AssociateFacilitato
 
 //Dashboard API for super admin
 Route::get('/dashboard/superadmin', 'UserController@SuperAdminDashboard');
+//Dashboard API for doctor
+Route::get('/dashboard/doctor', 'UserController@DoctorDashboard');
+//Dashboard API for facilitator
+Route::get('/dashboard/facilitator', 'UserController@FacilitatorDashboard');
+//Dashboard API for patient
+Route::get('/dashboard/patient', 'UserController@PatientDashboard');
+//Dashboard API for support staff
+Route::get('/dashboard/support/staff', 'UserController@SupportStaffDashboard');
 
 //permission list with pagination
 Route::get('/permission/list/search', 'PageController@PermissionListViaPagination');
