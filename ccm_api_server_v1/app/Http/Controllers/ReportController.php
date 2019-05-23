@@ -248,7 +248,8 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => Carbon::createFromTimestamp($item->CreatedOn),
+//                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
                     );
                     array_push($userData, $data);
                 }
