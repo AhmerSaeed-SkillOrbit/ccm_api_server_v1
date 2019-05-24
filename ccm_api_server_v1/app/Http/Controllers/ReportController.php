@@ -100,7 +100,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn),
+                        'RegisteredOn' => (string)Carbon::createFromTimestampUTC($item->CreatedOn),
                         'RegisteredAs' => $item->RegisteredAs,
                     );
                     array_push($userData, $data);
@@ -176,8 +176,6 @@ class ReportController
     {
         error_log('in controller');
 
-        error_log('in controller');
-
         $doctorId = $request->get('doctorId');
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
@@ -220,6 +218,7 @@ class ReportController
             foreach ($allInvitedPatientsData as $item) {
                 array_push($getEmailAddresses, $item->ToEmailAddress);
             };
+
             $userDetails['TotalPatientsInvitation'] = count($allInvitedPatientsData);
             //Now fetching patients count who are accepted
             $getAcceptedInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationAccepted, $searchStartDate, $searchEndDate);
@@ -239,33 +238,25 @@ class ReportController
 
             $userDetails['PatientData'] = array();
 
-            //Now fetching patients data
-            $getInvitedPatientsData = ReportModel::getMultipleUsersViaEmailAddressesAndPagination($getEmailAddresses, $pageNo, $limit);
+            $userData = array();
 
-            if (count($getInvitedPatientsData) > 0) {
+            foreach ($allInvitedPatientsData as $item) {
 
-                $userData = array();
+                error_log("Timestamp");
+                error_log(Carbon::createFromDate($item->CreatedOn));
 
-                foreach ($getInvitedPatientsData as $item) {
-
-                    error_log("Timestamp");
-                    error_log(Carbon::createFromDate($item->CreatedOn));
-
-                    $data = array(
-                        'Id' => (int)$item->Id,
-                        'PatientUniqueId' => $item->PatientUniqueId,
-                        'FirstName' => $item->FirstName,
-                        'LastName' => $item->LastName,
-                        'MiddleName' => $item->MiddleName,
-                        'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn)
-                    );
-                    array_push($userData, $data);
-                }
-                $userDetails['PatientData'] = $userData;
-            } else {
-                $userDetails['PatientData'] = null;
+                $data = array(
+                    'Id' => (int)$item->Id,
+                    'ToEmailAddress' => $item->ToEmailAddress,
+                    'CountryPhoneCode' => $item->CountryPhoneCode,
+                    'ToMobileNumber' => $item->ToMobileNumber,
+                    'InvitedStatus' => $item->Status_,
+                    'InvitedOn' => (string)Carbon::createFromTimestampUTC($item->CreatedOn),
+                    'InvitationLink' => env('BASE_URL') . '' . env('FRONT_END_PAGE') . '?token=' . $item->Token
+                );
+                array_push($userData, $data);
             }
+            $userDetails['PatientData'] = $userData;
 
             return response()->json(['data' => $userDetails, 'message' => 'Patient invited data found'], 200);
         } else {
@@ -276,8 +267,6 @@ class ReportController
 
     static public function GetPatientInvitationReportCount(Request $request)
     {
-        error_log('in controller');
-
         error_log('in controller');
 
         $doctorId = $request->get('doctorId');
@@ -309,21 +298,7 @@ class ReportController
 
         error_log('count of $getAssociatedPatients is ' . count($allInvitedPatientsData));
 
-        if (count($allInvitedPatientsData) > 0) {
-            //Means associated patients are there
-            $getEmailAddresses = array();
-            foreach ($allInvitedPatientsData as $item) {
-                array_push($getEmailAddresses, $item->ToEmailAddress);
-            };
-
-            //Now fetching patients data count
-            $getInvitedPatientsDataCount = ReportModel::getMultipleUsersCountViaEmailAddreses($getEmailAddresses);
-
-            return response()->json(['data' => $getInvitedPatientsDataCount, 'message' => 'Patient invited data count'], 200);
-        } else {
-            error_log('No patient associated');
-            return response()->json(['data' => null, 'message' => 'No patient(s) has been invited by this doctor'], 200);
-        }
+        return response()->json(['data' => count($allInvitedPatientsData), 'message' => 'Total Count'], 200);
     }
 
     static public function GetPatientCcmCptReport(Request $request)
@@ -399,7 +374,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' =>(string) Carbon::createFromTimestampUTC($item->CreatedOn),
+                        'RegisteredOn' => (string)Carbon::createFromTimestampUTC($item->CreatedOn),
                     );
                     array_push($userData, $data);
                 }
@@ -554,7 +529,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn),
+                        'RegisteredOn' => (string)Carbon::createFromTimestampUTC($item->CreatedOn),
                         'PatientType' => array()
                     );
 
