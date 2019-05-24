@@ -71,7 +71,10 @@ class ReportController
             foreach ($getAssociatedPatients as $item) {
                 array_push($getAssociatedPatientsIds, $item->DestinationUserId);
             };
-            $userDetails['TotalRegisteredPatients'] = 0;
+
+            //Getting all registered user
+            $getRegisteredPatientsCount = ReportModel::getMultipleUsersCount($getAssociatedPatientsIds, $searchStartDate, $searchEndDate);
+            $userDetails['TotalRegisteredPatients'] = $getRegisteredPatientsCount;
             //Now fetching patients count who are registered directly
             $getDirectlyRegisteredPatientsData = ReportModel::getUsersViaRegisteredAs($getAssociatedPatientsIds, $registeredDirectly, $searchStartDate, $searchEndDate);
             $userDetails['DirectlyRegisteredPatients'] = count($getDirectlyRegisteredPatientsData);
@@ -86,8 +89,6 @@ class ReportController
             $getAssociatedPatientsData = ReportModel::getMultipleUsersViaPagination($getAssociatedPatientsIds, $pageNo, $limit, $searchStartDate, $searchEndDate);
 
             if (count($getAssociatedPatientsData) > 0) {
-
-                $userDetails['TotalRegisteredPatients'] = count($getAssociatedPatientsData);
 
                 $userData = array();
 
@@ -625,7 +626,7 @@ class ReportController
             };
 
             $userDetails['PatientData'] = array();
- 
+
             $getAssociatedPatientsData = 0;
 
             //Now fetching patients data
