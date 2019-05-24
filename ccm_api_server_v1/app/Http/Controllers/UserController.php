@@ -1812,6 +1812,16 @@ class UserController extends Controller
                                 //verifying unique mobile number continue
                                 error_log('This mobile number is not exist');
                             }
+
+                            if ($item->PatientUniqueId == $tempUser[$i]->PatientUniqueId) {
+                                //verifying unique Patient Unique Id number break
+                                error_log('This Patient Unique Id number is already exist');
+                                $isUniqueEmail = false;
+                                break;
+                            } else {
+                                //verifying unique mobile number continue
+                                error_log('This Patient Unique Id is not exist');
+                            }
                         }
 
                     } else {

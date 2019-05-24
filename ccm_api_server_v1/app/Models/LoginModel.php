@@ -525,6 +525,31 @@ class LoginModel
         return $result;
     }
 
+    static function checkEmailAndMobileAndUniqueIdAvailable(string $email, string $mobileNumber, string $uniqueId)
+    {
+        error_log("Here 1");
+        error_log($email);
+        error_log($mobileNumber);
+
+//        $result = DB::table('user')
+//            ->select('*')
+//            ->where('IsActive', '=', 1)
+//            ->where('EmailAddress', '=', $email)
+//            ->orWhere('MobileNumber', '=', $mobileNumber)
+//            ->get();
+
+        $result = DB::table('user')
+            ->select('*')
+            ->where('IsActive', '=', 1)
+            ->where(function ($query) use ($email, $mobileNumber, $uniqueId) {
+                $query->where('EmailAddress', '=', $email)
+                    ->orWhere('MobileNumber', '=', $mobileNumber)
+                    ->orWhere('PatientUniqueId', '=', $uniqueId);
+            })->get();
+
+        return $result;
+    }
+
     static function checkTokenAvailableForResetPass(string $token)
     {
         $result = DB::table('verification_token')
