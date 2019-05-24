@@ -54,10 +54,10 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timeStampEndDate;
 
             error_log($timestamp);
@@ -100,7 +100,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn),
                         'RegisteredAs' => $item->RegisteredAs,
                     );
                     array_push($userData, $data);
@@ -138,10 +138,16 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+//            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+//            $searchStartDate = $timestamp;
+//
+//            $timestampForEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+//            $searchEndDate = $timestampForEndDate;
+
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timestampForEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timestampForEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timestampForEndDate;
 
             error_log($searchEndDate);
@@ -192,10 +198,10 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timeStampEndDate;
 
             error_log($timestamp);
@@ -241,6 +247,10 @@ class ReportController
                 $userData = array();
 
                 foreach ($getInvitedPatientsData as $item) {
+
+                    error_log("Timestamp");
+                    error_log(Carbon::createFromDate($item->CreatedOn));
+
                     $data = array(
                         'Id' => (int)$item->Id,
                         'PatientUniqueId' => $item->PatientUniqueId,
@@ -248,8 +258,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => Carbon::createFromTimestamp($item->CreatedOn),
-//                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn)
                     );
                     array_push($userData, $data);
                 }
@@ -284,10 +293,10 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timeStampEndDate;
 
             error_log($timestamp);
@@ -348,10 +357,10 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timeStampEndDate;
 
             error_log($timestamp);
@@ -390,7 +399,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' =>(string) Carbon::createFromTimestampUTC($item->CreatedOn),
                     );
                     array_push($userData, $data);
                 }
@@ -435,10 +444,10 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timeStampEndDate;
 
             error_log($timestamp);
@@ -503,10 +512,10 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timeStampEndDate;
 
             error_log($timestamp);
@@ -545,7 +554,7 @@ class ReportController
                         'LastName' => $item->LastName,
                         'MiddleName' => $item->MiddleName,
                         'DateOfBirth' => $item->DateOfBirth,
-                        'RegisteredOn' => date("d-M-Y", strtotime($item->CreatedOn)),
+                        'RegisteredOn' => (string) Carbon::createFromTimestampUTC($item->CreatedOn),
                         'PatientType' => array()
                     );
 
@@ -598,10 +607,10 @@ class ReportController
         }
         if ($startDate != "null" && $endDate != null) {
 
-            $timestamp = Carbon::createFromFormat('d-m-Y', $startDate)->timestamp;
+            $timestamp = Carbon::createFromFormat('Y-m-d', $startDate)->timestamp;
             $searchStartDate = $timestamp;
 
-            $timeStampEndDate = Carbon::createFromFormat('d-m-Y', $endDate)->timestamp;
+            $timeStampEndDate = Carbon::createFromFormat('Y-m-d', $endDate)->timestamp;
             $searchEndDate = $timeStampEndDate;
 
             error_log($timestamp);

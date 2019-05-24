@@ -553,7 +553,7 @@ class LoginController extends Controller
                 //custom check for
                 //email n mobile already exist
 
-                $data = LoginModel::checkEmailAndMobileAvailable($request->EmailAddress, $request->post('MobileNumber'));
+                $data = LoginModel::checkEmailAndMobileAndUniqueIdAvailable($request->EmailAddress, $request->post('MobileNumber'),$request->post('PatientUniqueId'));
                 if (count($data) > 0) {
                     if ($data[0]->EmailAddress == $request->EmailAddress) {
                         $message = "Email Address already exist";
@@ -561,6 +561,10 @@ class LoginController extends Controller
                     }
                     if ($data[0]->MobileNumber == $request->post('MobileNumber')) {
                         $message = "Mobile Number already exist";
+                        return response()->json(['data' => null, 'message' => $message], 400);
+                    }
+                    if ($data[0]->PatientUniqueId == $request->post('PatientUniqueId')) {
+                        $message = "Patient Unique Id already exist";
                         return response()->json(['data' => null, 'message' => $message], 400);
                     }
                 }
