@@ -1297,4 +1297,46 @@ class TicketModel
         return $query;
     }
 
+    static public function GetTicketCountViaStatus($raisedById, $trackStatus)
+    {
+        $query = DB::table('ticket')
+            ->where('ticket.IsActive', '=', true)
+            ->where('ticket.RaiseById', '=', $raisedById)
+            ->where('ticket.TrackStatus', '=', $trackStatus)
+            ->count();
+
+        return $query;
+    }
+
+    static public function GetTicketCreatedBy($raisedById)
+    {
+        $query = DB::table('ticket')
+            ->where('ticket.IsActive', '=', true)
+            ->where('ticket.RaiseById', '=', $raisedById)
+            ->count();
+
+        return $query;
+    }
+
+    static public function GetTicketRepliedBy($replyById)
+    {
+        $query = DB::table('ticket_reply')
+            ->where('ticket_reply.IsActive', '=', true)
+            ->where('ticket_reply.ReplyById', '=', $replyById)
+            ->count();
+
+        return $query;
+    }
+
+
+    static public function GetTicketClosedBy($closedById)
+    {
+        $query = DB::table('ticket')
+            ->where('ticket.IsActive', '=', true)
+            ->where('ticket.UpdatedBy', '=', $closedById)
+            ->count();
+
+        return $query;
+    }
+
 }

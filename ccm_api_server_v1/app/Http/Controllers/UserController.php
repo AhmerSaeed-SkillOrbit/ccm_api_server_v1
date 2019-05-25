@@ -17,6 +17,7 @@ use App\Models\GenericModel;
 use App\Models\HelperModel;
 use App\Models\DocumentUploadModel;
 use App\Models\ForumModel;
+use App\Models\TicketModel;
 use App\Models\ReportModel;
 use App\Models\LoginModel;
 use App\Models\DoctorScheduleModel;
@@ -1564,18 +1565,62 @@ class UserController extends Controller
         $supportStaffRole = env('ROLE_SUPPORT_STAFF');
         $patientRole = env('ROLE_PATIENT');
 
-        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRole);
-        $doctorCount = UserModel::getUserCountViaRoleCode($doctorRole);
-        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitatorRole);
-        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaffRole);
-        $patientCount = UserModel::getUserCountViaRoleCode($patientRole);
+        $openTrackStatus = env('TICKET_TRACK_STATUS_OPEN');
 
         $data = array(
-            "ActiveCcmPlan" => 0,
-            "UpcomingAppointment" => array(),
-            "OpenTicket" => 0,
-            "LoginHistory" => array()
+            "UpcomingAppointment" => array()
         );
+
+        $userData = UserModel::GetSingleUserViaId($userId);
+
+        if (count($userData) > 0) {
+            error_log('user data fetched');
+            if ($userData[0]->RoleCodeName != $patientRole) {
+                error_log('login user is not patient');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be patient'], 400);
+            }
+        }
+
+        $patientIds = array();
+        array_push($patientIds, $userId);
+
+        //Now get active ccm plans till yet
+        //Now fetching active CCM plans
+        $currentTime = Carbon::now("UTC");
+        error_log('$currentTime ' . $currentTime);
+        $getActiveCcmPlansCount = CcmModel::getActiveCcmPlansViaPatientIds($patientIds, $currentTime);
+        error_log('$getActiveCcmPlansCount ' . $getActiveCcmPlansCount);
+
+        $data['ActiveCcmPlan'] = $getActiveCcmPlansCount;
+
+        //Now we will fetch login history of patients
+        //Last 5 logins history
+        $list = LoginModel::FetchLastLoginHistoryList($patientIds, 5);
+        if (count($list) > 0) {
+            $loginHistory = array();
+            foreach ($list as $item) {
+                $itemArray = array(
+                    'Id' => $item->Id,
+                    'FirstName' => $item->FirstName,
+                    'LastName' => $item->LastName,
+                    'EmailAddress' => $item->EmailAddress,
+                    'MiddleName' => $item->MiddleName,
+                    'LastLoggedIn' => $item->LastLoggedIn,
+                    'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
+                    'LoginHistoryId' => $item->LoginHistoryId,
+                    'LoginDateTime' => date('d-M-Y h:m a', $item->LoginDateTime)
+                );
+                array_push($loginHistory, $itemArray);
+            }
+            $data['LoggedInHistory'] = $loginHistory;
+        } else {
+            $data['LoggedInHistory'] = null;
+        }
+
+        //Now fetching Open tickets
+        $getOpenTickets = TicketModel::GetTicketCountViaStatus($userId, $openTrackStatus);
+        $data['OpenTicket'] = $getOpenTickets;
 
         return response()->json(['data' => $data, 'message' => 'Patient dashboard stats'], 200);
     }
@@ -1596,16 +1641,28 @@ class UserController extends Controller
         $supportStaffRole = env('ROLE_SUPPORT_STAFF');
         $patientRole = env('ROLE_PATIENT');
 
-        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRole);
-        $doctorCount = UserModel::getUserCountViaRoleCode($doctorRole);
-        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitatorRole);
-        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaffRole);
-        $patientCount = UserModel::getUserCountViaRoleCode($patientRole);
+        $userData = UserModel::GetSingleUserViaId($userId);
+
+        if (count($userData) > 0) {
+            error_log('user data fetched');
+            if ($userData[0]->RoleCodeName != $supportStaffRole) {
+                error_log('login user is not support staff');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be from support staff'], 400);
+            }
+        }
+
+        //Now getting tickets created by this sipport staff person
+        $getCreatedTickets = TicketModel::GetTicketCreatedBy($userId);
+        //Now getting how many tickets he has responded to
+        $getTicketsRespondedTo = TicketModel::GetTicketRepliedBy($userId);
+        //Now getting closed tickets
+        $getTicketsClosedBy = TicketModel::GetTicketClosedBy($userId);
 
         $data = array(
-            "TicketCreated" => 0,
-            "TicketResponded" => 0,
-            "TicketClosed" => 0
+            "TicketCreated" => $getCreatedTickets,
+            "TicketResponded" => $getTicketsRespondedTo,
+            "TicketClosed" => $getTicketsClosedBy
         );
 
         return response()->json(['data' => $data, 'message' => 'Support staff dashboard stats'], 200);
