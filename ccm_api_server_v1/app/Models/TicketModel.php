@@ -53,6 +53,8 @@ class TicketModel
     {
         error_log('in model, fetching tickets generated');
 
+        $tableName = 'ticket';
+
         if ($ticketType == "null"
             && $trackStatus == "null"
             && $priority == "null"
@@ -88,8 +90,12 @@ class TicketModel
                         ->where('ticket.Priority', '=', $priority)
                         ->where('ticket.TrackStatus', '=', $trackStatus)
                         ->where('ticket.Type', '=', $ticketType)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->orderBy('ticket.Id', 'DESC')
                         ->skip($pageNo * $limit)
                         ->take($limit)
@@ -109,8 +115,12 @@ class TicketModel
                             ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -124,8 +134,12 @@ class TicketModel
                             ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -139,8 +153,12 @@ class TicketModel
                             ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -156,8 +174,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -172,8 +194,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -188,8 +214,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -205,8 +235,12 @@ class TicketModel
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -221,8 +255,12 @@ class TicketModel
                         ->join('role', 'user_access.RoleId', 'role.Id')
                         ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                         ->where('ticket.IsActive', '=', true)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->orderBy('ticket.Id', 'DESC')
                         ->skip($pageNo * $limit)
                         ->take($limit)
@@ -372,6 +410,7 @@ class TicketModel
     static public function GetTicketListViaPaginationAndSearchForPatient($pageNo, $limit, $searchKeyword, $ticketType, $trackStatus, $priority, $userId)
     {
         error_log('in model, fetching tickets generated');
+        $tableName = 'ticket';
 
         if ($ticketType == "null"
             && $trackStatus == "null"
@@ -410,8 +449,12 @@ class TicketModel
                         ->where('ticket.TrackStatus', '=', $trackStatus)
                         ->where('ticket.Type', '=', $ticketType)
                         ->where('ticket.RaiseById', '=', $userId)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->orderBy('ticket.Id', 'DESC')
                         ->skip($pageNo * $limit)
                         ->take($limit)
@@ -432,8 +475,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -448,8 +495,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -464,8 +515,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -482,8 +537,12 @@ class TicketModel
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -499,8 +558,12 @@ class TicketModel
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -516,8 +579,12 @@ class TicketModel
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -534,8 +601,12 @@ class TicketModel
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->orderBy('ticket.Id', 'DESC')
                             ->skip($pageNo * $limit)
                             ->take($limit)
@@ -551,8 +622,12 @@ class TicketModel
                         ->select('ticket.*', 'user.FirstName', 'user.LastName', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName')
                         ->where('ticket.IsActive', '=', true)
                         ->where('ticket.RaiseById', '=', $userId)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->orderBy('ticket.Id', 'DESC')
                         ->skip($pageNo * $limit)
                         ->take($limit)
@@ -738,6 +813,8 @@ class TicketModel
 
     static public function GetTicketListCountViaSearch($searchKeyword, $ticketType, $trackStatus, $priority)
     {
+        $tableName = 'ticket';
+
         error_log('in model, fetching tickets generated');
 
         if ($ticketType == "null"
@@ -764,8 +841,12 @@ class TicketModel
                         ->where('ticket.Priority', '=', $priority)
                         ->where('ticket.TrackStatus', '=', $trackStatus)
                         ->where('ticket.Type', '=', $ticketType)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->count();
 
 //                    dd(DB::getQueryLog());
@@ -778,24 +859,36 @@ class TicketModel
                         $query = DB::table('ticket')
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
                         error_log('Search keyword and priority is not null');
                         $query = DB::table('ticket')
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword and track status is not null');
                         $query = DB::table('ticket')
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } //Now checks if any of the two parameters are given
                     else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
@@ -804,8 +897,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
                         error_log('Search keyword and priority and track status is not null');
@@ -813,8 +910,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword and ticket type and track status is not null');
@@ -822,8 +923,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else {
                         error_log('Searching on the basis of all parameters');
@@ -832,8 +937,12 @@ class TicketModel
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     }
                 } else {
@@ -841,8 +950,12 @@ class TicketModel
 
                     $query = DB::table('ticket')
                         ->where('ticket.IsActive', '=', true)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->count();
                 }
             } else {
@@ -926,6 +1039,8 @@ class TicketModel
 
     static public function GetTicketListCountViaSearchForPatient($searchKeyword, $ticketType, $trackStatus, $priority, $userId)
     {
+
+        $tableName = 'ticket';
         error_log('in model, fetching tickets generated');
 
         if ($ticketType == "null"
@@ -954,8 +1069,12 @@ class TicketModel
                         ->where('ticket.TrackStatus', '=', $trackStatus)
                         ->where('ticket.Type', '=', $ticketType)
                         ->where('ticket.RaiseById', '=', $userId)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->count();
 
 //                    dd(DB::getQueryLog());
@@ -969,8 +1088,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus == "null") {
                         error_log('Search keyword and priority is not null');
@@ -978,8 +1101,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType == "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword and track status is not null');
@@ -987,8 +1114,12 @@ class TicketModel
                             ->where('ticket.IsActive', '=', true)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } //Now checks if any of the two parameters are given
                     else if ($ticketType != "null" && $priority != "null" && $trackStatus == "null") {
@@ -998,8 +1129,12 @@ class TicketModel
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType == "null" && $priority != "null" && $trackStatus != "null") {
                         error_log('Search keyword and priority and track status is not null');
@@ -1008,8 +1143,12 @@ class TicketModel
                             ->where('ticket.Priority', '=', $priority)
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else if ($ticketType != "null" && $priority == "null" && $trackStatus != "null") {
                         error_log('Search keyword and ticket type and track status is not null');
@@ -1018,8 +1157,12 @@ class TicketModel
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     } else {
                         error_log('Searching on the basis of all parameters');
@@ -1029,8 +1172,12 @@ class TicketModel
                             ->where('ticket.TrackStatus', '=', $trackStatus)
                             ->where('ticket.Type', '=', $ticketType)
                             ->where('ticket.RaiseById', '=', $userId)
-                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                            ->where(function ($query) use ($tableName, $searchKeyword) {
+                                $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                    ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                            })
+//                            ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                            ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                             ->count();
                     }
                 } else {
@@ -1039,8 +1186,12 @@ class TicketModel
                     $query = DB::table('ticket')
                         ->where('ticket.IsActive', '=', true)
                         ->where('ticket.RaiseById', '=', $userId)
-                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
-                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
+                        ->where(function ($query) use ($tableName, $searchKeyword) {
+                            $query->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+                                ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%');
+                        })
+//                        ->where('.ticket.TicketNumber', 'like', '%' . $searchKeyword . '%')
+//                        ->orWhere('.ticket.Title', 'like', '%' . $searchKeyword . '%')
                         ->count();
                 }
             } else {
