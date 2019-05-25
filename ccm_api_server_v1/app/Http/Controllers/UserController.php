@@ -1252,8 +1252,7 @@ class UserController extends Controller
             "Doctor" => $doctorCount,
             "Facilitator" => $facilitatorCount,
             "SupportStaff" => $supperStaffCount,
-            "Patient" => $patientCount,
-            "ActiveCcmPlan" => 0
+            "Patient" => $patientCount
         );
 
         $patientIds = array();
@@ -1455,6 +1454,9 @@ class UserController extends Controller
     {
         error_log('in controller');
 
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+
         $userId = (int)$request->get('userId');
 
         if ($userId == "null" || $userId == 0) {
@@ -1467,18 +1469,81 @@ class UserController extends Controller
         $supportStaffRole = env('ROLE_SUPPORT_STAFF');
         $patientRole = env('ROLE_PATIENT');
 
-        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRole);
-        $doctorCount = UserModel::getUserCountViaRoleCode($doctorRole);
-        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitatorRole);
-        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaffRole);
-        $patientCount = UserModel::getUserCountViaRoleCode($patientRole);
+        $userData = UserModel::GetSingleUserViaId($userId);
+
+        if (count($userData) > 0) {
+            error_log('user data fetched');
+            if ($userData[0]->RoleCodeName != $facilitatorRole) {
+                error_log('login user is not facilitator');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a facilitator'], 400);
+            }
+        }
 
         $data = array(
-            "ActiveCcmPlan" => 0,
             "TotalReviewsOnGoals" => 0,
-            "LoginHistory" => array(),
-            "AssociatedDoctor" => 0
         );
+
+        //Fetching Active CCM pLans
+        //First get associated doctors id with respect to facilitator Id
+        $getAssociatedDoctorsId = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
+
+        if (count($getAssociatedDoctorsId) > 0) {
+            error_log('doctors associated');
+            $data['AssociatedDoctor'] = count($getAssociatedDoctorsId);
+            $doctorIds = array();
+            foreach ($getAssociatedDoctorsId as $item) {
+                array_push($doctorIds, $item->SourceUserId);
+            }
+            //Now fetch associated patients of that doctor
+            $getAssociatedPatientIds = UserModel::getAssociatedPatientsUserId($doctorIds, $doctorPatientAssociation);
+            if (count($getAssociatedPatientIds) > 0) {
+                $patientIds = array();
+                foreach ($getAssociatedPatientIds as $item) {
+                    array_push($patientIds, $item->DestinationUserId);
+                }
+                //Now get active ccm plans till yet
+                //Now fetching active CCM plans
+                $currentTime = Carbon::now("UTC");
+                error_log('$currentTime ' . $currentTime);
+                $getActiveCcmPlansCount = CcmModel::getActiveCcmPlansViaPatientIds($patientIds, $currentTime);
+                error_log('$getActiveCcmPlansCount ' . $getActiveCcmPlansCount);
+
+                $data['ActiveCcmPlan'] = $getActiveCcmPlansCount;
+
+            } else {
+                $data['ActiveCcmPlan'] = 0;
+            }
+        } else {
+            $data['ActiveCcmPlan'] = 0;
+            $data['AssociatedDoctor'] = 0;
+        }
+
+        $facilitatorIds = array();
+        array_push($facilitatorIds, $userId);
+        //Now we will fetch login history of patients
+        //Last 5 logins history
+        $list = LoginModel::FetchLastLoginHistoryList($facilitatorIds, 5);
+        if (count($list) > 0) {
+            $loginHistory = array();
+            foreach ($list as $item) {
+                $itemArray = array(
+                    'Id' => $item->Id,
+                    'FirstName' => $item->FirstName,
+                    'LastName' => $item->LastName,
+                    'EmailAddress' => $item->EmailAddress,
+                    'MiddleName' => $item->MiddleName,
+                    'LastLoggedIn' => $item->LastLoggedIn,
+                    'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
+                    'LoginHistoryId' => $item->LoginHistoryId,
+                    'LoginDateTime' => date('d-M-Y h:m a', $item->LoginDateTime)
+                );
+                array_push($loginHistory, $itemArray);
+            }
+            $data['LoggedInHistory'] = $loginHistory;
+        } else {
+            $data['LoggedInHistory'] = null;
+        }
 
         return response()->json(['data' => $data, 'message' => 'Facilitator dashboard stats'], 200);
     }

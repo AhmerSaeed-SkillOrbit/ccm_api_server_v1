@@ -899,7 +899,6 @@ class CcmModel
                 ->orWhere('.ccm_plan.EndDate', '=', null)
                 ->count();
 
-
             return $queryResult;
         } else {
             error_log('patient id is null');
