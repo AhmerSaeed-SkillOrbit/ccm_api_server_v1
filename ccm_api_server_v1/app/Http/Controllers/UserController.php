@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CcmModel;
 use App\User;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
@@ -16,6 +17,8 @@ use App\Models\GenericModel;
 use App\Models\HelperModel;
 use App\Models\DocumentUploadModel;
 use App\Models\ForumModel;
+use App\Models\ReportModel;
+use App\Models\DoctorScheduleModel;
 use Config;
 use Carbon\Carbon;
 use Excel;
@@ -1268,25 +1271,45 @@ class UserController extends Controller
             return response()->json(['data' => null, 'message' => 'Doctor id should not be null'], 400);
         }
 
-        $superAdminRole = env('ROLE_SUPER_ADMIN');
-        $doctorRole = env('ROLE_DOCTOR');
-        $facilitatorRole = env('ROLE_FACILITATOR');
-        $supportStaffRole = env('ROLE_SUPPORT_STAFF');
-        $patientRole = env('ROLE_PATIENT');
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
+        $doctorFacilitatorAssociation = env('ASSOCIATION_DOCTOR_FACILITATOR');
+        $appointmentRequestPending = env('APPOINTMENT_PENDING_REQUEST_STATUS');
+        $invitationPending = env('INVITATION_PENDING');
 
-        $superAdminCount = UserModel::getUserCountViaRoleCode($superAdminRole);
-        $doctorCount = UserModel::getUserCountViaRoleCode($doctorRole);
-        $facilitatorCount = UserModel::getUserCountViaRoleCode($facilitatorRole);
-        $supperStaffCount = UserModel::getUserCountViaRoleCode($supportStaffRole);
-        $patientCount = UserModel::getUserCountViaRoleCode($patientRole);
+        $getRegisteredPatientsCount = 0;
+        $getAssociatedPatientsIds = array();
 
-        $data = array(
-            "RegisteredPatient" => 0,
-            "PendingInvitation" => 0,
-            "AssociatedFacilitator" => 0,
-            "ActiveCcmPlan" => 0,
-            "PendingAppointment" => array()
-        );
+        $getAssociatedPatients = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorPatientAssociation);
+        error_log('$getAssociatedPatients are ' . $getAssociatedPatients);
+        if (count($getAssociatedPatients) > 0) {
+            //Means associated patients are there
+            foreach ($getAssociatedPatients as $item) {
+                array_push($getAssociatedPatientsIds, $item->DestinationUserId);
+            };
+            //Getting all registered user
+            $getRegisteredPatientsCount = ReportModel::getMultipleUsersCount($getAssociatedPatientsIds, "null", "null");
+            $data['RegisteredPatient'] = $getRegisteredPatientsCount;
+        } else {
+            $data['RegisteredPatient'] = $getRegisteredPatientsCount;
+        }
+
+        //Now getting patients count who are in pending
+        $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, "null", "null");
+        $data['PendingInvitation'] = count($getPendingInvitationData);
+
+        //Now fetching associated facilitator
+        $getAssociatedFacilitator = UserModel::getDestinationUserIdViaLoggedInUserIdAndAssociationType($doctorId, $doctorFacilitatorAssociation);
+        $data['AssociatedFacilitator'] = count($getAssociatedFacilitator);
+
+        //Now fetching active CCM plans
+        $currentTime = Carbon::now("UTC");
+        error_log('$currentTime ' . $currentTime);
+        $getActiveCcmPlansCount = CcmModel::getActiveCcmPlansViaPatientIds($getAssociatedPatientsIds, $currentTime);
+        $data['ActiveCcmPlan'] = $getActiveCcmPlansCount;
+
+        //Now getting pending appointments
+        $getPendingAppointmentCount = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $appointmentRequestPending, $getAssociatedPatientsIds);
+        $data['PendingAppointment'] = $getPendingAppointmentCount;
 
         return response()->json(['data' => $data, 'message' => 'Doctor dashboard stats'], 200);
     }

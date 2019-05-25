@@ -438,7 +438,7 @@ class DoctorScheduleModel
 
     static public function getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds)
     {
-        error_log('in model');
+        error_log('in model $reqStatus ' .$reqStatus);
 
 
         $query = DB::table("appointment")
