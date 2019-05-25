@@ -889,14 +889,30 @@ class CcmModel
 
     static public function getActiveCcmPlansViaPatientIds($patientIds, $currentData)
     {
-        $queryResult = DB::table('ccm_plan')
-            ->select('ccm_plan.*')
-            ->where('ccm_plan.IsActive', '=', true)
-            ->whereIn('ccm_plan.PatientId', $patientIds)
-            ->where('.ccm_plan.EndDate', '>=', $currentData)
-            ->orWhere('.ccm_plan.EndDate', '=', null)
-            ->count();
+        if (count($patientIds) > 0) {
+            error_log('patient id is not null');
+            $queryResult = DB::table('ccm_plan')
+                ->select('ccm_plan.*')
+                ->where('ccm_plan.IsActive', '=', true)
+                ->whereIn('ccm_plan.PatientId', $patientIds)
+                ->where('.ccm_plan.EndDate', '>=', $currentData)
+                ->orWhere('.ccm_plan.EndDate', '=', null)
+                ->count();
 
-        return $queryResult;
+
+            return $queryResult;
+        } else {
+            error_log('patient id is null');
+
+            $queryResult = DB::table('ccm_plan')
+                ->select('ccm_plan.*')
+                ->where('ccm_plan.IsActive', '=', true)
+                ->where('.ccm_plan.EndDate', '>=', $currentData)
+                ->orWhere('.ccm_plan.EndDate', '=', null)
+                ->count();
+
+
+            return $queryResult;
+        }
     }
 }

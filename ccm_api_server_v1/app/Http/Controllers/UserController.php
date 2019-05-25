@@ -18,6 +18,7 @@ use App\Models\HelperModel;
 use App\Models\DocumentUploadModel;
 use App\Models\ForumModel;
 use App\Models\ReportModel;
+use App\Models\LoginModel;
 use App\Models\DoctorScheduleModel;
 use Config;
 use Carbon\Carbon;
@@ -1310,6 +1311,47 @@ class UserController extends Controller
         //Now getting pending appointments
         $getPendingAppointmentCount = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $appointmentRequestPending, $getAssociatedPatientsIds);
         $data['PendingAppointment'] = $getPendingAppointmentCount;
+
+        //Last 5 logins history
+        $list = LoginModel::FetchLastLoginHistoryList($doctorId, 5);
+        if (count($list) > 0) {
+            $loginHistory = array();
+            foreach ($list as $item) {
+                $itemArray = array(
+                    'Id' => $item->Id,
+                    'FirstName' => $item->FirstName,
+                    'LastName' => $item->LastName,
+                    'EmailAddress' => $item->EmailAddress,
+                    'CountryPhoneCode' => $item->CountryPhoneCode,
+                    'MobileNumber' => $item->MobileNumber,
+                    'TelephoneNumber' => $item->TelephoneNumber,
+                    'PatientUniqueId' => $item->PatientUniqueId,
+                    'Gender' => $item->Gender,
+                    'FunctionalTitle' => $item->FunctionalTitle,
+                    'Age' => $item->Age,
+                    'AgeGroup' => $item->AgeGroup,
+                    'AccountVerified' => $item->AccountVerified,
+                    'CreatedBy' => $item->CreatedBy,
+                    'CreatedOn' => $item->CreatedOn,
+                    'UpdatedOn' => $item->UpdatedOn,
+                    'UpdatedBy' => $item->UpdatedBy,
+                    'IsActive' => $item->IsActive,
+                    'IsBlock' => $item->IsBlock,
+                    'BlockReason' => $item->BlockReason,
+                    'InActiveReason' => $item->InActiveReason,
+                    'CityId' => $item->CityId,
+                    'MiddleName' => $item->MiddleName,
+                    'LastLoggedIn' => $item->LastLoggedIn,
+                    'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
+                    'LoginHistoryId' => $item->LoginHistoryId,
+                    'LoginDateTime' => date('d-M-Y h:m a', $item->LoginDateTime)
+                );
+                array_push($loginHistory, $itemArray);
+            }
+            $data['DoctorLoggedInHistory'] = $loginHistory;
+        } else {
+            $data['DoctorLoggedInHistory'] = null;
+        }
 
         return response()->json(['data' => $data, 'message' => 'Doctor dashboard stats'], 200);
     }
