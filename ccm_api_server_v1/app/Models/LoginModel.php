@@ -623,12 +623,12 @@ class LoginModel
         return $query;
     }
 
-    public static function FetchLastLoginHistoryList($userId, $limit)
+    public static function FetchLastLoginHistoryList($userIds, $limit)
     {
         error_log('getting list of login history for provided user');
         $query = DB::table('user')
             ->join('user_login_history', 'user.Id', 'user_login_history.UserId')
-            ->where('user_login_history.UserId', $userId)
+            ->whereIn('user_login_history.UserId', $userIds)
             ->take($limit)
             ->select('user.*', 'user_login_history.Id as LoginHistoryId', 'user_login_history.CreatedOn as LoginDateTime')
             ->orderBy('user_login_history.Id', 'desc')

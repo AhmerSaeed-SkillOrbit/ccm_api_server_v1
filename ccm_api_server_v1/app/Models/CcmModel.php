@@ -889,7 +889,7 @@ class CcmModel
 
     static public function getActiveCcmPlansViaPatientIds($patientIds, $currentData)
     {
-        if (count($patientIds) > 0) {
+        if ($patientIds != null) {
             error_log('patient id is not null');
             $queryResult = DB::table('ccm_plan')
                 ->select('ccm_plan.*')

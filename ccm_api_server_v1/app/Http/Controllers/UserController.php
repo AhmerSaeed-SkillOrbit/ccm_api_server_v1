@@ -1253,11 +1253,121 @@ class UserController extends Controller
             "Facilitator" => $facilitatorCount,
             "SupportStaff" => $supperStaffCount,
             "Patient" => $patientCount,
-            "LastPatientLoggedIn" => array(),
-            "LastDoctorLoggedIn" => array(),
-            "LastFacilitatorLoggedIn" => array(),
             "ActiveCcmPlan" => 0
         );
+
+        $patientIds = array();
+        $doctorIds = array();
+        $facilitatorIds = array();
+
+        //Now get last 10 patients logged in history
+        //First of all get users via role code
+        $getPatientUsers = UserModel::GetUserViaRoleCode($patientRole);
+        if (count($getPatientUsers) > 0) {
+            foreach ($getPatientUsers as $item) {
+                array_push($patientIds, $item->Id);
+            }
+            //Now we will fetch login history of patients
+            //Last 5 logins history
+            $list = LoginModel::FetchLastLoginHistoryList($patientIds, 10);
+            if (count($list) > 0) {
+                $loginHistory = array();
+                foreach ($list as $item) {
+                    $itemArray = array(
+                        'Id' => $item->Id,
+                        'FirstName' => $item->FirstName,
+                        'LastName' => $item->LastName,
+                        'EmailAddress' => $item->EmailAddress,
+                        'MiddleName' => $item->MiddleName,
+                        'LastLoggedIn' => $item->LastLoggedIn,
+                        'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
+                        'LoginHistoryId' => $item->LoginHistoryId,
+                        'LoginDateTime' => date('d-M-Y h:m a', $item->LoginDateTime)
+                    );
+                    array_push($loginHistory, $itemArray);
+                }
+                $data['LastPatientLoggedInHistory'] = $loginHistory;
+            } else {
+                $data['LastPatientLoggedInHistory'] = null;
+            }
+        } else {
+            $data['LastPatientLoggedIn'] = null;
+        }
+
+        //Now get last 10 doctor logged in history
+        //First of all get users via role code
+        $getDoctorUsers = UserModel::GetUserViaRoleCode($doctorRole);
+        if (count($getDoctorUsers) > 0) {
+            foreach ($getDoctorUsers as $item) {
+                array_push($doctorIds, $item->Id);
+            }
+            //Now we will fetch login history of patients
+            //Last 5 logins history
+            $list = LoginModel::FetchLastLoginHistoryList($doctorIds, 10);
+            if (count($list) > 0) {
+                $loginHistory = array();
+                foreach ($list as $item) {
+                    $itemArray = array(
+                        'Id' => $item->Id,
+                        'FirstName' => $item->FirstName,
+                        'LastName' => $item->LastName,
+                        'EmailAddress' => $item->EmailAddress,
+                        'MiddleName' => $item->MiddleName,
+                        'LastLoggedIn' => $item->LastLoggedIn,
+                        'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
+                        'LoginHistoryId' => $item->LoginHistoryId,
+                        'LoginDateTime' => date('d-M-Y h:m a', $item->LoginDateTime)
+                    );
+                    array_push($loginHistory, $itemArray);
+                }
+                $data['LastDoctorLoggedInHistory'] = $loginHistory;
+            } else {
+                $data['LastDoctorLoggedInHistory'] = null;
+            }
+        } else {
+            $data['LastDoctorLoggedInHistory'] = null;
+        }
+
+        //Now get last 10 facilitator logged in history
+        //First of all get users via role code
+        $getFacilitatorUsers = UserModel::GetUserViaRoleCode($facilitatorRole);
+        if (count($getFacilitatorUsers) > 0) {
+            foreach ($getFacilitatorUsers as $item) {
+                array_push($facilitatorIds, $item->Id);
+            }
+            //Now we will fetch login history of patients
+            //Last 5 logins history
+            $list = LoginModel::FetchLastLoginHistoryList($facilitatorIds, 10);
+            if (count($list) > 0) {
+                $loginHistory = array();
+                foreach ($list as $item) {
+                    $itemArray = array(
+                        'Id' => $item->Id,
+                        'FirstName' => $item->FirstName,
+                        'LastName' => $item->LastName,
+                        'EmailAddress' => $item->EmailAddress,
+                        'MiddleName' => $item->MiddleName,
+                        'LastLoggedIn' => $item->LastLoggedIn,
+                        'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
+                        'LoginHistoryId' => $item->LoginHistoryId,
+                        'LoginDateTime' => date('d-M-Y h:m a', $item->LoginDateTime)
+                    );
+                    array_push($loginHistory, $itemArray);
+                }
+                $data['LastFacilitatorLoggedInHistory'] = $loginHistory;
+            } else {
+                $data['LastFacilitatorLoggedInHistory'] = null;
+            }
+        } else {
+            $data['LastFacilitatorLoggedInHistory'] = null;
+        }
+
+        //Now get active ccm plans till yet
+        //Now fetching active CCM plans
+        $currentTime = Carbon::now("UTC");
+        error_log('$currentTime ' . $currentTime);
+        $getActiveCcmPlansCount = CcmModel::getActiveCcmPlansViaPatientIds(null, $currentTime);
+        $data['ActiveCcmPlan'] = $getActiveCcmPlansCount;
 
         return response()->json(['data' => $data, 'message' => 'Super admin dashboard stats'], 200);
     }
@@ -1312,8 +1422,11 @@ class UserController extends Controller
         $getPendingAppointmentCount = DoctorScheduleModel::getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $appointmentRequestPending, $getAssociatedPatientsIds);
         $data['PendingAppointment'] = $getPendingAppointmentCount;
 
+        $userIds = array();
+        array_push($userIds, $doctorId);
+
         //Last 5 logins history
-        $list = LoginModel::FetchLastLoginHistoryList($doctorId, 5);
+        $list = LoginModel::FetchLastLoginHistoryList($userIds, 5);
         if (count($list) > 0) {
             $loginHistory = array();
             foreach ($list as $item) {
@@ -1322,24 +1435,6 @@ class UserController extends Controller
                     'FirstName' => $item->FirstName,
                     'LastName' => $item->LastName,
                     'EmailAddress' => $item->EmailAddress,
-                    'CountryPhoneCode' => $item->CountryPhoneCode,
-                    'MobileNumber' => $item->MobileNumber,
-                    'TelephoneNumber' => $item->TelephoneNumber,
-                    'PatientUniqueId' => $item->PatientUniqueId,
-                    'Gender' => $item->Gender,
-                    'FunctionalTitle' => $item->FunctionalTitle,
-                    'Age' => $item->Age,
-                    'AgeGroup' => $item->AgeGroup,
-                    'AccountVerified' => $item->AccountVerified,
-                    'CreatedBy' => $item->CreatedBy,
-                    'CreatedOn' => $item->CreatedOn,
-                    'UpdatedOn' => $item->UpdatedOn,
-                    'UpdatedBy' => $item->UpdatedBy,
-                    'IsActive' => $item->IsActive,
-                    'IsBlock' => $item->IsBlock,
-                    'BlockReason' => $item->BlockReason,
-                    'InActiveReason' => $item->InActiveReason,
-                    'CityId' => $item->CityId,
                     'MiddleName' => $item->MiddleName,
                     'LastLoggedIn' => $item->LastLoggedIn,
                     'IsCurrentlyLoggedIn' => $item->IsCurrentlyLoggedIn,
