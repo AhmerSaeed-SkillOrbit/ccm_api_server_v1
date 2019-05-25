@@ -659,7 +659,7 @@ class UserModel
             ->select('user.*', 'role.Id as RoleId', 'role.Name as RoleName', 'role.CodeName as RoleCodeName', 'sourceUser.FirstName as SourceUserFirstName',
                 'sourceUser.LastName as SourceUserLastName', 'sourceUser.EmailAddress as SourceUserEmailAddress', 'user_association.AssociationType',
                 'destinationUser.FirstName as DestinationUserFirstName', 'destinationUser.LastName as DestinationUserLastName',
-                'destinationUser.EmailAddress as DestinationUserEmailAddress', 'ps.Id as PatientTypeId' ,'ps.Name', 'ps.Code')
+                'destinationUser.EmailAddress as DestinationUserEmailAddress', 'ps.Id as PatientTypeId', 'ps.Name', 'ps.Code')
             ->where('user.Id', '=', $id)
             ->first();
 
@@ -757,6 +757,7 @@ class UserModel
 
     static public function getUserInvitationLink($offset, $limit, $keyword)
     {
+        $tableName = 'account_invitation';
         if ($keyword != null && $keyword != "null") {
             return DB::table('account_invitation')
                 ->leftjoin('user', 'account_invitation.ByUserId', 'user.Id')
@@ -765,12 +766,20 @@ class UserModel
                 ->select('user.EmailAddress as ByUserEmail', 'user.FirstName as ByUserFirstName', 'user.LastName as ByUserLastName',
                     'account_invitation.ToEmailAddress', 'account_invitation.ToMobileNumber', 'account_invitation.Status_')
                 ->where('account_invitation.IsActive', '=', true)
-                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
-                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
-                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
-                ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
-                ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
-                ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%')
+                ->where(function ($query) use ($tableName, $keyword) {
+                    $query->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+                        ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
+                        ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
+                        ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%');
+                })
+//                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+//                ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
+//                ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
+//                ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%')
 //                ->offset($offset)->limit($limit)
                 ->skip($offset * $limit)->take($limit)
                 ->orderBy('account_invitation.Id', 'DESC')
@@ -792,18 +801,27 @@ class UserModel
 
     static public function getUserInvitationLinkCount($keyword)
     {
+        $tableName = 'account_invitation';
         if ($keyword != null && $keyword != "null") {
             return DB::table('account_invitation')
                 ->leftjoin('user', 'account_invitation.ByUserId', 'user.Id')
                 ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
                 ->leftjoin('role', 'user_access.RoleId', 'role.Id')
                 ->where('account_invitation.IsActive', '=', true)
-                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
-                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
-                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
-                ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
-                ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
-                ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%')
+                ->where(function ($query) use ($tableName, $keyword) {
+                    $query->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+                        ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
+                        ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
+                        ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%');
+                })
+//                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+//                ->orWhere('user.FirstName', 'like', '%' . $keyword . '%')
+//                ->orWhere('user.LastName', 'like', '%' . $keyword . '%')
+//                ->orWhere('user.EmailAddress', 'like', '%' . $keyword . '%')
                 ->count();
         } else {
             return DB::table('account_invitation')
@@ -811,6 +829,61 @@ class UserModel
                 ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
                 ->leftjoin('role', 'user_access.RoleId', 'role.Id')
                 ->where('account_invitation.IsActive', '=', true)
+                ->count();
+        }
+    }
+
+    static public function getUserInvitationListViaDoctorId($doctorId, $offset, $limit, $keyword)
+    {
+        $tableName = 'account_invitation';
+        if ($keyword != null && $keyword != "null") {
+            return DB::table('account_invitation')
+                ->where('account_invitation.IsActive', '=', true)
+                ->where('account_invitation.ByUserId', '=', $doctorId)
+                ->where(function ($query) use ($tableName, $keyword) {
+                    $query->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%');
+                })
+//                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+                ->skip($offset * $limit)->take($limit)
+                ->orderBy('account_invitation.Id', 'DESC')
+                ->get();
+        } else {
+            return DB::table('account_invitation')
+                ->where('account_invitation.IsActive', '=', true)
+                ->where('account_invitation.ByUserId', '=', $doctorId)
+                ->skip($offset * $limit)->take($limit)
+                ->orderBy('account_invitation.Id', 'DESC')
+                ->get();
+        }
+    }
+
+    static public function getUserInvitationListCountViaDoctorId($doctorId, $keyword)
+    {
+        $tableName = 'account_invitation';
+        if ($keyword != null && $keyword != "null") {
+            return DB::table('account_invitation')
+                ->where('account_invitation.IsActive', '=', true)
+                ->where('account_invitation.ByUserId', '=', $doctorId)
+                ->where(function ($query) use ($tableName, $keyword) {
+                    $query->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+                        ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%');
+                })
+//                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
+//                ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%')
+                ->count();
+        } else {
+            return DB::table('account_invitation')
+                ->leftjoin('user', 'account_invitation.ByUserId', 'user.Id')
+                ->leftjoin('user_access', 'user_access.UserId', 'user.Id')
+                ->leftjoin('role', 'user_access.RoleId', 'role.Id')
+                ->where('account_invitation.IsActive', '=', true)
+                ->where('account_invitation.ByUserId', '=', $doctorId)
                 ->count();
         }
     }

@@ -43,6 +43,12 @@ Route::post('/user/delete', 'UserController@UserDelete');
 Route::get('/user/invitation', 'UserController@GetUserInvitationListWithPaginationAndSearch');
 //User invitation list count with search
 Route::get('/user/invitation/count', 'UserController@GetUserInvitationListCount');
+
+//User invitation list with pagination and search
+Route::get('/user/invitation/list/doctor', 'UserController@GetUserInvitationListForDoctorWithPaginationAndSearch');
+//User invitation list count with search
+Route::get('/user/invitation/count/doctor', 'UserController@GetUserInvitationListCountForDoctor');
+
 //User block route
 Route::post('/user/block', 'UserController@UserBlock');
 //User unblock route

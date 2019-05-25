@@ -1465,11 +1465,11 @@ class UserController extends Controller
         }
 
         $superAdminRole = env('ROLE_SUPER_ADMIN');
-        $doctorRole = env('ROLE_DOCTOR');
         $facilitatorRole = env('ROLE_FACILITATOR');
         $supportStaffRole = env('ROLE_SUPPORT_STAFF');
         $patientRole = env('ROLE_PATIENT');
 
+        $doctorRole = env('ROLE_DOCTOR');
         $userData = UserModel::GetSingleUserViaId($userId);
 
         if (count($userData) > 0) {
@@ -1694,6 +1694,81 @@ class UserController extends Controller
         $searchKeyword = $request->get('s');
 
         $data = UserModel::getUserInvitationLinkCount($searchKeyword);
+
+        return response()->json(['data' => $data, 'message' => 'User invitation count'], 200);
+    }
+
+    function GetUserInvitationListForDoctorWithPaginationAndSearch(Request $request)
+    {
+        error_log('In controller');
+
+        $pageNo = $request->get('pageNo');
+        $limit = $request->get('limit');
+        $searchKeyword = $request->get('search');
+        $doctorId = (int)$request->get('userId');
+
+        //First check if logged in user is doctor
+        $doctorRole = env('ROLE_DOCTOR');
+        $userData = UserModel::GetSingleUserViaId($doctorId);
+
+        if (count($userData) > 0) {
+            error_log('user data fetched');
+            if ($userData[0]->RoleCodeName != $doctorRole) {
+                error_log('login user is not doctor');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+            }
+        }
+
+        $allInvitedPatientsData = UserModel::getUserInvitationListViaDoctorId($doctorId, $pageNo, $limit, $searchKeyword);
+
+        if (count($allInvitedPatientsData) > 0) {
+
+            $userData = array();
+
+            foreach ($allInvitedPatientsData as $item) {
+
+                error_log("Timestamp");
+                error_log(Carbon::createFromDate($item->CreatedOn));
+
+                $data = array(
+                    'Id' => (int)$item->Id,
+                    'ToEmailAddress' => $item->ToEmailAddress,
+                    'CountryPhoneCode' => $item->CountryPhoneCode,
+                    'ToMobileNumber' => $item->ToMobileNumber,
+                    'InvitedStatus' => $item->Status_,
+                    'InvitedOn' => (string)Carbon::createFromTimestampUTC($item->CreatedOn),
+                    'InvitationLink' => env('BASE_URL') . '' . env('FRONT_END_PAGE') . '?token=' . $item->Token
+                );
+                array_push($userData, $data);
+            }
+            return response()->json(['data' => $userData, 'message' => 'User invitation list found'], 200);
+        } else {
+            return response()->json(['data' => null, 'message' => 'User invitation list not found'], 200);
+        }
+    }
+
+    function GetUserInvitationListCountForDoctor(Request $request)
+    {
+        error_log('In controller');
+
+        $searchKeyword = $request->get('search');
+        $doctorId = (int)$request->get('userId');
+
+        //First check if logged in user is doctor
+        $doctorRole = env('ROLE_DOCTOR');
+        $userData = UserModel::GetSingleUserViaId($doctorId);
+
+        if (count($userData) > 0) {
+            error_log('user data fetched');
+            if ($userData[0]->RoleCodeName != $doctorRole) {
+                error_log('login user is not doctor');
+                //Now check if logged in user is doctor or not
+                return response()->json(['data' => null, 'message' => 'logged in user must be a doctor'], 400);
+            }
+        }
+
+        $data = UserModel::getUserInvitationListCountViaDoctorId($doctorId, $searchKeyword);
 
         return response()->json(['data' => $data, 'message' => 'User invitation count'], 200);
     }
