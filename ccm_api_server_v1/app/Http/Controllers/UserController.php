@@ -1705,7 +1705,7 @@ class UserController extends Controller
         $pageNo = $request->get('pageNo');
         $limit = $request->get('limit');
         $searchKeyword = $request->get('search');
-        $doctorId = (int)$request->get('userId');
+        $doctorId = (int)$request->get('doctorId');
 
         //First check if logged in user is doctor
         $doctorRole = env('ROLE_DOCTOR');
@@ -1753,7 +1753,7 @@ class UserController extends Controller
         error_log('In controller');
 
         $searchKeyword = $request->get('search');
-        $doctorId = (int)$request->get('userId');
+        $doctorId = (int)$request->get('doctorId');
 
         //First check if logged in user is doctor
         $doctorRole = env('ROLE_DOCTOR');
