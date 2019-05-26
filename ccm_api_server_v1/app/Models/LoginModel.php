@@ -280,32 +280,32 @@ class LoginModel
                     ->update($inviteUpdateData);
 
                 if ($inviteUpdate > 0) {
-                    if ($belongTo == "doctor_patient") {
-
-                        error_log("YES");
-                        //means patient is registering
-                        //so generate Patient unique id here
-                        //calling table view
-                        try {
-                            $getPatientCountResult = DB::table('get_patient_count_view')
-                                ->select('TotalPatient')
-                                ->take(1)
-                                ->get();
-                            if (count($getPatientCountResult) == 1) {
-                                $getPatientCountResult = $getPatientCountResult[0]->TotalPatient;
-                                if ($getPatientCountResult > 0) {
-                                    $patientUniqueId = $getPatientCountResult + 1;
-                                }
-                            }
-                        } catch (Exception $exception) {
-                            error_log("exception in fetching totalpatient count");
-                            error_log($exception);
-                            return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
-                        }
-                    }
+                    ## "NOT REQUIRED NOW" ##
+//                    if ($belongTo == "doctor_patient") {
+//
+//                        error_log("YES");
+//                        //means patient is registering
+//                        //so generate Patient unique id here
+//                        //calling table view
+////                        try {
+////                            $getPatientCountResult = DB::table('get_patient_count_view')
+////                                ->select('TotalPatient')
+////                                ->take(1)
+////                                ->get();
+////                            if (count($getPatientCountResult) == 1) {
+////                                $getPatientCountResult = $getPatientCountResult[0]->TotalPatient;
+////                                if ($getPatientCountResult > 0) {
+////                                    $patientUniqueId = $getPatientCountResult + 1;
+////                                }
+////                            }
+////                        } catch (Exception $exception) {
+////                            error_log("exception in fetching totalpatient count");
+////                            error_log($exception);
+////                            return array("status" => "failed", "data" => null, "message" => "Failed to insert the data");
+////                        }
+//                    }
 
                     $insertData = array(
-                        "PatientUniqueId" => $patientUniqueId,
                         "FirstName" => $data["FirstName"],
                         "LastName" => $data["LastName"],
                         "EmailAddress" => $data["EmailAddress"],
@@ -546,6 +546,22 @@ class LoginModel
                     ->orWhere('MobileNumber', '=', $mobileNumber)
                     ->orWhere('PatientUniqueId', '=', $uniqueId);
             })->get();
+
+        return $result;
+    }
+
+    static function checkUniqueIdAvailableForUpdateScenario(int $userId, string $uniqueId)
+    {
+        error_log("Here 1");
+        error_log($userId);
+        error_log($uniqueId);
+
+        $result = DB::table('user')
+            ->select('*')
+            ->where('Id', '<>', $userId)
+            ->where('PatientUniqueId', '=', $uniqueId)
+            ->where('IsActive', '=', 1)
+            ->get();
 
         return $result;
     }

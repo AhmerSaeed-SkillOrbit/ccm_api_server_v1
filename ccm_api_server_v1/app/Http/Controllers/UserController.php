@@ -793,6 +793,8 @@ class UserController extends Controller
         //First get and check if record exists or not
         $data = UserModel::GetSingleUserViaId($id);
 
+//        RoleCodeName
+
         if (count($data) == 0) {
             return response()->json(['data' => null, 'message' => 'User not found'], 400);
         }
@@ -839,13 +841,25 @@ class UserController extends Controller
         $gender = $request->post('Gender');
         $functionalTitle = $request->post('FunctionalTitle');
         $age = $request->post('Age');
-        $ageGroup = $request->post('AgeGroup');
         $profileSummary = $request->post('ProfileSummary');
+        $patientUniqueId = null;
+
+        if ($data[0]->RoleCodeName == env('ROLE_PATIENT')) {
+            error_log(" ## checking is provided patient id is unique or not  ## ");
+            $patientUniqueId = $request->post('PatientUniqueId');
+            $data = LoginModel::checkUniqueIdAvailableForUpdateScenario($id, $patientUniqueId);
+            if (count($data) > 0) {
+                error_log("## provided unique id is not Unique ##");
+                $message = "Patient Unique Id already exist";
+                return response()->json(['data' => null, 'message' => $message], 400);
+            }
+            error_log("## provided unique id is Unique ## ");
+        }
 
         $dataToUpdate = array(
+            "PatientUniqueId" => $patientUniqueId,
             "FirstName" => $firstName,
             "LastName" => $lastName,
-//            "MobileNumber" => $mobileNumber,
             "TelephoneNumber" => $telephoneNumber,
             "OfficeAddress" => $officeAddress,
             "ResidentialAddress" => $residentialAddress,
@@ -853,19 +867,21 @@ class UserController extends Controller
             "FunctionalTitle" => $functionalTitle,
             "Age" => $age,
             "ProfileSummary" => $profileSummary
-//            "AgeGroup" => $ageGroup,
         );
         $emailMessage = "Dear User <br/>Update is made on your records";
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        if ($update == true) {
+        if ($update == 1) {
             DB::commit();
             UserModel::sendEmail($data[0]->EmailAddress, $emailMessage, null);
             return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
+        } else if($update == 0) {
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'User records already updated'], 200);
         } else {
             DB::rollBack();
-            return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
+            return response()->json(['data' => null, 'message' => 'Error in updatin User records'], 500);
         }
     }
 

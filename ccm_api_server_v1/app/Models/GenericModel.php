@@ -24,6 +24,10 @@ class GenericModel
     static public function updateGeneric($table, $whereField, $whereFieldValue, $data)
     {
         $result = DB::table($table)->where($whereField, '=', $whereFieldValue)->update($data);
+
+        error_log("result");
+        error_log($result);
+
         return $result;
     }
 
