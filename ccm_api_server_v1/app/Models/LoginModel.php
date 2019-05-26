@@ -584,17 +584,10 @@ class LoginModel
             "  " . $emailMessage . " " .
             "<br>" . $urlForEmail . " ";
 
-
-//        Mail::raw($contentForEmail, function ($message) use ($email, $subjectForEmail) {
-//            $message->to($email)->subject($subjectForEmail);
-//        });
-
         Mail::send([], [], function ($message) use ($email, $subjectForEmail, $contentForEmail) {
-            $message->to($email)
+            $message->from("no-reply@connectcareplus.com")
+                ->to($email)
                 ->subject($subjectForEmail)
-                // here comes what you want
-                // ->setBody('Hi, welcome user!'); // assuming text/plain
-                // or:
                 ->setBody($contentForEmail, 'text/html'); // for HTML rich messages
         });
 

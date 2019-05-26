@@ -188,11 +188,13 @@ class ServicesModel
 
     private static function sendEmail($email, $type, $token)
     {
-//        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
+
+        error_log("sending email");
         $url = url(env('WEB_URL') . '/#/registration') . '?token=' . $token;
         Mail::raw('Invitation URL ' . $url, function ($message) use ($email) {
-            $message->to($email)->subject("Invitation");
+            $message->from("no-reply@connectcareplus.com")->to($email)->subject("Invitation");
         });
+
         return true;
     }
 }
