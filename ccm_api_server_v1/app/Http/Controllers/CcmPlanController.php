@@ -2612,8 +2612,18 @@ class CcmPlanController extends Controller
         $profileSummary = $request->post('ProfileSummary');
         $dob = $request->post('DateOfBirth');
         $patientTypeId = $request->post('PatientTypeId');
+        $patientUniqueId = $request->post('PatientUniqueId');
+
+        $data = LoginModel::checkUniqueIdAvailableForUpdateScenario($id, $patientUniqueId);
+        if (count($data) > 0) {
+            error_log("## provided unique id is not Unique ##");
+            $message = "Patient Unique Id already exist";
+            return response()->json(['data' => null, 'message' => $message], 400);
+        }
+        error_log("## provided unique id is Unique ## ");
 
         $dataToUpdate = array(
+            "PatientUniqueId" => $patientUniqueId,
             "FirstName" => $firstName,
             "MiddleName" => $middleName,
             "LastName" => $lastName,
@@ -2628,9 +2638,12 @@ class CcmPlanController extends Controller
 
         $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
 
-        if ($update == true) {
+        if ($update == 1) {
             DB::commit();
             return response()->json(['data' => $id, 'message' => 'User successfully updated'], 200);
+        } else if($update == 0){
+            DB::rollBack();
+            return response()->json(['data' => null, 'message' => 'User recoreds already updated'], 400);
         } else {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
