@@ -191,7 +191,7 @@ class TicketController extends Controller
 //            print_r($_POST);
 
             $patientRoleCode = env('ROLE_PATIENT');
-            return response()->json(['data' => $request->get('From'), 'message' => 'Ticket created from Email'], 200);
+            return response()->json(['data' => $request->get('From'), 'message' => 'New Ticket created from Email'], 200);
             //first check the fromNumber is
             //registered on our platform
             //if yes the proceed as follow
