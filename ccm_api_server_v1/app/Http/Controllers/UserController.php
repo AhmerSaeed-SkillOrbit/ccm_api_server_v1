@@ -1497,10 +1497,6 @@ class UserController extends Controller
             }
         }
 
-        $data = array(
-            "TotalReviewsOnGoals" => 0,
-        );
-
         //Fetching Active CCM pLans
         //First get associated doctors id with respect to facilitator Id
         $getAssociatedDoctorsId = UserModel::getSourceIdViaLoggedInUserIdAndAssociationType($userId, $doctorFacilitatorAssociation);
@@ -1561,6 +1557,10 @@ class UserController extends Controller
         } else {
             $data['LoggedInHistory'] = null;
         }
+
+        //Getting total reviews given by this facilitator
+        $totalReviews = CcmModel::GetTotalReviews($userId);
+        $data['TotalReviewsOnGoals'] = $totalReviews;
 
         return response()->json(['data' => $data, 'message' => 'Facilitator dashboard stats'], 200);
     }

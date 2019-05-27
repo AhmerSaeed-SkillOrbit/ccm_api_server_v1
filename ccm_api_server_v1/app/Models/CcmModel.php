@@ -921,4 +921,15 @@ class CcmModel
             return $queryResult;
         }
     }
+
+    static public function GetTotalReviews($reviewById){
+        $query = DB::table('ccm_plan_review')
+            ->where('ccm_plan_review.IsActive', '=', true)
+            ->where('ccm_plan_review.ReviewById', '=', $reviewById)
+            ->groupBy('ccm_plan_review.CcmPlanGoalId')
+            ->groupBy('ccm_plan_review.CreatedOn')
+            ->count();
+
+        return $query;
+    }
 }
