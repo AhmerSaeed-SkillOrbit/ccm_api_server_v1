@@ -876,7 +876,7 @@ class UserController extends Controller
             DB::commit();
             UserModel::sendEmail($data[0]->EmailAddress, $emailMessage, null);
             return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
-        } else if($update == 0) {
+        } else if ($update == 0) {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'User records already updated'], 200);
         } else {
@@ -1583,10 +1583,6 @@ class UserController extends Controller
 
         $openTrackStatus = env('TICKET_TRACK_STATUS_OPEN');
 
-        $data = array(
-            "UpcomingAppointment" => array()
-        );
-
         $userData = UserModel::GetSingleUserViaId($userId);
 
         if (count($userData) > 0) {
@@ -1637,6 +1633,10 @@ class UserController extends Controller
         //Now fetching Open tickets
         $getOpenTickets = TicketModel::GetTicketCountViaStatus($userId, $openTrackStatus);
         $data['OpenTicket'] = $getOpenTickets;
+
+        //Now getting upcoming appointments
+        $getUpcomingAppointment = DoctorScheduleModel::getUpcomingAppointmentViaPatientId($userId, $currentTime);
+        $data['UpcomingAppointment'] = $getUpcomingAppointment;
 
         return response()->json(['data' => $data, 'message' => 'Patient dashboard stats'], 200);
     }

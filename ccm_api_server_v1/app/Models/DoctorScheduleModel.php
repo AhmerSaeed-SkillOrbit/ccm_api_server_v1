@@ -425,7 +425,7 @@ class DoctorScheduleModel
             ->leftjoin('shift_time_slot as ScheduleShiftTime', 'ScheduleShiftTime.DoctorScheduleShiftId', 'ScheduleShift.Id')
             ->leftjoin('doctor_schedule_detail_copy1 as ScheduleDetail', 'ScheduleShift.DoctorScheduleDetailId', 'ScheduleDetail.Id')
             ->select('appointment.*', 'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
-                'patient.MobileNumber AS PatientMobileNumber','patient.CountryPhoneCode AS PatientCountryPhoneCode',
+                'patient.MobileNumber AS PatientMobileNumber', 'patient.CountryPhoneCode AS PatientCountryPhoneCode',
                 'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName', 'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
                 'doctor.CountryPhoneCode AS DoctorCountryPhoneCode',
                 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
@@ -438,7 +438,7 @@ class DoctorScheduleModel
 
     static public function getMultipleAppointmentsCountViaDoctorAndPatientId($doctorId, $reqStatus, $patientIds)
     {
-        error_log('in model $reqStatus ' .$reqStatus);
+        error_log('in model $reqStatus ' . $reqStatus);
 
 
         $query = DB::table("appointment")
@@ -601,5 +601,22 @@ class DoctorScheduleModel
         }
         error_log("end now");
         return $timeSlots;
+    }
+
+    static public function getUpcomingAppointmentViaPatientId($patientId, $currentDate)
+    {
+        error_log('in model ' . $currentDate);
+
+        $query = DB::table("appointment as app")
+            ->leftjoin('doctor_schedule_shift as dcf', 'app.DoctorScheduleShiftId', 'dcf.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
+            ->where("app.PatientId", "=", $patientId)
+            ->where("app.IsActive", "=", true)
+            ->where("app.RequestStatus", "=", 'accepted')
+            ->where("dcdc.ScheduleDate", ">", $currentDate)
+            ->groupBy('app.DoctorScheduleShiftId')
+            ->count();
+
+        return $query;
     }
 }
