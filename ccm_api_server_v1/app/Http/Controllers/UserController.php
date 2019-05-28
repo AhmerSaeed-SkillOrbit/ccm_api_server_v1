@@ -1760,7 +1760,7 @@ class UserController extends Controller
                     'ToMobileNumber' => $item->ToMobileNumber,
                     'InvitedStatus' => $item->Status_,
                     'InvitedOn' => (string)Carbon::createFromTimestampUTC($item->CreatedOn),
-                    'InvitationLink' => env('BASE_URL') . '' . env('FRONT_END_PAGE') . '?token=' . $item->Token
+                    'InvitationLink' => env('WEB_URL') . '' . env('FRONT_END_PAGE') . '?token=' . $item->Token
                 );
                 array_push($userData, $data);
             }
