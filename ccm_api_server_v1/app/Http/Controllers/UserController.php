@@ -1464,6 +1464,10 @@ class UserController extends Controller
             $data['DoctorLoggedInHistory'] = null;
         }
 
+        //Now getting upcoming appointments
+        $getUpcomingAppointment = DoctorScheduleModel::getUpcomingAppointmentViaDoctorId($doctorId, $currentTime);
+        $data['UpcomingAppointment'] = $getUpcomingAppointment;
+
         return response()->json(['data' => $data, 'message' => 'Doctor dashboard stats'], 200);
     }
 

@@ -619,4 +619,21 @@ class DoctorScheduleModel
 
         return $query;
     }
+
+    static public function getUpcomingAppointmentViaDoctorId($doctorId, $currentDate)
+    {
+        error_log('in model ' . $currentDate);
+
+        $query = DB::table("appointment as app")
+            ->leftjoin('doctor_schedule_shift as dcf', 'app.DoctorScheduleShiftId', 'dcf.Id')
+            ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
+            ->where("app.DoctorId", "=", $doctorId)
+            ->where("app.IsActive", "=", true)
+            ->where("app.RequestStatus", "=", 'accepted')
+            ->where("dcdc.ScheduleDate", ">", $currentDate)
+            ->groupBy('app.DoctorScheduleShiftId')
+            ->count();
+
+        return $query;
+    }
 }
