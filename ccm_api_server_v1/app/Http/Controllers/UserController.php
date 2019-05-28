@@ -1429,7 +1429,7 @@ class UserController extends Controller
         $data['AssociatedFacilitator'] = count($getAssociatedFacilitator);
 
         //Now fetching active CCM plans
-        $currentTime = Carbon::now("UTC");
+        $currentTime =  Carbon::now("UTC");
         error_log('$currentTime ' . $currentTime);
         $getActiveCcmPlansCount = CcmModel::getActiveCcmPlansViaPatientIds($getAssociatedPatientsIds, $currentTime);
         $data['ActiveCcmPlan'] = $getActiveCcmPlansCount;
@@ -1463,6 +1463,8 @@ class UserController extends Controller
         } else {
             $data['DoctorLoggedInHistory'] = null;
         }
+
+        // "2019-09-09"
 
         //Now getting upcoming appointments
         $getUpcomingAppointment = DoctorScheduleModel::getUpcomingAppointmentViaDoctorId($doctorId, $currentTime);
@@ -2059,11 +2061,10 @@ class UserController extends Controller
 
             try {
                 foreach ($data->toArray() as $key => $value) {
-
-                    if ($value['emailaddress'] != null && $value['mobilenumber'] != null) {
+                    if ($value['emailaddress'] != null && (string) $value['mobilenumber'] != null) {
 
                         error_log("check mobile number");
-                        error_log($value['mobilenumber']);
+                        error_log((string) $value['mobilenumber']);
 
                         $insert_data[] = array(
                             'PatientUniqueId' => $value['patientuniqueid'],
@@ -2072,8 +2073,8 @@ class UserController extends Controller
                             'LastName' => $value['lastname'],
                             'EmailAddress' => $value['emailaddress'],
                             'CountryPhoneCode' => $value['countryphonecode'],
-                            'MobileNumber' => $value['mobilenumber'],
-                            'TelephoneNumber' => $value['telephonenumber'],
+                            'MobileNumber' => (string) $value['mobilenumber'],
+                            'TelephoneNumber' => (string) ($value['telephonenumber']),
                             'IsMobileNumberVerified' => true,
                             'OfficeAddress' => $value['officeaddress'],
                             'ResidentialAddress' => $value['residentialaddress'],
