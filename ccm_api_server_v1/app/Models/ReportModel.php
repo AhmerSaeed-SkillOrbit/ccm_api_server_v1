@@ -226,7 +226,7 @@ class ReportModel
         }
     }
 
-    static public function getUsersInvitationViaInvitedType($userId, $invitedVia, $searchStartDate, $searchEndDate)
+    static public function getUsersInvitationViaInvitedType($userId, $invitedVia, $searchStartDate, $searchEndDate,$belongTo)
     {
         error_log('in model ' . $invitedVia);
 
@@ -238,6 +238,7 @@ class ReportModel
                 ->where('CreatedOn', '>=', $searchStartDate)
                 ->where('CreatedOn', '<=', $searchEndDate)
                 ->where('Status_', '=', $invitedVia)
+                ->where('BelongTo', '=', $belongTo)
                 ->get();
             return $result;
         } else {
@@ -246,6 +247,7 @@ class ReportModel
                 ->where('ByUserId', '=', $userId)
                 ->where('IsActive', '=', true)
                 ->where('Status_', '=', $invitedVia)
+                ->where('BelongTo', '=', $belongTo)
                 ->get();
             return $result;
         }

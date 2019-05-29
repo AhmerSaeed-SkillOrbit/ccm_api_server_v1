@@ -833,17 +833,18 @@ class UserModel
         }
     }
 
-    static public function getUserInvitationListViaDoctorId($doctorId, $offset, $limit, $keyword)
+    static public function getUserInvitationListViaDoctorId($doctorId, $offset, $limit, $keyword,$belongTo)
     {
         $tableName = 'account_invitation';
         if ($keyword != null && $keyword != "null") {
             return DB::table('account_invitation')
                 ->where('account_invitation.IsActive', '=', true)
                 ->where('account_invitation.ByUserId', '=', $doctorId)
+                ->where('account_invitation.Status_', '=', env("INVITATION_PENDING"))
+                ->where('account_invitation.BelongTo', '=', $belongTo)
                 ->where(function ($query) use ($tableName, $keyword) {
                     $query->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
-                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
-                        ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%');
+                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%');
                 })
 //                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
 //                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
@@ -855,23 +856,26 @@ class UserModel
             return DB::table('account_invitation')
                 ->where('account_invitation.IsActive', '=', true)
                 ->where('account_invitation.ByUserId', '=', $doctorId)
+                ->where('account_invitation.Status_', '=', env("INVITATION_PENDING"))
+                ->where('account_invitation.BelongTo', '=', $belongTo)
                 ->skip($offset * $limit)->take($limit)
                 ->orderBy('account_invitation.Id', 'DESC')
                 ->get();
         }
     }
 
-    static public function getUserInvitationListCountViaDoctorId($doctorId, $keyword)
+    static public function getUserInvitationListCountViaDoctorId($doctorId, $keyword,$belongTo)
     {
         $tableName = 'account_invitation';
         if ($keyword != null && $keyword != "null") {
             return DB::table('account_invitation')
                 ->where('account_invitation.IsActive', '=', true)
                 ->where('account_invitation.ByUserId', '=', $doctorId)
+                ->where('account_invitation.Status_', '=', env("INVITATION_PENDING"))
+                ->where('account_invitation.BelongTo', '=', $belongTo)
                 ->where(function ($query) use ($tableName, $keyword) {
                     $query->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
-                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
-                        ->orWhere('account_invitation.Status_', 'like', '%' . $keyword . '%');
+                        ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%');
                 })
 //                ->Where('account_invitation.ToEmailAddress', 'like', '%' . $keyword . '%')
 //                ->orWhere('account_invitation.ToMobileNumber', 'like', '%' . $keyword . '%')
@@ -884,6 +888,8 @@ class UserModel
                 ->leftjoin('role', 'user_access.RoleId', 'role.Id')
                 ->where('account_invitation.IsActive', '=', true)
                 ->where('account_invitation.ByUserId', '=', $doctorId)
+                ->where('account_invitation.Status_', '=', env("INVITATION_PENDING"))
+                ->where('account_invitation.BelongTo', '=', $belongTo)
                 ->count();
         }
     }

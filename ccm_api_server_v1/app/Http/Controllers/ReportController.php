@@ -221,19 +221,19 @@ class ReportController
 
             $userDetails['TotalPatientsInvitation'] = count($allInvitedPatientsData);
             //Now fetching patients count who are accepted
-            $getAcceptedInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationAccepted, $searchStartDate, $searchEndDate);
+            $getAcceptedInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationAccepted, $searchStartDate, $searchEndDate,$doctorPatientAssociation);
             $userDetails['AcceptedPatientsInvitation'] = count($getAcceptedInvitationData);
 
             //Now getting patients count who are in pending
-            $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, $searchStartDate, $searchEndDate);
+            $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, $searchStartDate, $searchEndDate,$doctorPatientAssociation);
             $userDetails['PendingPatientsInvitation'] = count($getPendingInvitationData);
 
             //Now getting patients count who are in pending
-            $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationRejected, $searchStartDate, $searchEndDate);
+            $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationRejected, $searchStartDate, $searchEndDate,$doctorPatientAssociation);
             $userDetails['RejectedPatientsInvitation'] = count($getPendingInvitationData);
 
             //Now getting patients count who are ignored
-            $getIgnoredInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationIgnored, $searchStartDate, $searchEndDate);
+            $getIgnoredInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationIgnored, $searchStartDate, $searchEndDate,$doctorPatientAssociation);
             $userDetails['IgnoredPatientsInvitation'] = count($getIgnoredInvitationData);
 
             $userDetails['PatientData'] = array();

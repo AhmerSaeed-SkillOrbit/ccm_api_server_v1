@@ -190,7 +190,10 @@ class ServicesModel
     {
 
         error_log("sending email");
-        $url = url(env('WEB_URL') . '/#/registration') . '?token=' . $token;
+        $url = env('WEB_URL') . '/#/registration?token=' . $token;
+        error_log("## check url");
+        error_log($url);
+
         Mail::raw('Invitation URL ' . $url, function ($message) use ($email) {
             $message->from("no-reply@connectcareplus.com")->to($email)->subject("Invitation");
         });

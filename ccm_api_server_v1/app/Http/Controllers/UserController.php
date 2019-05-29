@@ -1429,7 +1429,7 @@ class UserController extends Controller
         $data['AssociatedFacilitator'] = count($getAssociatedFacilitator);
 
         //Now fetching active CCM plans
-        $currentTime =  Carbon::now("UTC");
+        $currentTime = Carbon::now("UTC");
         error_log('$currentTime ' . $currentTime);
         $getActiveCcmPlansCount = CcmModel::getActiveCcmPlansViaPatientIds($getAssociatedPatientsIds, $currentTime);
         $data['ActiveCcmPlan'] = $getActiveCcmPlansCount;
@@ -1732,6 +1732,7 @@ class UserController extends Controller
         //First check if logged in user is doctor
         $doctorRole = env('ROLE_DOCTOR');
         $userData = UserModel::GetSingleUserViaId($doctorId);
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         if (count($userData) > 0) {
             error_log('user data fetched');
@@ -1742,7 +1743,7 @@ class UserController extends Controller
             }
         }
 
-        $allInvitedPatientsData = UserModel::getUserInvitationListViaDoctorId($doctorId, $pageNo, $limit, $searchKeyword);
+        $allInvitedPatientsData = UserModel::getUserInvitationListViaDoctorId($doctorId, $pageNo, $limit, $searchKeyword, $doctorPatientAssociation);
 
         if (count($allInvitedPatientsData) > 0) {
 
@@ -1780,6 +1781,7 @@ class UserController extends Controller
         //First check if logged in user is doctor
         $doctorRole = env('ROLE_DOCTOR');
         $userData = UserModel::GetSingleUserViaId($doctorId);
+        $doctorPatientAssociation = env('ASSOCIATION_DOCTOR_PATIENT');
 
         if (count($userData) > 0) {
             error_log('user data fetched');
@@ -1790,7 +1792,7 @@ class UserController extends Controller
             }
         }
 
-        $data = UserModel::getUserInvitationListCountViaDoctorId($doctorId, $searchKeyword);
+        $data = UserModel::getUserInvitationListCountViaDoctorId($doctorId, $searchKeyword, $doctorPatientAssociation);
 
         return response()->json(['data' => $data, 'message' => 'User invitation count'], 200);
     }
@@ -2061,10 +2063,10 @@ class UserController extends Controller
 
             try {
                 foreach ($data->toArray() as $key => $value) {
-                    if ($value['emailaddress'] != null && (string) $value['mobilenumber'] != null) {
+                    if ($value['emailaddress'] != null && (string)$value['mobilenumber'] != null) {
 
                         error_log("check mobile number");
-                        error_log((string) $value['mobilenumber']);
+                        error_log((string)$value['mobilenumber']);
 
                         $insert_data[] = array(
                             'PatientUniqueId' => $value['patientuniqueid'],
@@ -2073,8 +2075,8 @@ class UserController extends Controller
                             'LastName' => $value['lastname'],
                             'EmailAddress' => $value['emailaddress'],
                             'CountryPhoneCode' => $value['countryphonecode'],
-                            'MobileNumber' => (string) $value['mobilenumber'],
-                            'TelephoneNumber' => (string) ($value['telephonenumber']),
+                            'MobileNumber' => (string)$value['mobilenumber'],
+                            'TelephoneNumber' => (string)($value['telephonenumber']),
                             'IsMobileNumberVerified' => true,
                             'OfficeAddress' => $value['officeaddress'],
                             'ResidentialAddress' => $value['residentialaddress'],
