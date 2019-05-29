@@ -211,13 +211,13 @@ class LoginController extends Controller
 
                                 array_push($toNumber, $mobileNumber);
                                 try {
-                                    HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address.', null);
+                                    HelperModel::sendSms($toNumber, 'Reset Password - Verification link has been sent to your email address.', null);
                                 } catch (Exception $ex) {
 //                                    return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
-                                    return response()->json(['data' => $insertedRecord, 'message' => 'Verification link has been sent to your email address. '], 200);
+                                    return response()->json(['data' => $insertedRecord, 'message' => 'Reset Password - Verification link has been sent to your email address. '], 200);
                                 }
                             }
-                            return response()->json(['data' => $insertedRecord, 'message' => 'Verification link has been sent to your email address.'], 200);
+                            return response()->json(['data' => $insertedRecord, 'message' => 'Reset Password - Verification link has been sent to your email address.'], 200);
 
 
                         } else {

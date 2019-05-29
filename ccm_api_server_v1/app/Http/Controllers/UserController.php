@@ -1421,7 +1421,7 @@ class UserController extends Controller
         }
 
         //Now getting patients count who are in pending
-        $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, "null", "null");
+        $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, "null", "null",$doctorPatientAssociation);
         $data['PendingInvitation'] = count($getPendingInvitationData);
 
         //Now fetching associated facilitator

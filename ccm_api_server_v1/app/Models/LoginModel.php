@@ -592,19 +592,8 @@ class LoginModel
 
     public static function sendEmail($email, $subject, $emailMessage, $url = "")
     {
-
-        $urlForEmail = url($url);
-
-        $subjectForEmail = $subject;
-        $contentForEmail = " <b>Dear User</b>, <br><br>" .
-            "  " . $emailMessage . " " .
-            "<br>" . $urlForEmail . " ";
-
-        Mail::send([], [], function ($message) use ($email, $subjectForEmail, $contentForEmail) {
-            $message->from("no-reply@connectcareplus.com")
-                ->to($email)
-                ->subject($subjectForEmail)
-                ->setBody($contentForEmail, 'text/html'); // for HTML rich messages
+        Mail::raw($emailMessage . ' ' . $url, function ($message) use ($email, $subject) {
+            $message->from("no-reply@connectcareplus.com")->to($email)->subject($subject);
         });
 
         return true;
