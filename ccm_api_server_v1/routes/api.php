@@ -86,7 +86,7 @@ Route::get('/permission/via/user/id', 'UserController@PermissionViaUserId');
 
 
 //Adding schedule of doctor
-Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorScheduleUpdatedCode');
+Route::post('/doctor/schedule/save', 'DoctorScheduleController@AddDoctorSchedule');
 //Updating schedule of doctor
 Route::post('/doctor/schedule/update', 'DoctorScheduleController@UpdateDoctorSchedule');
 
