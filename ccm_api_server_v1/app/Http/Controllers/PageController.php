@@ -688,7 +688,143 @@ class PageController extends BaseController
 
     public function TestEmail()
     {
-        $result = ForgetPasswordModel::forgetPassword();
+        $emailContent = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" +
+        "<html xmlns=\"http://www.w3.org/1999/xhtml\">" +
+        "<head>" +
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0,\" />" +
+        "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"+
+        "<title>" + title + "/title>"+
+        "<link rel=\"stylesheet\" href=\"http://skillorbit.co/socialcxn_revamp/resources/email_assets/geomanist-fonts.css\" />' +
+    "</head>"+
+        "<body style=\"-webkit-font-smoothing:antialiased; font-family: \'Geomanist-Light\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif; -webkit-text-size-adjust:none; word-wrap:break-word; background-color:#ffffff; margin:0; padding:0;\">' +
+        "<!-- Main Template -->' +
+        " <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">' +
+        "<tr>' +
+        "<td align=\"center\" bgcolor=\"#ffffff\">' +
+        '<!-- Background -->' +
+        "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">' +
+        "<!-- Wrapper -->' +
+        "<!-- BODY -->\n' +
+    "<tr>' +
+        "<td width=\"600\" style=\"padding-top:30px;\">\n' +
+        "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n' +
+        "<!-- Header -->\n' +
+        "<tr>\n' +
+    "<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;border-bottom:1px solid #e5e8e5;\">\n' +
+        "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n' +
+        "<tr>\n' +
+        "<td width=\"540\" valign=\"middle\" style=\"padding-top:15px;padding-bottom:15px;\">\n' +
+    "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n' +
+        "<tr>\n' +
+        "<td width=\"180\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #3a796a;\">\n' +
+    "<img width=\"178\" height=\"22\" alt=\"Linkagoal android app\" src=\"http://skillorbit.co/socialcxn_revamp/resources/email_assets/green-logo.png\" style=\"border-style:none; width: 178px; height: 22px;\">\n' +
+        "</td>\n' +
+        "<td width=\"360\" align=\"right\" valign=\"middle\" style=\"text-align:right;font-size:12px;color:#5c6470;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">\n' +
+    "<span style=\"background-color:#5c6470;color:#ffffff;padding:5px;\">&nbsp;' + title + '&nbsp;</span>\n' +
+        "</td>\n' +
+        "</tr>\n' +
+    "</table>\n' +
+        "</td>\n' +
+        "</tr>\n' +
+    "</table>\n' +
+        "</td>\n' +
+        "</tr>\n' +
+    "<!-- Header -->\n' +
+        "<!-- Content -->\n' +
+        "<tr>\n' +
+    "<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;\">\n' +
+        "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n' +
+        "<tr>\n' +
+        "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:40px;padding-bottom:20px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">\n' +
+    "Hi "+ (entityName == null ? \"\" : entityName) + ',\n' +
+        "</td>\n' +
+        "</tr>\n' +
+        "</table>\n' +
+        "</td>\n' +
+        "</tr>\n' +
+        "<tr>\n' +
+        "<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;\">\n' +
+        "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n' +
+        "<tr>"+
+        "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:0px;text-align:left;font-size:16px;color:#2c2d30;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">\n" +
+    "content" +
+        "</td>" +
+        "</tr>" +
+        "</table>"+
+        "</td>" +
+        "</tr>" +
+
+            // console.log(linkContent, ' ' ,link);
+
+        (link != null && linkContent != null ? linkContentSection : \"\") +
+
+        '<tr>\n' +
+        '<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;\">\n' +
+        '<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">\n' +
+        '<tr>\n' +
+        '<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:40px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">\n' +
+        'Thank You,<br>Team SOCIALCxN\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '</table>\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '<!-- Content -->\n' +
+        '</table>\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '<!-- Footer -->\n' +
+        '<tr>\n' +
+        '<td width=\"600\">\n' +
+        '<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" align=\"center\" width=\"100%\" class=\"module footer\" role=\"module\" data-type=\"footer\">\n' +
+        '<tr>\n' +
+        '<td style=\"padding: 15px 30px 15px 30px;\" bgcolor=\"#f6f6f6\">\n' +
+        '<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;\">\n' +
+        '<!-- App link section -->\n' +
+        '<tr>\n' +
+        '<td width=\"540\" valign=\"middle\" align=\"center\" style=\"color: #6e6e6e; padding-top: 15px; text-align: center !important;font-family:helvetica, arial, sans-serif;font-family: \'Geomanist-Book\', \'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;font-size:16px;\">\n' +
+        'Download SOCIALCxN app\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '<tr>\n' +
+        '<td width=\"540\" valign=\"middle\" align=\"center\" style=\"color: #6e6e6e; padding-top: 15px; padding-bottom: 10px; text-align: center !important;\">\n' +
+        '<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;\">\n' +
+        '<tr>\n' +
+        '<td width=\"270\" valign=\"middle\" align=\"right\" style=\"text-align: right !important;\">\n' +
+        '<a href=\"\" style=\"text-decoration:none;padding-right: 10px;display:inline-block;\"><img width=\"28\" height=\"28\" alt=\"SocialCxN ios app\" src=\"http://skillorbit.co/socialcxn_revamp/resources/email_assets/appstore.png\" style=\"border-style:none; width: 28px; height: 28px;\"></a>\n' +
+        '</td>\n' +
+        '<td width=\"270\" valign=\"middle\" align=\"left\" style=\"text-align: left !important;\">\n' +
+        '<a href=\"https://play.google.com/apps/testing/com.socialcxn.socialcxnapp\" style=\"text-decoration:none;display:inline-block;\"><img width=\"28\" height=\"28\" alt=\"SocialCxN android app\" src=\"http://skillorbit.co/socialcxn_revamp/resources/email_assets/playstore.png\" style=\"border-style:none; width: 28px; height: 28px;\"></a>\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '</table>\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '<!-- <tr>\n' +
+        '<td style=\"padding-top: 10px; padding-bottom: 20px; text-align: center;font-family:helvetica, arial, sans-serif;font-size:15px;font-family: \'Geomanist-Regular\', \'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;font-size:13px;color: #666666 !important; line-height: 16px;\">\n' +
+        'F-17, Ground Floor, Business Executive Center, Block-8, Clifton, Karachi, Pakistan\n' +
+        '</td>\n' +
+        '</tr> -->\n' +
+        '<!-- App link section -->\n' +
+            // '</table>\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '</table>\n' +
+        '</td>\n' +
+        '</tr>\n' +
+        '<!-- Footer -->\n' +
+        '<!-- BODY -->\n' +
+        '<!-- Wrapper -->\n' +
+        '</table>\n' +
+        '<!-- Background -->\n' +
+        '</td>\n' +
+        '</tr>' +
+        '</table>' +
+        '<!-- Main Template -->' +
+        '</body>' +
+        '</html>";
+        $result = UserModel::sendEmailWithTemplate("ahmer.saeed.office@gmail.com","Email with Template","<b>This is a sample bold content</b>");
+//        $result = ForgetPasswordModel::forgetPassword();
         return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
     }
 

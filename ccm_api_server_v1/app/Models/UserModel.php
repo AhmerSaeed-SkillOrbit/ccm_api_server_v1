@@ -728,6 +728,32 @@ class UserModel
         }
     }
 
+    public static function sendEmailWithTemplate($toEmail,$emailSubject,$emailContent)
+    {
+        try {
+            error_log("Sending Mail With Template New");
+
+                Mail::send( [], [], function ($message) use ($toEmail, $emailSubject, $emailContent) {
+                $message->from("no-reply@connectcareplus.com")
+                    ->to($toEmail)
+                    ->subject($emailSubject)
+                    ->setBody($emailContent, 'text/html');
+
+
+                //OLD Method
+//            Mail::raw($emailContent, function ($message) use ($toEmail,$emailSubject,$emailContent) {
+//                $message->from("no-reply@connectcareplus.com")
+//                    ->to($toEmail)
+//                    ->subject($emailSubject)
+//                    ->setBody('text/html');
+            });
+            return true;
+        } catch (Exception $ex) {
+            error_log("Sending Mail Exception");
+            return false;
+        }
+    }
+
     public static function getUserCountViaRoleCode($roleCode)
     {
         return DB::table('user')

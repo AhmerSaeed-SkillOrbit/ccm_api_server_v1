@@ -2614,39 +2614,44 @@ class CcmPlanController extends Controller
         $patientTypeId = $request->post('PatientTypeId');
         $patientUniqueId = $request->post('PatientUniqueId');
 
-        $data = LoginModel::checkUniqueIdAvailableForUpdateScenario($id, $patientUniqueId);
-        if (count($data) > 0) {
-            error_log("## provided unique id is not Unique ##");
-            $message = "Patient Unique Id already exist";
-            return response()->json(['data' => null, 'message' => $message], 400);
+        if($patientUniqueId != null || $patientUniqueId != ""){
+            $data = LoginModel::checkUniqueIdAvailableForUpdateScenario($id, $patientUniqueId);
+            if (count($data) > 0) {
+                error_log("## provided unique id is not Unique ##");
+                $message = "Patient Unique Id already exist";
+                return response()->json(['data' => null, 'message' => $message], 400);
+            }
+            error_log("## provided unique id is Unique ## ");
+
+            $dataToUpdate = array(
+                "PatientUniqueId" => $patientUniqueId,
+                "FirstName" => $firstName,
+                "MiddleName" => $middleName,
+                "LastName" => $lastName,
+                "MobileNumber" => $mobileNumber,
+                "TelephoneNumber" => $telephoneNumber,
+                "Gender" => $gender,
+                "Age" => $age,
+                "ProfileSummary" => $profileSummary,
+                "DateOfBirth" => $dob,
+                "PatientTypeId" => $patientTypeId
+            );
+
+            $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
+
+            if ($update == 1) {
+                DB::commit();
+                return response()->json(['data' => $id, 'message' => 'User successfully updated'], 200);
+            } else if($update == 0){
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'User recoreds already updated'], 400);
+            } else {
+                DB::rollBack();
+                return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
+            }
         }
-        error_log("## provided unique id is Unique ## ");
-
-        $dataToUpdate = array(
-            "PatientUniqueId" => $patientUniqueId,
-            "FirstName" => $firstName,
-            "MiddleName" => $middleName,
-            "LastName" => $lastName,
-            "MobileNumber" => $mobileNumber,
-            "TelephoneNumber" => $telephoneNumber,
-            "Gender" => $gender,
-            "Age" => $age,
-            "ProfileSummary" => $profileSummary,
-            "DateOfBirth" => $dob,
-            "PatientTypeId" => $patientTypeId
-        );
-
-        $update = GenericModel::updateGeneric('user', 'Id', $id, $dataToUpdate);
-
-        if ($update == 1) {
-            DB::commit();
-            return response()->json(['data' => $id, 'message' => 'User successfully updated'], 200);
-        } else if($update == 0){
-            DB::rollBack();
-            return response()->json(['data' => null, 'message' => 'User recoreds already updated'], 400);
-        } else {
-            DB::rollBack();
-            return response()->json(['data' => null, 'message' => 'Error in updating user record'], 400);
+        else {
+            return response()->json(['data' => null, 'message' => 'Patient Unique Id is require'], 400);
         }
     }
 

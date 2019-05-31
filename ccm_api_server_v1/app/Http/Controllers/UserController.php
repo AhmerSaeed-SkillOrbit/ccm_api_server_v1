@@ -845,15 +845,19 @@ class UserController extends Controller
         $patientUniqueId = null;
 
         if ($data[0]->RoleCodeName == env('ROLE_PATIENT')) {
-            error_log(" ## checking is provided patient id is unique or not  ## ");
             $patientUniqueId = $request->post('PatientUniqueId');
-            $data = LoginModel::checkUniqueIdAvailableForUpdateScenario($id, $patientUniqueId);
-            if (count($data) > 0) {
-                error_log("## provided unique id is not Unique ##");
-                $message = "Patient Unique Id already exist";
-                return response()->json(['data' => null, 'message' => $message], 400);
+            if ($patientUniqueId != null || $patientUniqueId != "") {
+                error_log(" ## checking is provided patient id is unique or not  ## ");
+                $data = LoginModel::checkUniqueIdAvailableForUpdateScenario($id, $patientUniqueId);
+                if (count($data) > 0) {
+                    error_log("## provided unique id is not Unique ##");
+                    $message = "Patient Unique Id already exist";
+                    return response()->json(['data' => null, 'message' => $message], 400);
+                }
+                error_log("## provided unique id is Unique ## ");
+            } else {
+                return response()->json(['data' => null, 'message' => 'Patient Unique Id is require'], 400);
             }
-            error_log("## provided unique id is Unique ## ");
         }
 
         $dataToUpdate = array(
@@ -1421,7 +1425,7 @@ class UserController extends Controller
         }
 
         //Now getting patients count who are in pending
-        $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, "null", "null",$doctorPatientAssociation);
+        $getPendingInvitationData = ReportModel::getUsersInvitationViaInvitedType($doctorId, $invitationPending, "null", "null", $doctorPatientAssociation);
         $data['PendingInvitation'] = count($getPendingInvitationData);
 
         //Now fetching associated facilitator
