@@ -437,7 +437,7 @@ Route::get('/', function () {
 
 Route::get('/test/list', 'PageController@testFunction');
 
-//Route::get('/test/email', 'PageController@TestEmail');
+Route::get('/test/email', 'PageController@TestEmail');
 
 Route::get('/test/sms', 'PageController@TestSms');
 

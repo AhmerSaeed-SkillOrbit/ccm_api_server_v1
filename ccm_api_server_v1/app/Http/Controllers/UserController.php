@@ -889,6 +889,140 @@ class UserController extends Controller
         }
     }
 
+    public function TestEmailThree()
+    {
+
+
+        $emailContent = "<!DOCTYPE html>" .
+            "<html>" +
+            "<head>" +
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>" +
+            "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>" +
+            "<title>' abc '</title>" +
+            "<link rel='stylesheet' href='http://skillorbit.co/socialcxn_revamp/resources/email_assets/geomanist-fonts.css'>" +
+            "</head>" +
+            "<body style=\"-webkit-font-smoothing:antialiased; font-family: \'Geomanist-Light\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif; -webkit-text-size-adjust:none; word-wrap:break-word; background-color:#ffffff; margin:0; padding:0;\">" +
+//        Main Template
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\"> " +
+            "<tr>" +
+            "<td align=\"center\" bgcolor=\"#ffffff\">" +
+//        '<!-- Background -->"+
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">" +
+//        <!-- Wrapper -->
+//        <!-- BODY -->
+            "<tr>" +
+            "<td width=\"600\" style=\"padding-top:30px;\">" +
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" +
+//        <!-- Header -->
+            "<tr>" +
+            "<td width=\"600\" style='padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;border-bottom:1px solid #e5e8e5;'>" +
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" +
+            "<tr>" +
+            "<td width=\"540\" valign=\"middle\" style=\"padding-top:15px;padding-bottom:15px;\">" +
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" +
+            "<tr>" +
+            "<td width=\"180\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #3a796a;\">" +
+            "<img width=\"178\" height=\"22\" alt=\"Linkagoal android app\" src=\"http://skillorbit.co/socialcxn_revamp/resources/email_assets/green-logo.png\" style=\"border-style:none; width: 178px; height: 22px;\">" +
+            "</td>" +
+            "<td width=\"360\" align=\"right\" valign=\"middle\" style=\"text-align:right;font-size:12px;color:#5c6470;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" +
+            "<span style=\"background-color:#5c6470;color:#ffffff;padding:5px;\">&nbsp;' + title + '&nbsp;</span>" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+//    <!-- Header -->
+//        <!-- Content -->
+            "<tr>" +
+            "<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;\">" +
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" +
+            "<tr>" +
+            "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:40px;padding-bottom:20px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" +
+            "Hi" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+            "<tr>" +
+            "<td width='600' style='padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;'>" +
+            "<table cellspacing='0' cellpadding='0' border='0' style='border-collapse:collapse;'>" +
+            "<tr>" +
+            "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:0px;text-align:left;font-size:16px;color:#2c2d30;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">\n" +
+            "content" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+            "<tr>" +
+            "<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;\">" +
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" +
+            "<tr>" +
+            "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:40px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" +
+            "Thank You,<br>Team SOCIALCxN" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+//        "<!-- Content -->"+
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+//        "<!-- Footer -->" +
+            "<tr>" +
+            "<td width='600'>" +
+            "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" align=\"center\" width=\"100%\" class=\"module footer\" role=\"module\" data-type=\"footer\">" +
+            "<tr>" +
+            "<td style=\"padding: 15px 30px 15px 30px;\" bgcolor=\"#f6f6f6\">" +
+            "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;\">" +
+//        "<!-- App link section -->"+
+            "<tr>" +
+            "<td width=\"540\" valign=\"middle\" align=\"center\" style=\"color: #6e6e6e; padding-top: 15px; text-align: center !important;font-family:helvetica, arial, sans-serif;font-family: \'Geomanist-Book\', \'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;font-size:16px;\">" +
+            "</td>" +
+            "</tr>" +
+            "<tr>" +
+            "<td width=\"540\" valign=\"middle\" align=\"center\" style=\"color: #6e6e6e; padding-top: 15px; padding-bottom: 10px; text-align: center !important;\">" +
+            "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;\">" +
+            "<tr>" +
+            "<td width=\"270\" valign=\"middle\" align=\"right\" style=\"text-align: right !important;\">" +
+            "<a href=\"\" style=\"text-decoration:none;padding-right: 10px;display:inline-block;\"><img width=\"28\" height=\"28\" alt=\"SocialCxN ios app\" src=\"http://skillorbit.co/socialcxn_revamp/resources/email_assets/appstore.png\" style=\"border-style:none; width: 28px; height: 28px;\"></a>" +
+            "</td>" +
+            "<td width=\"270\" valign=\"middle\" align=\"left\" style=\"text-align: left !important;\">" +
+            "<a href=\"https://play.google.com/apps/testing/com.socialcxn.socialcxnapp\" style=\"text-decoration:none;display:inline-block;\"><img width=\"28\" height=\"28\" alt=\"SocialCxN android app\" src=\"http://skillorbit.co/socialcxn_revamp/resources/email_assets/playstore.png\" style=\"border-style:none; width: 28px; height: 28px;\"></a>" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+            "<!-- <tr>" +
+            "<td style=\"padding-top: 10px; padding-bottom: 20px; text-align: center;font-family:helvetica, arial, sans-serif;font-size:15px;font-family: \'Geomanist-Regular\', \'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;font-size:13px;color: #666666 !important; line-height: 16px;\">" +
+            "F-17, Ground Floor, Business Executive Center, Block-8, Clifton, Karachi, Pakistan" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+//        "<!-- Background --> +
+            "</td>" +
+            "</tr>" +
+            "</table>" +
+//        "<!-- Main Template -->' +
+            "</body>" +
+            "</html>";
+        $result = UserModel::sendEmailWithTemplate("ahmer.saeed.office@gmail.com", "Email with Template", $emailContent);
+//        $result = ForgetPasswordModel::forgetPassword();
+        return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
+    }
+
     function GetSingleUserViaId(Request $request)
     {
         $id = $request->get('id');
