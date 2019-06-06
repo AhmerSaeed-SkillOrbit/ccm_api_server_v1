@@ -25,7 +25,7 @@ class CcmModel
         $query = DB::table('ccm_question')
             ->select('Id', 'Question', 'Type')
             ->where('IsActive', '=', true)
-            ->orderBy('Id', 'desc')
+            ->orderBy('SortOrder', 'asc')
             ->get();
 
         return $query;
