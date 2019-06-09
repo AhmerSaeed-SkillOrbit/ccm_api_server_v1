@@ -954,7 +954,7 @@ class DocumentUploadController extends Controller
             $fileType = "";
             //Now checking if document name is same as it is given in parameter
             if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
-                error_log('image name is valid');
+                error_log(' image name is valid');
                 $filePath = '/' . $baseUrl . '/' . $checkDocument->RelativePath . $fileName;
                 error_log($filePath);
                 if (strtolower($checkDocument->FileExtension) == ".jpg" || strtolower($checkDocument->FileExtension) == ".jpeg") {
@@ -978,7 +978,23 @@ class DocumentUploadController extends Controller
                     'timeout' => env('FTP_TIMEOUT')
                 ]);
 
-                $fileContent = $ftp->get($filePath); // read file content
+                error_log("ftp credentials");
+
+                error_log(env('FTP_HOST'));
+                error_log(env('FTP_USER'));
+                error_log(env('FTP_PASSWORD'));
+                error_log(env('FTP_PORT'));
+                error_log(env('FTP_TIMEOUT'));
+
+                error_log("fileContent");
+
+                try {
+                    $fileContent = $ftp->get($filePath); // read file content
+                }
+                catch (exception $ex){
+                    error_log("exception message");
+                    error_log($ex);
+                }
 
                 // download file
                 return Response::make($fileContent, '200', array(

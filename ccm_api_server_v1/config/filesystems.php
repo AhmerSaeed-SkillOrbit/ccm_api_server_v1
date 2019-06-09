@@ -68,7 +68,10 @@ return [
             'host' => env('FTP_HOST'),
             'username' => env('FTP_USER'),
             'password' => env('FTP_PASSWORD'),
-            'root' => env('FTP_DIR') // for example: /var/www/html/dev/images
+            'root' => env('FTP_DIR'), // for example: /var/www/html/dev/images
+            'passive'  => true,
+            'timeout'  => 1000
+
         ],
     ],
 
