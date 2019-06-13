@@ -39,7 +39,7 @@ class ServicesController extends Controller
 
                 if ($check['status'] == "success") {
                     return response()->json(['data' => true, 'message' => 'Invite is successfully sent'], 200);
-                } else if ($check['status'] == "failed") {
+                } else if ($check['invitestatus'] == "failed") {
                     return response()->json(['data' => false, 'message' => $check['message']], 400);
                 } else {
                     return response()->json(['data' => false, 'message' => 'something went wrong'], 500);

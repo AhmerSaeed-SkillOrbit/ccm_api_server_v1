@@ -64,7 +64,7 @@ class ServicesModel
                     "ByUserId" => $userId,
                     "ToEmailAddress" => $email,
                     "CountryPhoneCode" => $countryPhoneCode,
-                    "ToMobileNumber" => $mobileNumber,
+                    "ToMobileNumber" => (string)$mobileNumber,
                     "Status_" => "pending",
                     "Token" => $token,
                     "BelongTo" => $type,
@@ -75,7 +75,14 @@ class ServicesModel
                 $checkInsertTokenId = DB::table("account_invitation")->insertGetId($insertData);
 
                 if ($checkInsertTokenId) {
-                    ServicesModel::sendEmail($email, $type, $token);
+
+                    //create email with template
+                    $emailBody = "<p style='width: 800px;'>You have been invited to Chronic Care Management system<br>" .
+                        "<br>To finish signing up for Connect Care Plus Chronic Care Management, Click on the Link given below<br><br>" .
+                        url(env('WEB_URL') . '/#/registration') . '?token=' . $token."<br><br>".
+                        "If the link does not work paste the same in your browser.</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($email,"Account Invitation",$emailBody);
 
                     error_log("email sent");
 
