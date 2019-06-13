@@ -154,31 +154,17 @@ class LoginController extends Controller
                 if (count($checkEmail) == 0) {
                     return response()->json(['data' => null, 'message' => 'Email not found'], 400);
                 } else {
-
-//                    return response()->json(['data' => null, 'message' => 'Test Break'], 400);
-//                    //Binding data to variable.
-
                     $token = md5(uniqid(rand(), true));
-                    // $token = LoginModel::generateAccessToken();
-
-
                     if ($token != null) {
-
-
                         DB::beginTransaction();
-
                         //Now making data for user_access
                         $dataToUpdate = array(
                             "IsActive" => false
                         );
-
                         $updateDataCheck = GenericModel::updateGeneric('verification_token', 'UserId', $checkEmail[0]->Id, $dataToUpdate);
-
                         if ($updateDataCheck >= 0) {
-
                             $mobileNumber = $checkEmail[0]->MobileNumber;
                             $countyPhoneCode = $checkEmail[0]->CountryPhoneCode;
-
                             $dataToInsert = array(
                                 "UserId" => $checkEmail[0]->Id,
                                 "Email" => $checkEmail[0]->EmailAddress,
@@ -200,8 +186,16 @@ class LoginController extends Controller
                             $emailMessage = "To reset your password click the link below.";
 
                             DB::commit();
-                            //Now sending email
-                            LoginModel::sendEmail($emailAddress, "Reset Password", $emailMessage, $url);
+//                            //Now sending email
+//                            LoginModel::sendEmail($emailAddress, "Reset Password", $emailMessage, $url);
+
+                            //create email with template
+                            $emailBody = "<p style='width: 800px;'>Dear " . $checkEmail[0]->FirstName . " " . $checkEmail[0]->LastName . "<br>" .
+                                "<br>Your recently requested to reset your password for your Connect Care Plus account a Chronic Care Management system developed by Business Services Solutions, LLC.<br><br>" .
+                                "Click the link below to reset the password.<br><br>" . $url . "<br><br>" .
+                                "If you did not request for the reset password, Please ignore this email or write us at info@connectcareplus.com.</p>";
+
+                            UserModel::sendEmailWithTemplateTwo($checkEmail[0]->EmailAddress, "Forget Password", $emailBody);
 
                             //Now sending sms
                             if ($mobileNumber != null) {
@@ -228,10 +222,7 @@ class LoginController extends Controller
                     } else {
                         return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
                     }
-
-
                 }
-
             } else {
                 return response()->json(['data' => null, 'message' => 'Code type is missing'], 400);
             }
@@ -304,7 +295,14 @@ class LoginController extends Controller
                                 $emailMessage = "Your password has been updated.";
 
                                 //Now sending email
-                                LoginModel::sendEmail($emailAddress, "Update Password", $emailMessage, "");
+//                                LoginModel::sendEmail($emailAddress, "Update Password", $emailMessage, "");
+
+                                //create email with template
+                                $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData[0]->FirstName . " " . $checkUserData[0]->LastName . "<br>" .
+                                    "<br>Your recently reset the password for your Connect Care Plus account a Chronic Care Management system developed by Business Services Solutions, LLC.<br><br>" .
+                                    "If you did not reset the password, Please write us at info@connectcareplus.com.</p>";
+
+                                UserModel::sendEmailWithTemplateTwo($emailAddress, "Reset Password", $emailBody);
 
                                 //Now sending sms
                                 if ($mobileNumber != null) {
@@ -553,7 +551,7 @@ class LoginController extends Controller
                 //custom check for
                 //email n mobile already exist
 
-                $data = LoginModel::checkEmailAndMobileAndUniqueIdAvailable($request->EmailAddress, $request->post('MobileNumber'),$request->post('PatientUniqueId'));
+                $data = LoginModel::checkEmailAndMobileAndUniqueIdAvailable($request->EmailAddress, $request->post('MobileNumber'), $request->post('PatientUniqueId'));
                 if (count($data) > 0) {
                     if ($data[0]->EmailAddress == $request->EmailAddress) {
                         $message = "Email Address already exist";
@@ -654,6 +652,17 @@ class LoginController extends Controller
                     );
 
                     DB::table("user_access")->insertGetId($insertRoleData);
+
+                    //create email with template
+
+                    $emailBody = "<p><h3>Hi</h3>$request->EmailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id (https://www.connectcareplus.com). The following will be the facilities. <br><br>" .
+                        "1. Your health plan directly from the portal.<br>" .
+                        "2. Instantly set a meeting with your provider.<br>" .
+                        "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
+                        "4. Review your progress against the plan and much more.<br><br>" .
+                        "use this Password " . $hashedPassword . " to Login</p><br>";
+
+                    UserModel::sendEmailWithTemplateTwo($request->EmailAddress, "Welcome to CCM", $emailBody);
 
                     return response()->json(['data' => $checkInsertUserId, 'message' => 'Patient successfully added'], 200);
 

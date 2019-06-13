@@ -1222,7 +1222,7 @@ class UserModel
         error_log($userId);
 
         return DB::table('user')
-            ->select('user.Id', 'user.EmailAddress', 'role.Name', 'role.CodeName')
+            ->select('user.Id', 'user.FirstName', 'user.LastName', 'user.EmailAddress', 'role.Name', 'role.CodeName')
             ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
             ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
             ->where('user.Id', '=', $userId)

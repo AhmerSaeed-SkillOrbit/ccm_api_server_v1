@@ -378,10 +378,6 @@ class LoginModel
                                 //create email with template
                                 UserModel::sendEmailWithTemplateTwo($email, "Welcome to CCM", $emailBody);
 
-//                                Mail::raw('Welcome, You are successfully registered to CCM', function ($message) use ($email) {
-//                                    $message->to($email)->subject("Registration Successful");
-//                                });
-
                                 DB::commit();
                                 return array("status" => "success", "data" => $checkInsertUserId, "message" => "You have successfully Signed up");
 

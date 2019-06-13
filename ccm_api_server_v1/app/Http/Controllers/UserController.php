@@ -878,14 +878,21 @@ class UserController extends Controller
 
         if ($update == 1) {
             DB::commit();
-            UserModel::sendEmail($data[0]->EmailAddress, $emailMessage, null);
+
+            //create email with template
+            $emailBody = "<p style='width: 800px;'>Dear " . $firstName . " " . $lastName . "<br>" .
+                "<br>Your account information is updated in the Chronic Care Management system.<br><br>" .
+                "The message is for information purpose only. If you have any concerns please contact with the provider or check the same by logging into the portal http://connectcareplus.com</p>";
+
+            UserModel::sendEmailWithTemplateTwo($data[0]->EmailAddress, "User Account Information Update", $emailBody);
+
             return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
         } else if ($update == 0) {
             DB::rollBack();
             return response()->json(['data' => null, 'message' => 'User records already updated'], 200);
         } else {
             DB::rollBack();
-            return response()->json(['data' => null, 'message' => 'Error in updatin User records'], 500);
+            return response()->json(['data' => null, 'message' => 'Error in updating User records'], 500);
         }
     }
 
@@ -1239,7 +1246,11 @@ class UserController extends Controller
         } else {
             DB::commit();
             //Now sending email
-            UserModel::sendEmail($emailAddress, $emailMessage, null);
+
+            //create email with template
+            $emailBody = "<p><h3>Hi</h3>$emailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a " . $roleName . " into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id (https://www.connectcareplus.com).<br><br>" .
+                "use this Password ".$defaultPassword." to Login<br></p><br>";
+            UserModel::sendEmailWithTemplateTwo($emailAddress, "Welcome to CCM", $emailBody);
 
             //Now sending sms
             if ($mobileNumber != null) {
@@ -1288,6 +1299,14 @@ class UserController extends Controller
                     error_log($update);
 
                     if ($update == 1) {
+
+                        //create email with template
+                        $emailBody = "<p style='width: 800px;'>Dear " . $roleData[0]->FirstName . " " . $roleData[0]->LastName . "<br>" .
+                            "<br>Your account is deleted form the Chronic Care Management system<br><br>" .
+                            "The message is for information purpose only. If you have any concerns please contact with the provider.</p>";
+
+                        UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
+
                         error_log("Super Admin deleted successfully");
                         return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                     } else if ($update == 0) {
@@ -1321,6 +1340,14 @@ class UserController extends Controller
                 error_log($update);
 
                 if ($update == 1) {
+
+                    //create email with template
+                    $emailBody = "<p style='width: 800px;'>Dear " . $roleData[0]->FirstName . " " . $roleData[0]->LastName . "<br>" .
+                        "<br>Your account is deleted form the Chronic Care Management system<br><br>" .
+                        "The message is for information purpose only. If you have any concerns please contact with the provider.</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
+
                     return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                 } else if ($update == 0) {
                     return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
@@ -1349,6 +1376,14 @@ class UserController extends Controller
                 error_log($update);
 
                 if ($update == 1) {
+
+                    //create email with template
+                    $emailBody = "<p style='width: 800px;'>Dear " . $roleData[0]->FirstName . " " . $roleData[0]->LastName . "<br>" .
+                        "<br>Your account is deleted form the Chronic Care Management system<br><br>" .
+                        "The message is for information purpose only. If you have any concerns please contact with the provider.</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
+
                     return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                 } else if ($update == 0) {
                     return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
@@ -1373,6 +1408,14 @@ class UserController extends Controller
                 error_log($update);
 
                 if ($update == 1) {
+
+                    //create email with template
+                    $emailBody = "<p style='width: 800px;'>Dear " . $roleData[0]->FirstName . " " . $roleData[0]->LastName . "<br>" .
+                        "<br>Your account is deleted form the Chronic Care Management system<br><br>" .
+                        "The message is for information purpose only. If you have any concerns please contact with the provider.</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
+
                     return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                 } else if ($update == 0) {
                     return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
