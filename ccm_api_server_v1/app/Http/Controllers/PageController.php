@@ -688,8 +688,6 @@ class PageController extends BaseController
 
     public function TestEmail()
     {
-
-
         $emailContent = "<!DOCTYPE html>" .
             "<html>" .
             "<head>" .
@@ -718,12 +716,11 @@ class PageController extends BaseController
             "<td width=\"540\" valign=\"middle\" style=\"padding-top:15px;padding-bottom:15px;\">" .
             "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
             "<tr>" .
-            "<td width=\"180\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #000000;\">" .
-            "<img width=\"178\" height=\"22\" alt=\"Chronic Care Management\" src=\"http://businessdirectory360.com/assets/images/logo.png\" style=\"border-style:none; width: 178px; height: 22px;\">" .
+            "<td width=\"0\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #000000;\">" .
+            "<img width=\"0\" height=\"22\" alt=\"Chronic Care Management\" src=\"http://businessdirectory360.com/assets/images/logo.png\" style=\"border-style:none; width: 178px; height: 55px;\">" .
             "</td>" .
-            "<td width=\"395\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #000000;\"><h5><b>Chronic Care Management</b></h5></td>".
-            "<td width=\"360\" align=\"right\" valign=\"middle\" style=\"text-align:right;font-size:12px;color:#5c6470;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
-            "<span style=\"background-color:#5c6470;color:#ffffff;padding:5px;\">Welcome to CCM</span>" .
+            "<td width=\"0\" align=\"right\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #000000;\">" .
+            "<img width=\"0\" height=\"22\" alt=\"Chronic Care Management\" src=\"http://businessdirectory360.com/assets/images/BSSVector1.png\" style=\"border-style:none; width: 178px; height: 150px; margin-left: 150px;\">" .
             "</td>" .
             "</tr>" .
             "</table>" .
@@ -753,11 +750,13 @@ class PageController extends BaseController
             "<tr>" .
             "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:0px;text-align:left;font-size:16px;color:#2c2d30;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
 
-            "<br>Here is yours signup Link<br><br>" .
-            "To finish signing up for Connect Care Plus Chronic Care Management, Clink on the Link given below<br><br>" .
-            "If the link does not work paste the same in your browser<br><br>" .
-
+            "<br>Welcome to the Chronic Care Management system. You are registered as a patient into the connect care plus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with you registered id (www.connectcareplus.com). The following will be the facility. <br><br>" .
+            "1. Your health plan directly from the portal.<br>" .
+            "2. Instantly set a meeting with you provider.<br>" .
+            "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
+            "4. Review your progress against the plan and much more.<br>" .
             "</td>" .
+            "</tr>" .
             "</tr>" .
             "</table>" .
             "</td>" .
@@ -767,8 +766,8 @@ class PageController extends BaseController
             "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
             "<tr>" .
             "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:40px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
-            "This is a mandatory service communication<br>This message was sent from an unmonitored e-mail address. Please do not reply to this message<br><br>Privacy | Legal<br><br>" .
-            "Care Connect Plus<br><br>".
+            "<br><b>This is a mandatory service communication<br>This message was sent from an unmonitored e-mail address. Please do not reply to this message</b><br><br>Privacy | Legal<br><br>" .
+            "<b>Care Connect Plus</b><br><br>".
             "<b>One Microsoft Way</b><br>".
             "<b>Redmond, WA</b><br>".
             "<b>98052-6399 USA</b><br><br>" .
@@ -800,7 +799,6 @@ class PageController extends BaseController
             "</td>" .
             "</tr>" .
             "<td style=\"padding-top: 10px; padding-bottom: 20px; text-align: center;font-family:helvetica, arial, sans-serif;font-size:15px;font-family: \'Geomanist-Regular\', \'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;font-size:13px;color: #666666 !important; line-height: 16px;\">" .
-
             "</td>" .
             "</tr>" .
             "</table>" .
@@ -818,7 +816,7 @@ class PageController extends BaseController
             "</body>" .
             "</html>";
 
-        $result = UserModel::sendEmailWithTemplate("ahmer.saeed.office@gmail.com", "Email with Template", $emailContent);
+        $result = UserModel::sendEmailWithTemplate("ahmer.saeed.office@gmail.com", "12 Welcome to CCM 12", $emailContent);
 //        $result = ForgetPasswordModel::forgetPassword();
         return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
     }

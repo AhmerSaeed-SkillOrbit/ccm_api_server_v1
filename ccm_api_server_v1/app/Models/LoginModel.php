@@ -339,10 +339,18 @@ class LoginModel
                         $roleCode = "";
                         if ($belongTo == "superadmin_doctor") {
                             $roleCode = "doctor";
+                            $emailBody = "<h5><b>Hi</b></h5> $email<br><br>Welcome to the Chronic Care Management system. You are registered as a Doctor into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id (https://www.connectcareplus.com).<br><br>";
                         } else if ($belongTo == "doctor_patient") {
                             $roleCode = "patient";
+                            $emailBody = "<h5><b>Hi</b></h5> $email<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id (https://www.connectcareplus.com). The following will be the facilities. <br><br>" .
+                                "1. Your health plan directly from the portal.<br>" .
+                                "2. Instantly set a meeting with your provider.<br>" .
+                                "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
+                                "4. Review your progress against the plan and much more.<br>";
+
                         } else if ($belongTo == "doctor_facilitator") {
                             $roleCode = "facilitator";
+                            $emailBody = "<h5><b>Hi</b></h5> $email<br><br>Welcome to the Chronic Care Management system. You are registered as a Facilitator into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id (https://www.connectcareplus.com).<br><br>";
                         } else {
                             $roleCode = "noRole";
                         }
@@ -367,9 +375,12 @@ class LoginModel
 
                             if ($checkInsertUserId) {
 
-                                Mail::raw('Welcome, You are successfully registered to CCM', function ($message) use ($email) {
-                                    $message->to($email)->subject("Registration Successful");
-                                });
+                                //create email with template
+                                UserModel::sendEmailWithTemplateTwo($email, "Welcome to CCM", $emailBody);
+
+//                                Mail::raw('Welcome, You are successfully registered to CCM', function ($message) use ($email) {
+//                                    $message->to($email)->subject("Registration Successful");
+//                                });
 
                                 DB::commit();
                                 return array("status" => "success", "data" => $checkInsertUserId, "message" => "You have successfully Signed up");

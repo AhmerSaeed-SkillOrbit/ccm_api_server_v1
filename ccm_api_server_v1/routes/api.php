@@ -35,7 +35,7 @@ Route::get('/user/count', 'UserController@UserCount');
 Route::post('/user/update', 'UserController@UserUpdate');
 //Get single user via id
 Route::get('/user/single', 'UserController@GetSingleUserViaId');
-//User registration
+//add user as super admin and support staff
 Route::post('/user/add', 'UserController@UserRegistration');
 //User delete route
 Route::post('/user/delete', 'UserController@UserDelete');
@@ -448,6 +448,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('/login', 'LoginController@login');
+//register via invitation
 Route::post('/register', 'LoginController@register');
 Route::post('/forgetPass', 'LoginController@forgetPass');
 Route::post('/resetPass', 'LoginController@resetPass');
@@ -529,6 +530,7 @@ Route::post('/bulk/user/register', 'UserController@BulkUserRegister');
 
 Route::get('/background/bulk/user/register', 'UserController@BackgroundBulkUserRegister');
 
+//add patient to application
 Route::post('/patient/add', 'LoginController@AddPatientDirect');
 
 
