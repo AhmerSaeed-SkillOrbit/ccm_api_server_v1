@@ -750,7 +750,7 @@ class PageController extends BaseController
             "<tr>" .
             "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:0px;text-align:left;font-size:16px;color:#2c2d30;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
 
-            "<br>Welcome to the Chronic Care Management system. You are registered as a patient into the connect care plus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with you registered id (www.connectcareplus.com). The following will be the facility. <br><br>" .
+            "<br>Welcome to the Chronic Care Management system. You are registered as a patient into the connect care plus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with you registered id " . env('WEB_URL') . " The following will be the facility. <br><br>" .
             "1. Your health plan directly from the portal.<br>" .
             "2. Instantly set a meeting with you provider.<br>" .
             "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
@@ -767,9 +767,9 @@ class PageController extends BaseController
             "<tr>" .
             "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:40px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
             "<br><b>This is a mandatory service communication<br>This message was sent from an unmonitored e-mail address. Please do not reply to this message</b><br><br>Privacy | Legal<br><br>" .
-            "<b>Care Connect Plus</b><br><br>".
-            "<b>One Microsoft Way</b><br>".
-            "<b>Redmond, WA</b><br>".
+            "<b>Care Connect Plus</b><br><br>" .
+            "<b>One Microsoft Way</b><br>" .
+            "<b>Redmond, WA</b><br>" .
             "<b>98052-6399 USA</b><br><br>" .
             "</td>" .
             "</tr>" .
@@ -820,7 +820,6 @@ class PageController extends BaseController
 //        $result = ForgetPasswordModel::forgetPassword();
         return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
     }
-
 
 
     public function TestSms()

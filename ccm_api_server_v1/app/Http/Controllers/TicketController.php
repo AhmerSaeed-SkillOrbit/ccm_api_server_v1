@@ -184,8 +184,7 @@ class TicketController extends Controller
                 }
             }
 
-        }
-        else if($requestType == $emailRequestType){
+        } else if ($requestType == $emailRequestType) {
             error_log('Request type is of EMAIL');
 
 //            print_r($_POST);
@@ -215,8 +214,7 @@ class TicketController extends Controller
 
             if ($eliminatedNumOne == '+1') {
                 $eliminatedNumTwo = substr($fromNum, 2);
-            }
-            else {
+            } else {
                 $eliminatedNumOne = substr($fromNum, 0, 3);
                 error_log("eliminatedNumberOne-2");
                 error_log($eliminatedNumOne);
@@ -237,8 +235,7 @@ class TicketController extends Controller
             if ($checkUserData == null) {
                 error_log('Patient record not found');
                 return response()->json(['data' => null, 'message' => 'Error in inserting ticket'], 400);
-            }
-            else {
+            } else {
                 error_log('Patient record found with this Mobile number');
 
                 //fetching last generated ticket number
@@ -282,8 +279,7 @@ class TicketController extends Controller
 //                    return $response;
                 }
             }
-        }
-        else if ($requestType == $portalRequestType) {
+        } else if ($requestType == $portalRequestType) {
 
             //fetching last generated ticket number
             $getLastTicketNumber = TicketModel::getLastTicket();
@@ -323,33 +319,20 @@ class TicketController extends Controller
                     DB::rollBack();
                     return response()->json(['data' => null, 'message' => 'Error in inserting ticket'], 400);
                 } else {
-//                    if (count($fileUpload) > 0) {
-//
-//                        $fileUploadData = array();
-//
-//                        foreach ($fileUpload as $item) {
-//
-//                            array_push($fileUploadData,
-//                                array(
-//                                    "TicketId" => $insertedDataId,
-//                                    "FileUploadId" => $item['Id'],
-//                                    "IsActive" => true
-//                                )
-//                            );
-//                        }
-//
-//                        $insertForumTopicFileUpload = GenericModel::insertGeneric('ticket_file', $fileUploadData);
-//                        if ($insertForumTopicFileUpload == 0) {
-//                            DB::rollBack();
-//                            return response()->json(['data' => null, 'message' => 'Error in inserting ticket file'], 400);
-//                        }
-//                    }
                     DB::commit();
+
+                    //create email with template
+                    $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData->FirstName . " " . $checkUserData->LastName . "<br>" .
+                        "<br>We are confirming that you have create a new Ticket with the topic " . $request->input('Title') . "<br><br>" .
+                        "Your new ticket number is #: " . $getTicketNumber . "<br><br>" .
+                        "Our correspondent is responding to you shortly.</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Create", $emailBody);
+
                     return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully created'], 200);
                 }
             }
-        }
-        else {
+        } else {
             return response()->json(['data' => null, 'message' => 'Invalid request type'], 400);
         }
     }
@@ -909,7 +892,15 @@ class TicketController extends Controller
                                         //in array for use in sending sms
                                         array_push($toNumber, $patientUserData->CountryPhoneCode . $patientUserData->MobileNumber);
 
-                                        UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
+                                        //create email with template
+                                        $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData->FirstName . " " . $checkUserData->LastName . "<br>" .
+                                            "<br>Our Support Staff Team is responded on your Ticket please check it by log into the portal " . env('WEB_URL') . " with you registered id<br><br>" .
+                                            "Your ticket topic is : " . $ticketData->Title . "<br><br>" .
+                                            "Your ticket number is #: " . $ticketNumber . "</p>";
+
+                                        UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Replied on Ticket", $emailBody);
+
+                                        UserModel::sendEmail($checkUserData->EmailAddress, $emailMessage, null);
 
                                         ## Preparing Data for SMS  - START ##
                                         if (count($toNumber) > 0) {
@@ -1012,15 +1003,21 @@ class TicketController extends Controller
                                     } else {
                                         error_log('Patient data found, now sending email');
 
-                                        $emailMessage = "Dear Patient, please check the response from Support Staff on your Ticket. Remember Your Ticket Number is " . $ticketNumber . "";
-
                                         $toNumber = array();
 
                                         //pushing mobile number
                                         //in array for use in sending sms
                                         array_push($toNumber, $patientUserData->CountryPhoneCode . $patientUserData->MobileNumber);
 
-                                        UserModel::sendEmail($patientUserData->EmailAddress, $emailMessage, null);
+                                        //create email with template
+                                        $emailBody = "<p style='width: 800px;'>Dear " . $patientUserData->FirstName . " " . $patientUserData->LastName . "<br>" .
+                                            "<br>Our Support Staff Team is responded on your Ticket please check it by log into the portal " . env('WEB_URL') . " with you registered id<br><br>" .
+                                            "Your ticket topic is : " . $ticketData->Title . "<br><br>" .
+                                            "Your ticket number is #: " . $ticketNumber . "</p>";
+
+                                        UserModel::sendEmailWithTemplateTwo($patientUserData->EmailAddress, "Replied on Ticket", $emailBody);
+
+                                        $emailMessage = "Dear Patient, please check the response from Support Staff on your Ticket. Remember Your Ticket Number is " . $ticketNumber . "";
 
                                         ## Preparing Data for SMS  - START ##
                                         if (count($toNumber) > 0) {
@@ -1264,16 +1261,20 @@ class TicketController extends Controller
                             } else {
                                 error_log('assigned to data found, now sending email');
 
-                                $emailMessage = "Dear Support Staff, Ticket Number - " . $ticketData->TicketNumber . " is assigned to you. 
-                            Please check the details in the following";
-
                                 $toNumber = array();
                                 //pushing mobile number
                                 //in array for use in sending sms
                                 array_push($toNumber, $assignedToData->CountryPhoneCode . $assignedToData->MobileNumber);
 
-                                UserModel::sendEmail($assignedToData->EmailAddress, $emailMessage, null);
+                                //create email with template
+                                $emailBody = "<p style='width: 800px;'>Dear Support Staff<br>" .
+                                    "<br>Ticket # " . $ticketData->TicketNumber . " is assigned to you<br><br>" .
+                                    "Please check the details by log into the portal " . env('WEB_URL') . "with you registered id</p> ";
 
+                                UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Assign", $emailBody);
+
+                                $emailMessage = "Dear Support Staff, Ticket Number - " . $ticketData->TicketNumber . " is assigned to you. 
+                            Please check the details in the following";
                                 ## Preparing Data for SMS  - START ##
                                 if (count($toNumber) > 0) {
                                     HelperModel::sendSms($toNumber, $emailMessage, null);
@@ -1389,6 +1390,18 @@ class TicketController extends Controller
                     );
 
                     GenericModel::updateGeneric('ticket', 'Id', $item->Id, $ticketDataUpdate);
+
+                    //fetch ticket raise by data
+                    //to be use in sending email
+                    $checkUserData = GenericModel::simpleFetchGenericByWhere("user", " = ", "Id", $item->RaiseById);
+
+                    //create email with template
+                    $emailBody = " < p style = 'width: 800px;' > Dear " . $checkUserData[0]->FirstName . " " . $checkUserData[0]->LastName . " < br>" .
+                        " < br>We are confirming that we have received a ticket from you with the topic " . $item->Title . " < br><br > " .
+                        "Your new ticket number is #: " . $item->TicketNumber . "<br><br>" .
+                        "We are closing the ticket as all the ticket issue is resolved.</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Close", $emailBody);
                 }
             }
 
