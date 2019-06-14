@@ -6561,7 +6561,8 @@ class CcmPlanController extends Controller
                 return response()->json(['data' => null, 'message' => 'This patient is not associated to this doctor'], 400);
             }
 
-        } else if ($checkUserData->RoleCodeName == $facilitatorRole) {
+        }
+        else if ($checkUserData->RoleCodeName == $facilitatorRole) {
             error_log('logged in user role is facilitator');
             error_log('Now first get facilitator association with doctor');
 
@@ -6586,7 +6587,8 @@ class CcmPlanController extends Controller
                 return response()->json(['data' => null, 'message' => 'logged in facilitator is not yet associated to any doctor'], 400);
             }
 
-        } else if ($checkUserData->RoleCodeName == $superAdminRole) {
+        }
+        else if ($checkUserData->RoleCodeName == $superAdminRole) {
             error_log('logged in user is super admin');
         } else {
             return response()->json(['data' => null, 'message' => 'logged in user must be from doctor, facilitator or super admin'], 400);
@@ -6715,6 +6717,15 @@ class CcmPlanController extends Controller
         } else {
             error_log('data inserted');
             DB::commit();
+
+            //fetch PATIENT data
+            //to be use in sending email
+            $patientData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $patientId);
+            //create email with template
+            $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
+                "<br>Your health plan is ready at the portal. You can review the plan and download its PDF in the portal <br><br>" . env('WEB_URL'). "/#</p>";
+            UserModel::sendEmailWithTemplateTwo( $patientData[0]->EmailAddress, "Ticket Create", $emailBody);
+
             return response()->json(['data' => $insertCcmPlanData, 'message' => 'Ccm plan successfully added'], 200);
         }
     }
@@ -7493,6 +7504,15 @@ class CcmPlanController extends Controller
                         return response()->json(['data' => null, 'message' => 'Error in adding review'], 400);
                     } else {
                         error_log('data inserted');
+
+                        //fetch PATIENT data
+                        //to be use in sending email
+                        $patientData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $patientId);
+                        //create email with template
+                        $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
+                            "<br>Your health plan is updated/reviewed at the portal. You can review the plan in the portal  <br><br>" . env('WEB_URL'). "/#</p>";
+                        UserModel::sendEmailWithTemplateTwo( $patientData[0]->EmailAddress, "Ticket Create", $emailBody);
+
                         return response()->json(['data' => $insertedData, 'message' => 'Review successfully added'], 200);
                     }
 
@@ -7500,7 +7520,7 @@ class CcmPlanController extends Controller
                     error_log('review found');
                     return response()->json(['data' => null, 'message' => 'Review for this date against the same goal already exists'], 400);
                 }
-            }
+
         }
     }
 
