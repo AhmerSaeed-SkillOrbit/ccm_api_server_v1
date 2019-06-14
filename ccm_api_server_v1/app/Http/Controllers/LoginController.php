@@ -664,7 +664,7 @@ class LoginController extends Controller
                         "2. Instantly set a meeting with your provider.<br>" .
                         "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
                         "4. Review your progress against the plan and much more.<br><br>" .
-                        "use this Password " . $hashedPassword . " to Login</p><br>";
+                        "use this Password " . env('DEFAULT_PWD') . " to Login</p><br>";
 
                     UserModel::sendEmailWithTemplateTwo($request->EmailAddress, "Welcome to CCM", $emailBody);
 
