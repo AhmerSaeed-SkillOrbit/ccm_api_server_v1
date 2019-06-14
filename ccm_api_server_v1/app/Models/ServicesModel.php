@@ -86,19 +86,19 @@ class ServicesModel
 
                     error_log("email sent");
 
+                    //create sms
                     ## Preparing Data for SMS  - START ##
                     if ($mobileNumber != null) {
                         $toNumber = array();
                         $toNumber[0] = $countryPhoneCode . $mobileNumber;
 
-                        $content = getenv("ACCOUNT_INVITATION_SMS");
-//                        $url = url(env('WEB_URL') . '/#/registration') . '?type=' . $type . '&token=' . $token;
-                        $url = url(env('WEB_URL') . '/#/registration') . '?token=' . $token;
+                        $content = "Invitation Link:";
+                        $url = url(env('WEB_URL') . '/#/registration') . '?token=' . $token." Business Services Solutions, LLC.";
                         try {
                             error_log('sms in try block');
                             HelperModel::sendSms($toNumber, $content, $url);
                         } catch (Exception $ex) {
-                            error_log('sms exception catched');
+                            error_log('sms exception catch');
                             return array("status" => "success", "data" => null);
                         }
                     }

@@ -379,6 +379,17 @@ class LoginModel
                                 //create email with template
                                 UserModel::sendEmailWithTemplateTwo($email, "Welcome to CCM", $emailBody);
 
+                                //create sms
+                                //Now sending sms to patient
+                                if ($mobileNumber != null) {
+                                    $url = env('WEB_URL') . '/#/';
+                                    $toNumber = array();
+                                    $mobileNumber =$countryPhoneCode . $mobileNumber;
+                                    array_push($toNumber, $mobileNumber);
+
+                                    HelperModel::sendSms($toNumber, 'Welcome to the Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                                }
+
                                 DB::commit();
                                 return array("status" => "success", "data" => $checkInsertUserId, "message" => "You have successfully Signed up");
 
@@ -411,8 +422,6 @@ class LoginModel
             return array("status" => "error", "data" => null);
             //   return $e;
         }
-
-
     }
 
     static public function getAdminLogin(Request $request)

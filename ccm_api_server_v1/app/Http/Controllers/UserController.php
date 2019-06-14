@@ -1307,6 +1307,16 @@ class UserController extends Controller
 
                         UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
 
+                        //create sms
+                        //Now sending sms to patient
+                        if ($roleData[0]->MobileNumber != null) {
+                            $url = null;
+                            $toNumber = array();
+                            $roleData[0]->MobileNumber = $roleData[0]->CountryPhoneCode . $roleData[0]->MobileNumber;
+                            array_push($toNumber, $roleData[0]->MobileNumber);
+
+                            HelperModel::sendSms($toNumber, 'Your account is deleted from the Care Connect Plus, Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                        }
                         error_log("Super Admin deleted successfully");
                         return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                     } else if ($update == 0) {
@@ -1348,6 +1358,17 @@ class UserController extends Controller
 
                     UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
 
+                    //create sms
+                    //Now sending sms to patient
+                    if ($roleData[0]->MobileNumber != null) {
+                        $url = null;
+                        $toNumber = array();
+                        $roleData[0]->MobileNumber = $roleData[0]->CountryPhoneCode . $roleData[0]->MobileNumber;
+                        array_push($toNumber, $roleData[0]->MobileNumber);
+
+                        HelperModel::sendSms($toNumber, 'Your account is deleted from the Care Connect Plus, Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    }
+
                     return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                 } else if ($update == 0) {
                     return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
@@ -1384,6 +1405,17 @@ class UserController extends Controller
 
                     UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
 
+                    //create sms
+                    //Now sending sms to patient
+                    if ($roleData[0]->MobileNumber != null) {
+                        $url = null;
+                        $toNumber = array();
+                        $roleData[0]->MobileNumber = $roleData[0]->CountryPhoneCode . $roleData[0]->MobileNumber;
+                        array_push($toNumber, $roleData[0]->MobileNumber);
+
+                        HelperModel::sendSms($toNumber, 'Your account is deleted from the Care Connect Plus, Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    }
+
                     return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                 } else if ($update == 0) {
                     return response()->json(['data' => null, 'message' => 'Already deleted'], 400);
@@ -1415,6 +1447,17 @@ class UserController extends Controller
                         "The message is for information purpose only. If you have any concerns please contact with the provider.</p>";
 
                     UserModel::sendEmailWithTemplateTwo($roleData[0]->EmailAddress, "User Delete", $emailBody);
+
+                    //create sms
+                    //Now sending sms to patient
+                    if ($roleData[0]->MobileNumber != null) {
+                        $url = null;
+                        $toNumber = array();
+                        $roleData[0]->MobileNumber = $roleData[0]->CountryPhoneCode . $roleData[0]->MobileNumber;
+                        array_push($toNumber, $roleData[0]->MobileNumber);
+
+                        HelperModel::sendSms($toNumber, 'Your account is deleted from the Care Connect Plus, Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    }
 
                     return response()->json(['data' => $id, 'message' => 'Deleted successfully'], 200);
                 } else if ($update == 0) {
@@ -2549,7 +2592,6 @@ class UserController extends Controller
                     "<br>Upload Completion Time: 10 minutes</p>";
 
                 UserModel::sendEmailWithTemplateTwo($userData[0]->EmailAddress, "Bulk Upload User Complete", $emailBody);
-
             } catch (Exception $ex) {
                 $exception = $ex;
                 $uploadStatus = "failed";

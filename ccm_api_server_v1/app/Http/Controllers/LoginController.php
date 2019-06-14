@@ -668,6 +668,17 @@ class LoginController extends Controller
 
                     UserModel::sendEmailWithTemplateTwo($request->EmailAddress, "Welcome to CCM", $emailBody);
 
+                    //create sms
+                    //Now sending sms to patient
+                    if ($request->MobileNumber != null) {
+                        $url = env('WEB_URL') . '/#/';
+                        $toNumber = array();
+                        $request->MobileNumber = $request->CountryPhoneCode . $request->MobileNumber;
+                        array_push($toNumber, $request->MobileNumber);
+
+                        HelperModel::sendSms($toNumber, 'Welcome to the Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    }
+
                     return response()->json(['data' => $checkInsertUserId, 'message' => 'Patient successfully added'], 200);
 
                 } catch (Exception $exception) {
