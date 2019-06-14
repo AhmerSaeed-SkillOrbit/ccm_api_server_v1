@@ -760,6 +760,143 @@ class UserModel
      * $emailBody = array
      *
      */
+    public static function sendEmailWithTemplateThree($toEmail, $emailSubject, $emailBody)
+    {
+        $emailContent = "<!DOCTYPE html>" .
+            "<html>" .
+            "<head>" .
+            "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>" .
+            "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>" .
+            "<title>" . $emailSubject . "</title>" .
+            "<link rel='stylesheet' href='http://businessdirectory360.com/assets/email_assets/geomanist-fonts.css'>" .
+            "</head>" .
+            "<body style=\"-webkit-font-smoothing:antialiased; font-family: \'Geomanist-Light\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif; -webkit-text-size-adjust:none; word-wrap:break-word; background-color:#ffffff; margin:0; padding:0;\">" .
+//        Main Template
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\"> " .
+            "<tr>" .
+            "<td align=\"center\" bgcolor=\"#ffffff\">" .
+//        '<!-- Background -->"+
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">" .
+//        <!-- Wrapper -->
+//        <!-- BODY -->
+            "<tr>" .
+            "<td width=\"600\" style=\"padding-top:30px;\">" .
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
+//        <!-- Header -->
+            "<tr>" .
+            "<td style='background: yellow;' width=\"600\" style='padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;border-bottom:1px solid #e5e8e5;'>" .
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
+            "<tr>" .
+            "<td width=\"540\" valign=\"middle\" style=\"padding-top:15px;padding-bottom:15px;\">" .
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
+            "<tr>" .
+            "<td width=\"0\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #000000;\">" .
+            "</td>" .
+            "<td width=\"0\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 25px;font-weight: 900;color: #000000;\">" .
+            "<p style='margin-left: 200px;'>Chronic Care Management</p>" .
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+//    <!-- Header -->
+//        <!-- Content -->
+            "<tr>" .
+            "<td width='600' style='padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;'>" .
+            "<table cellspacing='0' cellpadding='0' border='0' style='border-collapse:collapse;'>" .
+            "<tr>" .
+            "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:0px;text-align:left;font-size:16px;color:#2c2d30;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
+            $emailBody .
+            "</td>" .
+            "</tr>" .
+            "</tr>" .
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+            "<tr>" .
+            "<td width=\"540\" valign=\"middle\" align=\"center\" style=\"color: #6e6e6e; padding-top: 15px; padding-bottom: 10px; text-align: center !important;\">" .
+            "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;margin-left: -40px;\">" .
+            "<tr>" .
+            "<td width=\"270\" valign=\"middle\" align=\"right\" style=\"text-align: right !important;\">" .
+            "<img width=\"0\" height=\"0\" alt=\"Chronic Care Management\" src=\"http://businessdirectory360.com/assets/images/logo.png\" style=\"border-style:none; width: 300px; height: 55px;margin-left: -50px;\">" .
+            "</td>" .
+            "<td width=\"270\" valign=\"middle\" align=\"left\" style=\"text-align: left !important;\">" .
+            "<img width=\"0\" height=\"0\" alt=\"Business Service Solution\" src=\"http://businessdirectory360.com/assets/images/BSSVector1.png\" style=\"border-style:none; width: 178px; height: 55px; margin-left: 150px;\">" .
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+            "<tr>" .
+            "<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;\">" .
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
+            "<tr>" .
+            "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:40px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
+            "<br>This is a mandatory service communication<br>This message was sent from an unmonitored e-mail address. Please do not reply to this message<br><br>" .
+            "Care Connect Plus<br><br>" .
+            "One Microsoft Way<br>" .
+            "Redmond, WA<br>" .
+            "98052-6399 USA<br><br>" .
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+//        "<!-- Content -->"+
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+//        "<!-- Footer -->" .
+//        "<!-- App link section -->"+
+            "<tr>" .
+            "<td width=\"540\" valign=\"middle\" align=\"center\" style=\"color: #6e6e6e; padding-top: 15px; text-align: center !important;font-family:helvetica, arial, sans-serif;font-family: \'Geomanist-Book\', \'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;font-size:16px;\">" .
+            "</td>" .
+            "</tr>" .
+            "<td style=\"padding-top: 10px; padding-bottom: 20px; text-align: center;font-family:helvetica, arial, sans-serif;font-size:15px;font-family: \'Geomanist-Regular\', \'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;font-size:13px;color: #666666 !important; line-height: 16px;\">" .
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+//        "<!-- Background -->
+            "</td>" .
+            "</tr>" .
+            "</table>" .
+//        "<!-- Main Template -->' +
+            "</body>" .
+            "</html>";
+
+        try {
+            error_log("Sending Mail With Template");
+
+            Mail::send([], [], function ($message) use ($toEmail, $emailSubject, $emailContent) {
+                $message->from(getenv("FROM_ADDRESS"))
+                    ->to($toEmail)
+                    ->subject($emailSubject)
+                    ->setBody($emailContent, 'text/html');
+            });
+            error_log("Email Sent Successfully along with Template");
+            return true;
+        } catch (Exception $ex) {
+            error_log("Sending Mail Exception");
+            return false;
+            error_log("Email Failed to sent along with Template");
+        }
+    }
+
+    /*
+    * $toEmail = array
+    * $emailSubject = string
+    * $emailBody = array
+    *
+    */
     public static function sendEmailWithTemplateTwo($toEmail, $emailSubject, $emailBody)
     {
         $emailContent = "<!DOCTYPE html>" .

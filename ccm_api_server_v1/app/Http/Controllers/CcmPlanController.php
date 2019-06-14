@@ -7821,6 +7821,17 @@ class CcmPlanController extends Controller
                 return response()->json(['data' => null, 'message' => 'Error in publishing'], 400);
             } else {
                 error_log('data inserted');
+
+                //fetch PATIENT data
+                //to be use in sending email
+                $patientData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $patientId);
+
+                //create email with template
+                $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
+                    "<br>Your health records are updated/reviewed at the portal. You can review the records in the portal<br><br>" . env('WEB_URL')."</p>";
+
+                UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "Patient Record Publish", $emailBody);
+
                 return response()->json(['data' => $insert, 'message' => 'Tab has been published'], 200);
             }
         }

@@ -900,8 +900,6 @@ class TicketController extends Controller
 
                                         UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Replied on Ticket", $emailBody);
 
-                                        UserModel::sendEmail($checkUserData->EmailAddress, $emailMessage, null);
-
                                         ## Preparing Data for SMS  - START ##
                                         if (count($toNumber) > 0) {
                                             HelperModel::sendSms($toNumber, $emailMessage, null);
@@ -1406,7 +1404,7 @@ class TicketController extends Controller
                         "Your new ticket number is #: " . $item->TicketNumber . "<br><br>" .
                         "We are closing the ticket as all the ticket issue is resolved.</p>";
 
-                    UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Close", $emailBody);
+                    UserModel::sendEmailWithTemplateTwo($checkUserData[0]->EmailAddress, "Ticket Close", $emailBody);
                 }
             }
 

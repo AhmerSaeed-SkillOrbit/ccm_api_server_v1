@@ -2528,11 +2528,26 @@ class UserController extends Controller
 
                 for ($j = 0; $j < count($registeredEmailAddress); $j++) {
                     error_log("## NOW Sending Email to newly Registered User ##");
-                    UserModel::sendEmail($registeredEmailAddress[$j], 'Welcome, You are successfully registered to CCM as ' . $tempUser[$j]->Role . ' use this password to login ' . getenv("DEFAULT_PWD") . '', null);
+                    //create email with template
+                    $emailBody = "<p><h3>Hi</h3>$registeredEmailAddress[$j]<br><br>Welcome to the Chronic Care Management system. You are registered as a " . $tempUser[$j]->Role . " into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . "<br><br>" .
+                        "use this Password " . getenv("DEFAULT_PWD") . " to Login<br></p><br>";
+                    UserModel::sendEmailWithTemplateTwo($registeredEmailAddress[$j], "Welcome to CCM", $emailBody);
                 }
                 error_log("## Here Sending Success Email to Uploader ##");
-                UserModel::sendEmail($createdByEmail, "Your Bulk Uploaded Users process is successfully completed. ", null);
 
+                $currentDateTime = Carbon\Carbon::now();
+
+                //fetch User data
+                //to be use in sending email
+                $userData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $createdBy);
+
+                //create email with template
+                $emailBody = "<p style='width: 800px;'>Dear " . $userData[0]->FirstName . " " . $userData[0]->LastName . "<br>" .
+                    "<br>The bulk upload made by you is successfully completed. All the records are successful uploaded. <br><br>" .
+                    "<br>Upload Completion Date: " . $currentDateTime . "<br><br>" .
+                    "<br>Upload Completion Time: 10 minutes</p>";
+
+                UserModel::sendEmailWithTemplateTwo($userData->EmailAddress, "Bulk Upload User Complete", $emailBody);
 
             } catch (Exception $ex) {
                 $exception = $ex;
