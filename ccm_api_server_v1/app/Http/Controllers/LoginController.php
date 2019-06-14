@@ -299,7 +299,7 @@ class LoginController extends Controller
 
                                 //create email with template
                                 $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData[0]->FirstName . " " . $checkUserData[0]->LastName . "<br>" .
-                                    "<br>Your recently reset the password for your Connect Care Plus account a Chronic Care Management system developed by Business Services Solutions, LLC.<br><br>" .
+                                    "<br>You recently reset the password for your Connect Care Plus account a Chronic Care Management system developed by Business Services Solutions, LLC.<br><br>" .
                                     "If you did not reset the password, Please write us at info@connectcareplus.com.</p>";
 
                                 UserModel::sendEmailWithTemplateTwo($emailAddress, "Reset Password", $emailBody);
@@ -392,8 +392,11 @@ class LoginController extends Controller
 
                             error_log("now sending email and sms");
 
-                            //Now sending email
-                            LoginModel::sendEmail($emailAddress, "Update Password", $emailMessage, "");
+                            //create email with template
+                            $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData[0]->FirstName . " " . $checkUserData[0]->LastName . "<br>" .
+                                "<br>You recently change your password for your Connect Care Plus account a Chronic Care Management system developed by Business Services Solutions, LLC.<br><br>" .
+                                "If you did not change the password, Please write us at info@connectcareplus.com.</p>";
+                            UserModel::sendEmailWithTemplateTwo($emailAddress, "Password Changed", $emailBody);
 
                             //Now sending sms
                             if ($mobileNumber != null) {
