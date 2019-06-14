@@ -74,7 +74,7 @@ class DoctorScheduleController extends Controller
             for ($i = 0; $i < count($item['ScheduleShift']); $i++) {
                 error_log("### VERIFYING Shifts Overlap ####");
 
-                if ($item['ScheduleShift'][$i] != null && (($i+1) != count($item['ScheduleShift']))) {
+                if ($item['ScheduleShift'][$i] != null && (($i + 1) != count($item['ScheduleShift']))) {
                     if ($item['ScheduleShift'][$i]['EndTime'] > $item['ScheduleShift'][$i + 1]['StartTime']) {
                         DB::rollBack();
                         error_log("###  Not Allowed, Shifts Overlap");
@@ -118,7 +118,7 @@ class DoctorScheduleController extends Controller
             if ($item['ScheduleDate'] >= $request->post('StartDate') && $item['ScheduleDate'] <= $request->post('EndDate')) {
 
 //                #########################
-                $doctorScheduleDetailData  = array(
+                $doctorScheduleDetailData = array(
                     "DoctorScheduleId" => $insertDoctorScheduleData,
                     "ScheduleDate" => $item['ScheduleDate'],
                     "NoOfShift" => $item['NoOfShift'],
@@ -242,7 +242,7 @@ class DoctorScheduleController extends Controller
                 for ($i = 0; $i < count($scheduleShift); $i++) {
                     error_log("### VERIFYING Shifts Overlap ####");
 
-                    if ($scheduleShift[$i] != null && (($i+1) != count($scheduleShift))) {
+                    if ($scheduleShift[$i] != null && (($i + 1) != count($scheduleShift))) {
                         if ($scheduleShift[$i]['EndTime'] > $scheduleShift[$i + 1]['StartTime']) {
                             error_log("###  Not Allowed, Shifts Overlap");
                             return response()->json(['data' => null, 'message' => 'Shifts should not be overlap'], 400);
@@ -313,8 +313,7 @@ class DoctorScheduleController extends Controller
                                     }
                                 }
                             }
-                        }
-                        else {
+                        } else {
                             error_log('Schedule shift exist');
                             //Now checking if off day is true
                             //If yes then we will remove all the schedule shift
@@ -851,7 +850,15 @@ class DoctorScheduleController extends Controller
                 return response()->json(['data' => null, 'message' => 'Error in making appointment'], 400);
             } else {
                 DB::commit();
-                UserModel::sendEmail($patientData[0]->EmailAddress, $emailMessageForPatient, null);
+
+                //create email with template
+                $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
+                    "<br>We are confirming that we have received a new Appointment request from you <br><br>" .
+                    "Your new Appointment number is #: " . $appointmentNumber . "<br><br>" .
+                    "To view the details, Please click the link below:<br><br>" . env('WEB_URL') . "</p>";
+
+                UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "Appointment Request", $emailBody);
+
                 //Now sending sms to patient
                 if ($patientData[0]->MobileNumber != null) {
                     $url = env('WEB_URL') . '/#/';
@@ -860,7 +867,14 @@ class DoctorScheduleController extends Controller
                     array_push($toNumber, $mobileNumber);
                     HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
                 }
-                UserModel::sendEmail($DoctorData[0]->EmailAddress, $emailMessageForDoctor, null);
+
+                //create email with template
+                $emailBody = "<p style='width: 800px;'>Dear " . $DoctorData[0]->FirstName . " " . $DoctorData[0]->LastName . "<br>" .
+                    "<br>We are confirming that your Patient requested an Appointment<br><br>" .
+                    "Appointment number is #: " . $appointmentNumber . "<br><br>" .
+                    "To view the details, Please click the link below:<br><br>" . env('WEB_URL') . "</p>";
+
+                UserModel::sendEmailWithTemplateTwo($DoctorData[0]->EmailAddress, "Appointment Request", $emailBody);
 
                 //Now sending sms to doctor
                 if ($DoctorData[0]->MobileNumber != null) {
@@ -1179,7 +1193,16 @@ class DoctorScheduleController extends Controller
         } else {
             DB::commit();
 
-            UserModel::sendEmail($getAppointmentData->PatientEmailAddress, $emailMessageForPatient, null);
+//            UserModel::sendEmail($getAppointmentData->PatientEmailAddress, $emailMessageForPatient, null);
+
+            //create email with template
+            $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br>" .
+                "<br>We are confirming that your Appointment Request has been" . $reqStatus . "<br><br>" .
+                "Appointment number is #: " . $getAppointmentData->AppointmentNumber . "<br><br>" .
+                "To view the details, Please click the link below:<br><br>" . env('WEB_URL') . "</p>";
+
+            UserModel::sendEmailWithTemplateTwo($getAppointmentData->PatientEmailAddress, "Appointment Request Status", $emailBody);
+
             //Now sending sms to patient
             if ($getAppointmentData->PatientMobileNumber != null) {
                 $url = env('WEB_URL') . '/#/';
@@ -1188,7 +1211,15 @@ class DoctorScheduleController extends Controller
                 array_push($toNumber, $mobileNumber);
                 HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
             }
-            UserModel::sendEmail($getAppointmentData->DoctorEmailAddress, $emailMessageForDoctor, null);
+//            UserModel::sendEmail($getAppointmentData->DoctorEmailAddress, $emailMessageForDoctor, null);
+
+            //create email with template
+            $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . "<br>" .
+                "<br>We are confirming that you have " . $reqStatus . " your Patient Appointment Request <br><br>" .
+                "Appointment number is #: " . $getAppointmentData->AppointmentNumber . "<br><br>" .
+                "To view the details, Please click the link below:<br><br>" . env('WEB_URL') . "</p>";
+
+            UserModel::sendEmailWithTemplateTwo($getAppointmentData->DoctorEmailAddress, "Appointment Request Status", $emailBody);
 
             //Now sending sms to doctor
             if ($getAppointmentData->DoctorMobileNumber != null) {
