@@ -2164,7 +2164,8 @@ class UserController extends Controller
                 error_log('$item' . $item->EmailAddress);
                 error_log('$item' . $item->MobileNumber);
 
-                UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
+//                Not required
+//                UserModel::sendEmail($item->EmailAddress, $emailMessage, null);
             }
 
             ## Preparing Data for SMS  - START ##
@@ -2547,7 +2548,7 @@ class UserController extends Controller
                     "<br>Upload Completion Date: " . $currentDateTime . "<br><br>" .
                     "<br>Upload Completion Time: 10 minutes</p>";
 
-                UserModel::sendEmailWithTemplateTwo($userData->EmailAddress, "Bulk Upload User Complete", $emailBody);
+                UserModel::sendEmailWithTemplateTwo($userData[0]->EmailAddress, "Bulk Upload User Complete", $emailBody);
 
             } catch (Exception $ex) {
                 $exception = $ex;
@@ -2556,7 +2557,16 @@ class UserController extends Controller
                 $tempTableRecordDelete = "not required";
 
                 error_log("## Here Sending Failure Email to Uploader ##");
-                UserModel::sendEmail($tempUser[$i]->CreatedByEmail, "Sorry, Your Bulk Uploaded Users process is failed to complete. Please try again ", null);
+
+                //fetch User data
+                //to be use in sending email
+                $userData = GenericModel::simpleFetchGenericByWhere("user", "=", "Id", $createdBy);
+
+                //create email with template
+                $emailBody = "<p style='width: 800px;'>Dear " . $userData[0]->FirstName . " " . $userData[0]->LastName . "<br>" .
+                    "<br>We are sorry the bulk upload made by you is failed completed. Please try again. </p>";
+
+                UserModel::sendEmailWithTemplateTwo($userData[0]->EmailAddress, "Bulk Upload User Complete", $emailBody);
 
                 return response()->json(['data' => null, 'message' => 'Internal Server Error'], 500);
             }
