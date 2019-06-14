@@ -323,9 +323,9 @@ class TicketController extends Controller
 
                     //create email with template
                     $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData->FirstName . " " . $checkUserData->LastName . "<br>" .
-                        "<br>We are confirming that you have create a new Ticket with the topic " . $request->input('Title') . "<br><br>" .
-                        "Your new ticket number is #: " . $getTicketNumber . "<br><br>" .
-                        "Our correspondent is responding to you shortly.</p>";
+                        "<br>We are confirming that we have received a new ticket from you with the topic " . $request->input('Title') . "<br><br>" .
+                        "Your new ticket number is #: " . $getTicketNumber . ". Here is what you told us:<br><br>" . $request->input('Description') .
+                        "To view the full ticket and reply, Please click the link/button below:<br><br>" . env('WEB_URL') . "</p>";
 
                     UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Create", $emailBody);
 
@@ -1298,7 +1298,6 @@ class TicketController extends Controller
         $ticketTrackStatus = $request->get('trackStatus');
 
         $ticketClose = env('TICKET_TRACK_STATUS_CLOSE');
-        $ticketInProgress = env('TICKET_TRACK_STATUS_IN_PROGRESS');
         $patientRole = env('ROLE_PATIENT');
 
         $date = HelperModel::getDate();
@@ -1350,11 +1349,17 @@ class TicketController extends Controller
                     );
 
                     $insertedDataId = GenericModel::updateGeneric('ticket', 'Id', $ticketId, $ticketDataUpdate);
-                    if ($insertedDataId == false) {
-                        return response()->json(['data' => null, 'message' => 'Error in closing the Ticket ticket'], 400);
-                    } else {
-                        return response()->json(['data' => $ticketId, 'message' => 'Ticket is successfully closed'], 200);
-                    }
+
+                    //create email with template
+                    $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData->FirstName . " " . $checkUserData->LastName . "<br>" .
+                        "<br>We are confirming that we have received a ticket from you with the topic " . $ticketData->Title . "<br><br>" .
+                        "Your new ticket number is #: " . $ticketData->TicketNumber . "<br><br>" .
+                        "We are closing the ticket as all the ticket issue is resolved.</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Close", $emailBody);
+
+                    return response()->json(['data' => $ticketId, 'message' => 'Ticket is successfully closed'], 200);
+
                 }
             }
         }

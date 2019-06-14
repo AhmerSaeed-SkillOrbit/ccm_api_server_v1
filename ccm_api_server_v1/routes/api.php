@@ -194,7 +194,7 @@ Route::post('/ticket/reply/update', 'TicketController@UpdateTicketReply');
 //ticket assign
 Route::post('/ticket/assign', 'TicketController@AssignTicket');
 
-//ticket status update
+//ticket status update (means ticket close)
 Route::post('/ticket/track/status/update', 'TicketController@TicketTrackStatusUpdate');
 
 ##
