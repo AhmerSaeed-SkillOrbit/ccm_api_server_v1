@@ -6721,7 +6721,18 @@ class CcmPlanController extends Controller
             //create email with template
             $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
                 "<br>Your health plan is ready at the portal. You can review the plan and download its PDF in the portal <br><br>" . env('WEB_URL') . "/#</p>";
-            UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "CCM Plan Create", $emailBody);
+            UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "CCM Plan", $emailBody);
+
+            //create sms
+            //Now sending sms to patient
+            if ($patientData[0]->MobileNumber != null) {
+                $url = null;
+                $toNumber = array();
+                $patientData[0]->MobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
+                array_push($toNumber, $patientData[0]->MobileNumber);
+
+                HelperModel::sendSms($toNumber, 'Your CCM Plan is created for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+            }
 
             return response()->json(['data' => $insertCcmPlanData, 'message' => 'Ccm plan successfully added'], 200);
         }
@@ -7828,7 +7839,7 @@ class CcmPlanController extends Controller
 
                 //create email with template
                 $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
-                    "<br>Your health records are updated/reviewed at the portal. You can review the records in the portal<br><br>" . env('WEB_URL')."</p>";
+                    "<br>Your health records are updated/reviewed at the portal. You can review the records in the portal<br><br>" . env('WEB_URL') . "</p>";
 
                 UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "Patient Record Publish", $emailBody);
 

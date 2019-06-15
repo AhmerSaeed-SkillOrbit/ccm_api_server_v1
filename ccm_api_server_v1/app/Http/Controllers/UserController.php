@@ -886,6 +886,17 @@ class UserController extends Controller
 
             UserModel::sendEmailWithTemplateTwo($data[0]->EmailAddress, "User Account Information Update", $emailBody);
 
+            //create sms
+            //Now sending sms to patient
+            if ($mobileNumber != null) {
+                $url = null;
+                $toNumber = array();
+                $mobileNumber = $data[0]->CountryPhoneCode . $mobileNumber;
+                array_push($toNumber, $mobileNumber);
+
+                HelperModel::sendSms($toNumber, 'Your account information is updated, Please check the portal for the update.  Care Connect Plus, Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+            }
+
             return response()->json(['data' => null, 'message' => 'User successfully updated'], 200);
         } else if ($update == 0) {
             DB::rollBack();

@@ -186,8 +186,6 @@ class LoginController extends Controller
                             $emailMessage = "To reset your password click the link below.";
 
                             DB::commit();
-//                            //Now sending email
-//                            LoginModel::sendEmail($emailAddress, "Reset Password", $emailMessage, $url);
 
                             //create email with template
                             $emailBody = "<p style='width: 800px;'>Dear " . $checkEmail[0]->FirstName . " " . $checkEmail[0]->LastName . "<br>" .
@@ -197,22 +195,20 @@ class LoginController extends Controller
 
                             UserModel::sendEmailWithTemplateTwo($checkEmail[0]->EmailAddress, "Forget Password", $emailBody);
 
+                            //create sms
                             //Now sending sms
                             if ($mobileNumber != null) {
-                                $url = env('WEB_URL') . '/#/';
                                 $toNumber = array();
                                 $mobileNumber = $countyPhoneCode . $mobileNumber;
 
                                 array_push($toNumber, $mobileNumber);
                                 try {
-                                    HelperModel::sendSms($toNumber, 'Reset Password - Verification link has been sent to your email address.', null);
+                                    HelperModel::sendSms($toNumber, 'Your password reset link ' . $url . ' for  Care Connect Plus, Chronic Care Management system developed by Business Services Solutions, LLC', null);
                                 } catch (Exception $ex) {
-//                                    return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
                                     return response()->json(['data' => $insertedRecord, 'message' => 'Reset Password - Verification link has been sent to your email address. '], 200);
                                 }
                             }
                             return response()->json(['data' => $insertedRecord, 'message' => 'Reset Password - Verification link has been sent to your email address.'], 200);
-
 
                         } else {
                             DB::rollback();
@@ -304,17 +300,15 @@ class LoginController extends Controller
 
                                 UserModel::sendEmailWithTemplateTwo($emailAddress, "Reset Password", $emailBody);
 
+                                //create sms
                                 //Now sending sms
                                 if ($mobileNumber != null) {
-                                    $url = env('WEB_URL') . '/#/';
                                     $toNumber = array();
                                     $mobileNumber = $countryPhoneCode . $mobileNumber;
                                     array_push($toNumber, $mobileNumber);
                                     try {
-//                                    HelperModel::sendSms($toNumber, 'Verification link has been sent to your email address', $url);
-                                        HelperModel::sendSms($toNumber, 'Your password has been updated.', null);
+                                        HelperModel::sendSms($toNumber, 'Your password is recently reset, Please check the portal for the update.  Care Connect Plus, Chronic Care Management system developed by Business Services Solutions, LLC', null);
                                     } catch (Exception $ex) {
-//                                    return response()->json(['data' => $insertedRecord, 'message' => 'User successfully registered. ' . $ex], 200);
                                         return response()->json(['data' => null, 'message' => 'Your password has been updated. '], 200);
                                     }
                                 }
@@ -398,6 +392,7 @@ class LoginController extends Controller
                                 "If you did not change the password, Please write us at info@connectcareplus.com.</p>";
                             UserModel::sendEmailWithTemplateTwo($emailAddress, "Password Changed", $emailBody);
 
+                            //create sms
                             //Now sending sms
                             if ($mobileNumber != null) {
                                 $url = env('WEB_URL') . '/#/';
@@ -405,7 +400,7 @@ class LoginController extends Controller
                                 $mobileNumber = $countryPhoneCode . $mobileNumber;
                                 array_push($toNumber, $mobileNumber);
                                 try {
-                                    HelperModel::sendSms($toNumber, 'Your password has been changed.', null);
+                                    HelperModel::sendSms($toNumber, 'Your have recently change the password for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', null);
                                 } catch (Exception $ex) {
                                     return response()->json(['data' => null, 'message' => 'Your password has been changed'], 200);
                                 }

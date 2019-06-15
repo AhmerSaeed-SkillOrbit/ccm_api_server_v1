@@ -179,7 +179,17 @@ class TicketController extends Controller
 
                     DB::commit();
                     error_log('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
+
+                    //create email with template
+                    $emailBody = "<p style='width: 800px;'>Dear " . $checkUserData->FirstName . " " . $checkUserData->LastName . "<br>" .
+                        "<br>We are confirming that we have received a new ticket from you with the topic " . $request->input('Title') . "<br><br>" .
+                        "Your new ticket number is #: " . $getTicketNumber . ". Here is what you told us:<br><br>" . $request->input('Description') .
+                        "To view the full ticket and reply, Please click the link/button below:<br><br>" . env('WEB_URL') . "</p>";
+
+                    UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Create", $emailBody);
+
                     $response->message('Dear Patient, your Ticket is created. We are responding shortly, your Ticket Number is ' . $getTicketNumber . '. Regards CCM - Support Staff Thanks');
+
                     return $response;
                 }
             }
@@ -328,6 +338,17 @@ class TicketController extends Controller
                         "To view the full ticket and reply, Please click the link/button below:<br><br>" . env('WEB_URL') . "</p>";
 
                     UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Create", $emailBody);
+
+                    //create sms
+                    //Now sending sms to patient
+                    if ($checkUserData->MobileNumber != null) {
+                        $url = null;
+                        $toNumber = array();
+                        $checkUserData->MobileNumber = $checkUserData->CountryPhoneCode . $checkUserData->MobileNumber;
+                        array_push($toNumber, $checkUserData->MobileNumber);
+
+                        HelperModel::sendSms($toNumber, 'Your have recently created the ticket [Ticket #: ' . $getTicketNumber . '] for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    }
 
                     return response()->json(['data' => $insertedDataId, 'message' => 'Ticket is successfully created'], 200);
                 }
@@ -884,7 +905,7 @@ class TicketController extends Controller
                                     } else {
                                         error_log('Patient data found, now sending email');
 
-                                        $emailMessage = "Dear Patient, please check the response from Support Staff on your Ticket. Remember Your Ticket Number is " . $ticketNumber . "";
+                                        $emailMessage = "Our Support Staff Team is responded on your Ticket [Ticket #: ' . $ticketNumber . '], please check it by log into the Chronic Care Management system developed by Business Services Solutions, LLC";
 
                                         $toNumber = array();
 
@@ -1356,6 +1377,17 @@ class TicketController extends Controller
 
                     UserModel::sendEmailWithTemplateTwo($checkUserData->EmailAddress, "Ticket Close", $emailBody);
 
+                    //create sms
+                    //Now sending sms to patient
+                    if ($checkUserData->MobileNumber != null) {
+                        $url = null;
+                        $toNumber = array();
+                        $checkUserData->MobileNumber = $checkUserData->CountryPhoneCode . $checkUserData->MobileNumber;
+                        array_push($toNumber, $checkUserData->MobileNumber);
+
+                        HelperModel::sendSms($toNumber, 'Your ticket is close [Ticket #: ' . $ticketData->TicketNumber . '] for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    }
+
                     return response()->json(['data' => $ticketId, 'message' => 'Ticket is successfully closed'], 200);
 
                 }
@@ -1405,6 +1437,18 @@ class TicketController extends Controller
                         "We are closing the ticket as all the ticket issue is resolved.</p>";
 
                     UserModel::sendEmailWithTemplateTwo($checkUserData[0]->EmailAddress, "Ticket Close", $emailBody);
+
+                    //create sms
+                    //Now sending sms to patient
+                    if ($checkUserData[0]->MobileNumber != null) {
+                        $url = null;
+                        $toNumber = array();
+                        $checkUserData[0]->MobileNumber = $checkUserData[0]->CountryPhoneCode . $checkUserData[0]->MobileNumber;
+
+                        array_push($toNumber, $checkUserData[0]->MobileNumber);
+
+                        HelperModel::sendSms($toNumber, 'Your ticket is close [Ticket #: ' . $item->TicketNumber . '] for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    }
                 }
             }
 
