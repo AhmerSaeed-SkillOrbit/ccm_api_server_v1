@@ -43,7 +43,8 @@ class DocumentUploadController extends Controller
         //filename to store
         $filenametostore = $filename . '_' . uniqid() . '.' . $extension;
 
-        $createDir = Storage::disk('ftp')->makeDirectory('1/forum');
+//        $createDir = Storage::disk('ftp')->makeDirectory('1/forum');
+        $createDir = Storage::disk('local')->makeDirectory('1/forum');
 
         error_log("createDir");
 
@@ -268,14 +269,16 @@ class DocumentUploadController extends Controller
 
                 $dirPath = $byUserId . '/' . $profileDirectory . '/';
 
-                $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+//                $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+                $createDir = Storage::disk('local')->makeDirectory($dirPath);
 
                 error_log("createDir");
 
                 error_log($createDir);
 
                 try {
-                    $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
+//                    $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
+                    $upload_success = Storage::disk('local')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
                     error_log('$upload_success');
                     error_log($upload_success);
 
@@ -955,7 +958,7 @@ class DocumentUploadController extends Controller
             //Now checking if document name is same as it is given in parameter
             if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
                 error_log(' image name is valid');
-                $filePath = '/' . $baseUrl . '/' . $checkDocument->RelativePath . $fileName;
+                $filePath = '/' . $checkDocument->RelativePath . $fileName;
                 error_log($filePath);
                 if (strtolower($checkDocument->FileExtension) == ".jpg" || strtolower($checkDocument->FileExtension) == ".jpeg") {
                     $fileType = env('JPG_IMAGE_TYPE');
@@ -970,13 +973,13 @@ class DocumentUploadController extends Controller
                     $fileType = env('SVG_IMAGE_TYPE');
                     error_log($fileType);
                 }
-                $ftp = Storage::createFtpDriver([
-                    'host' => env('FTP_HOST'),
-                    'username' => env('FTP_USER'),
-                    'password' => env('FTP_PASSWORD'),
-                    'port' => env('FTP_PORT'),
-                    'timeout' => env('FTP_TIMEOUT')
-                ]);
+//                $ftp = Storage::createFtpDriver([
+//                    'host' => env('FTP_HOST'),
+//                    'username' => env('FTP_USER'),
+//                    'password' => env('FTP_PASSWORD'),
+//                    'port' => env('FTP_PORT'),
+//                    'timeout' => env('FTP_TIMEOUT')
+//                ]);
 
                 error_log("ftp credentials");
 
@@ -989,9 +992,10 @@ class DocumentUploadController extends Controller
                 error_log("fileContent");
 
                 try {
-                    $fileContent = $ftp->get($filePath); // read file content
-                }
-                catch (exception $ex){
+//                    $fileContent = $ftp->get($filePath); // read file content
+                    $fileContent = Storage::disk('local')->get($filePath); // read file content
+
+                } catch (exception $ex) {
                     error_log("exception message");
                     error_log($ex);
                 }
@@ -1329,14 +1333,17 @@ class DocumentUploadController extends Controller
 
                 $dirPath = $dirAndEnumValue . '/';
 
-                $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+//                $createDir = Storage::disk('ftp')->makeDirectory($dirPath);
+                $createDir = Storage::disk('local')->makeDirectory($dirPath);
 
                 error_log("createDir");
 
                 error_log($createDir);
 
                 try {
-                    $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
+//                    $upload_success = Storage::disk('ftp')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
+                    $upload_success = Storage::disk('local')->put($dirPath . '/' . $filenameWithoutExtension . '.' . $extension, fopen($request->file('File'), 'r+'));
+
                     error_log('$upload_success');
                     error_log($upload_success);
 
@@ -1413,7 +1420,8 @@ class DocumentUploadController extends Controller
             //Now checking if document name is same as it is given in parameter
             if ($fileName == ($checkDocument->FileName . '' . $checkDocument->FileExtension)) {
                 error_log('document name is valid');
-                $filePath = '/' . $baseUrl . '/' . $checkDocument->RelativePath . $fileName;
+//                $filePath = '/' . $baseUrl . '/' . $checkDocument->RelativePath . $fileName;
+                $filePath = '/' . $checkDocument->RelativePath . $fileName;
                 if (strtolower($checkDocument->FileExtension) == ".jpg" || strtolower($checkDocument->FileExtension) == ".jpeg") {
                     $fileType = env('JPG_IMAGE_TYPE');
                 } else if (strtolower($checkDocument->FileExtension) == ".png") {
@@ -1439,15 +1447,16 @@ class DocumentUploadController extends Controller
                 } else if (strtolower($checkDocument->FileExtension) == ".rar") {
                     $fileType = env('RAR_FILE_TYPE');
                 }
-                $ftp = Storage::createFtpDriver([
-                    'host' => env('FTP_HOST'),
-                    'username' => env('FTP_USER'),
-                    'password' => env('FTP_PASSWORD'),
-                    'port' => '21', // your ftp port
-                    'timeout' => '30', // timeout setting
-                ]);
+//                $ftp = Storage::createFtpDriver([
+//                    'host' => env('FTP_HOST'),
+//                    'username' => env('FTP_USER'),
+//                    'password' => env('FTP_PASSWORD'),
+//                    'port' => '21', // your ftp port
+//                    'timeout' => '30', // timeout setting
+//                ]);
 
-                $fileContent = $ftp->get($filePath); // read file content
+//                $fileContent = $ftp->get($filePath); // read file content
+                $fileContent = Storage::disk('local')->get($filePath); // read file content
 
                 // download file
                 return Response::make($fileContent, '200', array(
