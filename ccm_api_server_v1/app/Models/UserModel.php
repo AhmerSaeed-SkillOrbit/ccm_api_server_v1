@@ -760,7 +760,7 @@ class UserModel
      * $emailBody = array
      *
      */
-    public static function sendEmailWithTemplateThree($toEmail, $emailSubject, $emailBody)
+    public static function sendEmailWithTemplateTwo($toEmail, $emailSubject, $emailBody)
     {
         $emailContent = "<!DOCTYPE html>" .
             "<html>" .
@@ -897,7 +897,7 @@ class UserModel
     * $emailBody = array
     *
     */
-    public static function sendEmailWithTemplateTwo($toEmail, $emailSubject, $emailBody)
+    public static function sendEmailWithTemplateThree($toEmail, $emailSubject, $emailBody)
     {
         $emailContent = "<!DOCTYPE html>" .
             "<html>" .

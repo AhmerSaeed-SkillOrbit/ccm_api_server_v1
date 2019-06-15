@@ -859,13 +859,14 @@ class DoctorScheduleController extends Controller
 
                 UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "Appointment Request", $emailBody);
 
+                //create sms
                 //Now sending sms to patient
                 if ($patientData[0]->MobileNumber != null) {
-                    $url = env('WEB_URL') . '/#/';
+                    $url = null;
                     $toNumber = array();
                     $mobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request is submitted successfully', $url);
+                    HelperModel::sendSms($toNumber, 'We are confirming that we have received a new Appointment request from you on Chronic Care Management system developed by Business Services Solutions, LLC', $url);
                 }
 
                 //create email with template
@@ -876,13 +877,14 @@ class DoctorScheduleController extends Controller
 
                 UserModel::sendEmailWithTemplateTwo($DoctorData[0]->EmailAddress, "Appointment Request", $emailBody);
 
+                //create sms
                 //Now sending sms to doctor
                 if ($DoctorData[0]->MobileNumber != null) {
-                    $url = env('WEB_URL') . '/#/';
+                    $url = null;
                     $toNumber = array();
                     $mobileNumber = $DoctorData[0]->CountryPhoneCode . $DoctorData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'Dear Doctor, Your patient has request an appointment. View details from the following link', $url);
+                    HelperModel::sendSms($toNumber, '>We are confirming that your Patient requested an Appointment on Chronic Care Management system developed by Business Services Solutions, LLC', $url);
                 }
                 return response()->json(['data' => $checkInsertedData, 'message' => 'Appointment request successfully created'], 200);
             }
@@ -1203,15 +1205,15 @@ class DoctorScheduleController extends Controller
 
             UserModel::sendEmailWithTemplateTwo($getAppointmentData->PatientEmailAddress, "Appointment Request Status", $emailBody);
 
+            //create sms
             //Now sending sms to patient
             if ($getAppointmentData->PatientMobileNumber != null) {
-                $url = env('WEB_URL') . '/#/';
+                $url = null;
                 $toNumber = array();
                 $mobileNumber = $getAppointmentData->PatientCountryPhoneCode . $getAppointmentData->PatientMobileNumber;
                 array_push($toNumber, $mobileNumber);
-                HelperModel::sendSms($toNumber, 'Dear Patient, Your appointment request has been ' . $reqStatus . '.', $url);
+                HelperModel::sendSms($toNumber, 'Your appointment request has been ' . $reqStatus . '. on Chronic Care Management system developed by Business Services Solutions, LLC', $url);
             }
-//            UserModel::sendEmail($getAppointmentData->DoctorEmailAddress, $emailMessageForDoctor, null);
 
             //create email with template
             $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . "<br>" .
@@ -1221,13 +1223,14 @@ class DoctorScheduleController extends Controller
 
             UserModel::sendEmailWithTemplateTwo($getAppointmentData->DoctorEmailAddress, "Appointment Request Status", $emailBody);
 
+            //create sms
             //Now sending sms to doctor
             if ($getAppointmentData->DoctorMobileNumber != null) {
-                $url = env('WEB_URL') . '/#/';
+                $url = null;
                 $toNumber = array();
                 $mobileNumber = $getAppointmentData->DoctorCountryPhoneCode . $getAppointmentData->DoctorMobileNumber;
                 array_push($toNumber, $mobileNumber);
-                HelperModel::sendSms($toNumber, 'Dear Doctor, You have ' . $reqStatus . ' your patient appointment request. View details from the following link', $url);
+                HelperModel::sendSms($toNumber, 'You have ' . $reqStatus . ' your patient appointment request on Chronic Care Management system developed by Business Services Solutions, LLC.', $url);
             }
             return response()->json(['data' => $appointmentId, 'message' => 'Appointment request successfully updated'], 200);
         }

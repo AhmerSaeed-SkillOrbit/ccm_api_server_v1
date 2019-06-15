@@ -2603,6 +2603,18 @@ class UserController extends Controller
                     "<br>Upload Completion Time: 10 minutes</p>";
 
                 UserModel::sendEmailWithTemplateTwo($userData[0]->EmailAddress, "Bulk Upload User Complete", $emailBody);
+
+                //create sms
+                //Now sending sms to patient
+                if ($userData[0]->MobileNumber != null) {
+                    $url = null;
+                    $toNumber = array();
+                    $userData[0]->MobileNumber = $userData[0]->CountryPhoneCode . $userData[0]->MobileNumber;
+                    array_push($toNumber, $userData[0]->MobileNumber);
+
+                    HelperModel::sendSms($toNumber, 'Your bulk upload is completed for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                }
+
             } catch (Exception $ex) {
                 $exception = $ex;
                 $uploadStatus = "failed";
