@@ -768,7 +768,7 @@ class UserModel
             "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>" .
             "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>" .
             "<title>" . $emailSubject . "</title>" .
-            "<link rel='stylesheet' href='http://businessdirectory360.com/assets/email_assets/geomanist-fonts.css'>" .
+            "<link rel='stylesheet' href='https://connectcareplus.com/assets/email_assets/geomanist-fonts.css'>" .
             "</head>" .
             "<body style=\"-webkit-font-smoothing:antialiased; font-family: \'Geomanist-Light\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif; -webkit-text-size-adjust:none; word-wrap:break-word; background-color:#ffffff; margin:0; padding:0;\">" .
 //        Main Template
@@ -821,10 +821,10 @@ class UserModel
             "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;margin-left: -40px;\">" .
             "<tr>" .
             "<td width=\"270\" valign=\"middle\" align=\"right\" style=\"text-align: right !important;\">" .
-            "<img width=\"0\" height=\"0\" alt=\"Chronic Care Management\" src=\"http://businessdirectory360.com/assets/images/logo.png\" style=\"border-style:none; width: 300px; height: 55px;margin-left: -50px;\">" .
+            "<img width=\"0\" height=\"0\" alt=\"Chronic Care Management\" src=\"https://connectcareplus.com/assets/images/logo.png\" style=\"border-style:none; width: 300px; height: 55px;margin-left: -50px;\">" .
             "</td>" .
             "<td width=\"270\" valign=\"middle\" align=\"left\" style=\"text-align: left !important;\">" .
-            "<img width=\"0\" height=\"0\" alt=\"Business Service Solution\" src=\"http://businessdirectory360.com/assets/images/BSSVector1.png\" style=\"border-style:none; width: 178px; height: 55px; margin-left: 150px;\">" .
+            "<img width=\"0\" height=\"0\" alt=\"Business Service Solution\" src=\"https://connectcareplus.com/assets/images/BSSVector1.png\" style=\"border-style:none; width: 178px; height: 55px; margin-left: 150px;\">" .
             "</td>" .
             "</tr>" .
             "</table>" .
@@ -905,7 +905,7 @@ class UserModel
             "<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0'>" .
             "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>" .
             "<title>" . $emailSubject . "</title>" .
-            "<link rel='stylesheet' href='http://businessdirectory360.com/assets/email_assets/geomanist-fonts.css'>" .
+            "<link rel='stylesheet' href='https://connectcareplus.com/assets/email_assets/geomanist-fonts.css'>" .
             "</head>" .
             "<body style=\"-webkit-font-smoothing:antialiased; font-family: \'Geomanist-Light\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif; -webkit-text-size-adjust:none; word-wrap:break-word; background-color:#ffffff; margin:0; padding:0;\">" .
 //        Main Template
@@ -928,10 +928,10 @@ class UserModel
             "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
             "<tr>" .
             "<td width=\"0\" align=\"left\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #000000;\">" .
-            "<img width=\"0\" height=\"22\" alt=\"Chronic Care Management\" src=\"http://businessdirectory360.com/assets/images/logo.png\" style=\"border-style:none; width: 178px; height: 55px;\">" .
+            "<img width=\"0\" height=\"22\" alt=\"Chronic Care Management\" src=\"https://connectcareplus.com/assets/images/logo.png\" style=\"border-style:none; width: 178px; height: 55px;\">" .
             "</td>" .
             "<td width=\"0\" align=\"right\" valign=\"middle\" style=\"text-align:left;font-size: 20px;font-weight: 900;color: #000000;\">" .
-            "<img width=\"0\" height=\"22\" alt=\"Chronic Care Management\" src=\"http://businessdirectory360.com/assets/images/BSSVector1.png\" style=\"border-style:none; width: 178px; height: 150px; margin-left: 150px;\">" .
+            "<img width=\"0\" height=\"22\" alt=\"Chronic Care Management\" src=\"https://connectcareplus.com/assets/images/BSSVector1.png\" style=\"border-style:none; width: 178px; height: 150px; margin-left: 150px;\">" .
             "</td>" .
             "</tr>" .
             "</table>" .
