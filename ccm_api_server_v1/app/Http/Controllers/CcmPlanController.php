@@ -7861,7 +7861,7 @@ class CcmPlanController extends Controller
                     $patientData[0]->MobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $patientData[0]->MobileNumber);
 
-                    HelperModel::sendSms($toNumber, 'Your patient records are avaiable for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    HelperModel::sendSms($toNumber, 'Your patient records are available for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
                 }
 
                 return response()->json(['data' => $insert, 'message' => 'Tab has been published'], 200);

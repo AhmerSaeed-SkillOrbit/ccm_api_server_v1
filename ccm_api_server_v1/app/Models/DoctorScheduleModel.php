@@ -427,7 +427,7 @@ class DoctorScheduleModel
             ->select('appointment.*', 'patient.FirstName AS PatientFirstName', 'patient.LastName AS PatientLastName', 'patient.EmailAddress AS PatientEmailAddress',
                 'patient.MobileNumber AS PatientMobileNumber', 'patient.CountryPhoneCode AS PatientCountryPhoneCode',
                 'doctor.FirstName AS DoctorFirstName', 'doctor.LastName AS DoctorLastName', 'doctor.EmailAddress AS DoctorEmailAddress', 'doctor.MobileNumber AS DoctorMobileNumber',
-                'doctor.CountryPhoneCode AS DoctorCountryPhoneCode',
+                'doctor.CountryPhoneCode AS DoctorCountryPhoneCode','doctor.OfficeAddress AS DoctorOfficeAddress','doctor.TelephoneNumber AS DoctorTelephoneNumber',
                 'ScheduleDetail.ScheduleDate', 'ScheduleShiftTime.TimeSlot')
             ->where("appointment.IsActive", "=", true)
             ->where('appointment.Id', '=', $appointmentId)

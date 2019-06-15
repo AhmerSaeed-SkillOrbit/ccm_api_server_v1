@@ -853,9 +853,10 @@ class DoctorScheduleController extends Controller
 
                 //create email with template
                 $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
-                    "<br>We are confirming that we have received a new Appointment request from you <br><br>" .
-                    "Your new Appointment number is #: " . $appointmentNumber . "<br><br>" .
-                    "To view the details, Please click the link below:<br><br>" . env('WEB_URL') . "</p>";
+                    "<br>Thi is a confirmation email that the appointment is created by " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "The following are the appointment details: <br><br>" .
+                    "Appointment Date: " . $getScheduleDate->ScheduleDate . "<br><br>" .
+                    "Appointment Time: " . $getScheduleDate->StartTime . "<br><br>" .
+                    "Please note that the confirmation of the appointment is due. As soon it is confirmed you will received another email and the sms notification. You can always check the the details in the portal.</p>";
 
                 UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "Appointment Request", $emailBody);
 
@@ -866,7 +867,7 @@ class DoctorScheduleController extends Controller
                     $toNumber = array();
                     $mobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
                     array_push($toNumber, $mobileNumber);
-                    HelperModel::sendSms($toNumber, 'We are confirming that we have received a new Appointment request from you on Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                    HelperModel::sendSms($toNumber, 'The appointment created by you is pending for approval Connect Care Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
                 }
 
                 //create email with template
@@ -1123,8 +1124,8 @@ class DoctorScheduleController extends Controller
 
 //        First checking if appointment exists or not
 
-        $emailMessageForPatient = "Dear Patient, Your appointment request has been " . $reqStatus . '.';
-        $emailMessageForDoctor = "Dear Doctor, You have " . $reqStatus . " your patient appointment request. View details from the following link";
+//        $emailMessageForPatient = "Dear Patient, Your appointment request has been " . $reqStatus . '.';
+//        $emailMessageForDoctor = "Dear Doctor, You have " . $reqStatus . " your patient appointment request. View details from the following link";
 
         $getAppointmentData = DoctorScheduleModel::getSingleAppointmentViaId($appointmentId);
         if ($getAppointmentData == null) {
@@ -1195,24 +1196,48 @@ class DoctorScheduleController extends Controller
         } else {
             DB::commit();
 
-//            UserModel::sendEmail($getAppointmentData->PatientEmailAddress, $emailMessageForPatient, null);
+            if ($reqStatus == 'accepted') {
+                //create email with template
+                $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br>" .
+                    "<br>This a confirmation email that the appointment is accepted by " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . " The following are the appointment details:<br><br>" .
+                    "Patient Name: " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br><br>" .
+                    "Appointment Date: " . $getAppointmentData->ScheduleDate . "<br><br>" .
+                    "Appointment Time: " . $getAppointmentData->TimeSlot . "<br><br>" .
+                    "Our address is " . $getAppointmentData->DoctorOfficeAddress . " If you have any questions, Please reach me at " . $getAppointmentData->DoctorOfficeAddress . " or email me at " . $getAppointmentData->DoctorEmailAddress . "</p>";
 
-            //create email with template
-            $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br>" .
-                "<br>We are confirming that your Appointment Request has been" . $reqStatus . "<br><br>" .
-                "Appointment number is #: " . $getAppointmentData->AppointmentNumber . "<br><br>" .
-                "To view the details, Please click the link below:<br><br>" . env('WEB_URL') . "</p>";
+                UserModel::sendEmailWithTemplateTwo($getAppointmentData->PatientEmailAddress, "Appointment Request Status", $emailBody);
 
-            UserModel::sendEmailWithTemplateTwo($getAppointmentData->PatientEmailAddress, "Appointment Request Status", $emailBody);
+                //create sms
+                //Now sending sms to patient
+                if ($getAppointmentData->PatientMobileNumber != null) {
+                    $url = null;
+                    $toNumber = array();
+                    $mobileNumber = $getAppointmentData->PatientCountryPhoneCode . $getAppointmentData->PatientMobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'The appointment created by you is accepted for Connect Care Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                }
+            }
 
-            //create sms
-            //Now sending sms to patient
-            if ($getAppointmentData->PatientMobileNumber != null) {
-                $url = null;
-                $toNumber = array();
-                $mobileNumber = $getAppointmentData->PatientCountryPhoneCode . $getAppointmentData->PatientMobileNumber;
-                array_push($toNumber, $mobileNumber);
-                HelperModel::sendSms($toNumber, 'Your appointment request has been ' . $reqStatus . '. on Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+            if ($reqStatus == 'rejected') {
+                //create email with template
+                $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br>" .
+                    "<br>This a confirmation email that the appointment is cancelled by " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . " The following are the appointment details:<br><br>" .
+                    "Patient Name: " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br><br>" .
+                    "Appointment Date: " . $getAppointmentData->ScheduleDate . "<br><br>" .
+                    "Appointment Time: " . $getAppointmentData->TimeSlot . "<br><br>" .
+                    "Cancellation Reason: " . $getAppointmentData->RequestStatusReason . "</p>";
+
+                UserModel::sendEmailWithTemplateTwo($getAppointmentData->PatientEmailAddress, "Appointment Request Status", $emailBody);
+
+                //create sms
+                //Now sending sms to patient
+                if ($getAppointmentData->PatientMobileNumber != null) {
+                    $url = null;
+                    $toNumber = array();
+                    $mobileNumber = $getAppointmentData->PatientCountryPhoneCode . $getAppointmentData->PatientMobileNumber;
+                    array_push($toNumber, $mobileNumber);
+                    HelperModel::sendSms($toNumber, 'The appointment created by you is cancelled for Connect Care Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                }
             }
 
             //create email with template
