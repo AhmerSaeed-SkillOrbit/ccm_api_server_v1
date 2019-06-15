@@ -7521,6 +7521,16 @@ class CcmPlanController extends Controller
                             "<br>Your health plan is updated/reviewed at the portal. You can review the plan in the portal  <br><br>" . env('WEB_URL') . "/#</p>";
                         UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "CCM Plan Reviewed", $emailBody);
 
+                        //create sms
+                        //Now sending sms to patient
+                        if ($patientData[0]->MobileNumber != null) {
+                            $url = null;
+                            $toNumber = array();
+                            $patientData[0]->MobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
+                            array_push($toNumber, $patientData[0]->MobileNumber);
+
+                            HelperModel::sendSms($toNumber, 'Your CCM Plan is reviewed for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                        }
                         return response()->json(['data' => $insertedData, 'message' => 'Review successfully added'], 200);
                     }
 
@@ -7842,6 +7852,17 @@ class CcmPlanController extends Controller
                     "<br>Your health records are updated/reviewed at the portal. You can review the records in the portal<br><br>" . env('WEB_URL') . "</p>";
 
                 UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "Patient Record Publish", $emailBody);
+
+                //create sms
+                //Now sending sms to patient
+                if ($patientData[0]->MobileNumber != null) {
+                    $url = null;
+                    $toNumber = array();
+                    $patientData[0]->MobileNumber = $patientData[0]->CountryPhoneCode . $patientData[0]->MobileNumber;
+                    array_push($toNumber, $patientData[0]->MobileNumber);
+
+                    HelperModel::sendSms($toNumber, 'Your patient records are avaiable for Care Connect Plus account. Chronic Care Management system developed by Business Services Solutions, LLC', $url);
+                }
 
                 return response()->json(['data' => $insert, 'message' => 'Tab has been published'], 200);
             }
