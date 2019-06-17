@@ -177,7 +177,7 @@ class LoginController extends Controller
 
                             if ($insertedRecord == 0) {
                                 DB::rollback();
-                                return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                                return response()->json(['data' => null, 'message' => '1'], 400);
                             }
 
                             $url = env('WEB_URL') . '/#/reset-password?token=' . $token;
@@ -212,11 +212,11 @@ class LoginController extends Controller
 
                         } else {
                             DB::rollback();
-                            return response()->json(['data' => null, 'message' => 'Something went wrong'], 400);
+                            return response()->json(['data' => null, 'message' => '2'], 400);
                         }
 
                     } else {
-                        return response()->json(['data' => null, 'message' => 'something went wrong'], 400);
+                        return response()->json(['data' => null, 'message' => '3'], 400);
                     }
                 }
             } else {
@@ -225,7 +225,7 @@ class LoginController extends Controller
 
         } catch (Exception $e) {
             error_log('error ' . $e);
-            return response()->json(['data' => null, 'message' => 'Something went wrong'], 500);
+            return response()->json(['data' => null, 'message' => '4'], 500);
         }
 
     }
