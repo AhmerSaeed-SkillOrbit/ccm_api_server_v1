@@ -877,7 +877,7 @@ class UserModel
             error_log("Sending Mail With Template");
 
             Mail::send([], [], function ($message) use ($toEmail, $emailSubject, $emailContent) {
-                $message->from(getenv("FROM_ADDRESS"))
+                $message->from(getenv('FROM_ADDRESS'))
                     ->to($toEmail)
                     ->subject($emailSubject)
                     ->setBody($emailContent, 'text/html');
