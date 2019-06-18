@@ -762,6 +762,26 @@ class UserModel
      */
     public static function sendEmailWithTemplateTwo($toEmail, $emailSubject, $emailBody)
     {
+        try {
+            error_log("Sending Mail With Template");
+
+            Mail::send([], [], function ($message) use ($toEmail, $emailSubject) {
+                $message->from(env('FROM_ADDRESS'))
+                    ->to($toEmail)
+                    ->subject($emailSubject)
+                    ->setBody("Test", 'text/html');
+            });
+            error_log("Email Sent Successfully along with Template");
+            return true;
+        } catch (Exception $ex) {
+            error_log("Sending Mail Exception");
+            return false;
+            error_log("Email Failed to sent along with Template");
+        }
+    }
+
+    public static function sendEmailWithTemplateTwoTwo($toEmail, $emailSubject, $emailBody)
+    {
         $emailContent = "<!DOCTYPE html>" .
             "<html>" .
             "<head>" .
