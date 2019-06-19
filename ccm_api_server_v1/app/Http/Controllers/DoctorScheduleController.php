@@ -535,7 +535,7 @@ class DoctorScheduleController extends Controller
             return response()->json(['data' => null, 'message' => 'No schedule found for this doctor'], 200);
         }
 
-        $doctorScheduleDetail['Id'] = $getRange->Id;
+        $doctorScheduleDetail['Id'] = (int) $getRange->Id;
         $doctorScheduleDetail['FirstName'] = $loggedInUserData[0]->FirstName;
         $doctorScheduleDetail['LastName'] = $loggedInUserData[0]->LastName;
         $doctorScheduleDetail['StartDate'] = $getRange->StartDate;
@@ -554,7 +554,7 @@ class DoctorScheduleController extends Controller
                 error_log('loop iterating for : ' . $counter += 1);
 
                 $data = array(
-                    'Id' => $item->Id,
+                    'Id' => (int) $item->Id,
                     'ScheduleDate' => $item->ScheduleDate,
                     'NoOfShift' => (int)$item->NoOfShift,
 //                    'IsOffDay' => (($item->IsOffDay == "0") ? false : true),

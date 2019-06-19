@@ -826,7 +826,7 @@ class UserModel
 //        <!-- Content -->
             "<tr>" .
             "<td width='600' style='padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;'>" .
-            "<table cellspacing='0' cellpadding='0' border='0' style='border-collapse:collapse;'>" .
+            "<table cellspacing='0' cellpadding='0' border='0' style='margin-left:-31px;border-collapse:collapse;'>" .
             "<tr>" .
             "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:0px;text-align:left;font-size:16px;color:#2c2d30;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
             $emailBody .
@@ -838,7 +838,7 @@ class UserModel
             "</tr>" .
             "<tr>" .
             "<td width=\"540\" valign=\"middle\" align=\"center\" style=\"color: #6e6e6e; padding-top: 15px; padding-bottom: 10px; text-align: center !important;\">" .
-            "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;margin-left: -40px;\">" .
+            "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin-left:-31px;table-layout: fixed;\">" .
             "<tr>" .
             "<td width=\"270\" valign=\"middle\" align=\"right\" style=\"text-align: right !important;\">" .
             "<img width=\"0\" height=\"0\" alt=\"Chronic Care Management\" src=\"https://connectcareplus.com/assets/images/logo.png\" style=\"border-style:none; width: 300px; height: 55px;margin-left: -50px;\">" .
@@ -852,7 +852,7 @@ class UserModel
             "</tr>" .
             "<tr>" .
             "<td width=\"600\" style=\"padding-top:0px;padding-left:30px;padding-right:30px;padding-bottom:0px;background-color:#ffffff;\">" .
-            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"border-collapse:collapse;\">" .
+            "<table cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin-left:-31px;border-collapse:collapse;\">" .
             "<tr>" .
             "<td width=\"540\" valign=\"middle\" align=\"left\" style=\"padding-top:20px;padding-bottom:40px;text-align:left;font-size:16px;color:#151515;font-family: \'Geomanist-Regular\',\'Helvetica Neue\', Helvetica, \'Segoe UI\', \'Lucida Grande\', Arial, sans-serif;\">" .
             "<br>This is a mandatory service communication<br>This message was sent from an unmonitored e-mail address. Please do not reply to this message<br><br>" .

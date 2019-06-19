@@ -2490,7 +2490,6 @@ class UserController extends Controller
                             'ProfileSummary' => $tempUser[$i]->ProfileSummary,
                             'DateOfBirth' => $tempUser[$i]->DateOfBirth,
                             'IsBlock' => false,
-                            'PatientUniqueId' => 1, //generate if role is patient
                             'IsCurrentlyLoggedIn' => false,
                         );
                         $insertedUserId = GenericModel::insertGenericAndReturnID('user', $insertData);

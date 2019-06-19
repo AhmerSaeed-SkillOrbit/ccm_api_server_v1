@@ -1025,21 +1025,23 @@ class DocumentUploadController extends Controller
         } else {
             error_log('image name is valid');
 
-            $filePath = '/' . $defaultProfilePicDir . '/' . $imageName;
+//            $filePath = '/' . $defaultProfilePicDir . '/' . $imageName;
+            $filePath = '/' . $imageName;
             $fileType = env('PNG_IMAGE_TYPE');
 
             error_log($filePath);
             error_log($fileType);
 
-            $ftp = Storage::createFtpDriver([
-                'host' => env('FTP_HOST'),
-                'username' => env('FTP_USER'),
-                'password' => env('FTP_PASSWORD'),
-                'port' => env('FTP_PORT'),
-                'timeout' => env('FTP_TIMEOUT')
-            ]);
+//            $ftp = Storage::createFtpDriver([
+//                'host' => env('FTP_HOST'),
+//                'username' => env('FTP_USER'),
+//                'password' => env('FTP_PASSWORD'),
+//                'port' => env('FTP_PORT'),
+//                'timeout' => env('FTP_TIMEOUT')
+//            ]);
 
-            $fileContent = $ftp->get($filePath); // read file content
+            $fileContent = Storage::disk('local')->get($filePath); // read file content
+//            $fileContent = $ftp->get($filePath); // read file content
 
             // download file
             return Response::make($fileContent, '200', array(
