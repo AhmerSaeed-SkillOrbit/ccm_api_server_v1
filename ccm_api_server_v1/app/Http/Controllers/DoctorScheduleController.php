@@ -701,8 +701,9 @@ class DoctorScheduleController extends Controller
         } else {
             error_log('doctor schedule shift found');
             //Getting doctor time slots
-            $getDoctorScheduleShiftTimeSlot = DoctorScheduleModel::getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId);
-
+            $getDoctorScheduleShiftTimeSlot = \App\ShiftTimeSlot::all();
+//            $getDoctorScheduleShiftTimeSlot = DoctorScheduleModel::getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId);
+//            print_r($getDoctorScheduleShiftTimeSlot);
 
             $doctorScheduleShiftData['Id'] = $getDoctorScheduleShiftData->Id;
             $doctorScheduleShiftData['StartTime'] = $getDoctorScheduleShiftData->StartTime;

@@ -137,7 +137,7 @@ class DoctorScheduleModel
         error_log('in model');
 
         $query = DB::table("doctor_schedule_shift")
-            ->select( (int)"Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i") as StartTime'),
+            ->select( "Id", DB::raw('TIME_FORMAT(StartTime, "%H:%i") as StartTime'),
                 DB::raw('TIME_FORMAT(EndTime, "%H:%i") as EndTime'), 'NoOfPatientAllowed')
             ->where("DoctorScheduleDetailId", "=", $doctorScheduleDetailId)
             ->where("IsActive", "=", true)
