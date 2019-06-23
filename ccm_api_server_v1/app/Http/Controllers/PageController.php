@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\ShiftTimeSlot;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
 use View;
@@ -694,6 +695,21 @@ class PageController extends BaseController
         return response()->json(['data' => $result, 'message' => 'Check Email'], 200);
     }
 
+    public function TestEloquent()
+    {
+
+
+        error_log("Now Test");
+
+        foreach ($flights as $flight) {
+            error_log($flight->Id);
+            error_log($flight->DoctorScheduleShiftId);
+            error_log($flight->TimeSlot);
+            error_log($flight->IsBooked);
+        }
+
+        return true;
+    }
 
     public function TestSms()
     {
