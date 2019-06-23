@@ -224,7 +224,16 @@ class ForumModel
 //        $timestamp = $request->get('t');
 //        error_log($timestamp);
 
+        if ($createdOn == null || $createdOn == "") {
+            $formatMessage = 'Never';
+            return $formatMessage;
+        }
+
         $topicCreatedTime = Carbon::createFromTimestamp($createdOn);
+
+        error_log("topicCreatedTime nowwwww");
+        error_log($createdOn);
+
         $currentTime = Carbon::now("UTC");
 
         $diffInYears = $currentTime->diffInYears($topicCreatedTime);
@@ -245,7 +254,7 @@ class ForumModel
         error_log($diffInMints);
         error_log($diffInSec);
 
-        if ($diffInYears > 0) {
+        if ($diffInYears > 0 || $diffInYears > 0) {
             $formatMessage = $diffInYears . ' y ago';
             return $formatMessage;
         } else if ($diffInMonths > 0) {

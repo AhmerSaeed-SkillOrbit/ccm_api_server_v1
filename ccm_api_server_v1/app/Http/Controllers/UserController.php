@@ -2589,7 +2589,7 @@ class UserController extends Controller
                 }
                 error_log("## Here Sending Success Email to Uploader ##");
 
-                $currentDateTime = Carbon\Carbon::now();
+                $currentDateTime = Carbon::now("UTC");
 
                 //fetch User data
                 //to be use in sending email

@@ -663,6 +663,7 @@ class UserModel
             ->where('user.Id', '=', $id)
             ->first();
 
+        error_log("query result");
         return $query;
     }
 
@@ -760,7 +761,7 @@ class UserModel
      * $emailBody = array
      *
      */
-    public static function sendEmailWithTemplateTwo($toEmail, $emailSubject, $emailBody)
+    public static function sendEmailWithTemplateTwoTwo($toEmail, $emailSubject, $emailBody)
     {
         try {
             error_log("Sending Mail With Template");
@@ -780,7 +781,7 @@ class UserModel
         }
     }
 
-    public static function sendEmailWithTemplateTwoTwo($toEmail, $emailSubject, $emailBody)
+    public static function sendEmailWithTemplateTwo($toEmail, $emailSubject, $emailBody)
     {
         $emailContent = "<!DOCTYPE html>" .
             "<html>" .
@@ -1379,7 +1380,7 @@ class UserModel
         error_log($userId);
 
         return DB::table('user')
-            ->select('user.Id', 'user.FirstName', 'user.LastName', 'user.EmailAddress','user.MobileNumber','user.CountryPhoneCode', 'role.Name', 'role.CodeName')
+            ->select('user.Id', 'user.FirstName', 'user.LastName', 'user.EmailAddress', 'user.MobileNumber', 'user.CountryPhoneCode', 'role.Name', 'role.CodeName')
             ->leftjoin('user_access', 'user_access.UserId', '=', 'user.Id')
             ->leftjoin('role', 'role.Id', '=', 'user_access.RoleId')
             ->where('user.Id', '=', $userId)
