@@ -697,6 +697,7 @@ class PageController extends BaseController
 
     public function TestEloquent()
     {
+        $flights = \App\ShiftTimeSlot::all();
 
 
         error_log("Now Test");
