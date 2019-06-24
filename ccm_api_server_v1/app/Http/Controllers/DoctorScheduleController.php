@@ -703,7 +703,7 @@ class DoctorScheduleController extends Controller
             //Getting doctor time slots
 //            $getDoctorScheduleShiftTimeSlot = \App\ShiftTimeSlot::where('active', 1)->all();
             $getDoctorScheduleShiftTimeSlot = \App\ShiftTimeSlot::where('DoctorScheduleShiftId', $doctorScheduleShiftId)->orderBy('Id', 'asc')->get();
-           
+
 //            $getDoctorScheduleShiftTimeSlot = DoctorScheduleModel::getDoctorScheduleShiftTimeSlotsViaDoctorScheduleShiftId($doctorScheduleShiftId);
 //            print_r($getDoctorScheduleShiftTimeSlot);
 
@@ -856,9 +856,9 @@ class DoctorScheduleController extends Controller
 
                 //create email with template
                 $emailBody = "<p style='width: 800px;'>Dear " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "<br>" .
-                    "<br>Thi is a confirmation email that the appointment is created by " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . "The following are the appointment details: <br><br>" .
+                    "<br>This is a confirmation email that the appointment is created by " . $patientData[0]->FirstName . " " . $patientData[0]->LastName . " Following are the appointment details: <br><br>" .
                     "Appointment Date: " . $getScheduleDate->ScheduleDate . "<br><br>" .
-                    "Appointment Time: " . $getScheduleDate->StartTime . "<br><br>" .
+                    "Appointment Time: " . $getScheduleDate->StartTime . " (Time Format 0-24)<br><br>" .
                     "Please note that the confirmation of the appointment is due. As soon it is confirmed you will received another email and the sms notification. You can always check the the details in the portal.</p>";
 
                 UserModel::sendEmailWithTemplateTwo($patientData[0]->EmailAddress, "Appointment Request", $emailBody);
@@ -1202,10 +1202,10 @@ class DoctorScheduleController extends Controller
             if ($reqStatus == 'accepted') {
                 //create email with template
                 $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br>" .
-                    "<br>This a confirmation email that the appointment is accepted by " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . " The following are the appointment details:<br><br>" .
+                    "<br>This a confirmation email that the appointment is accepted by " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . ". Following are the appointment details:<br><br>" .
                     "Patient Name: " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br><br>" .
                     "Appointment Date: " . $getAppointmentData->ScheduleDate . "<br><br>" .
-                    "Appointment Time: " . $getAppointmentData->TimeSlot . "<br><br>" .
+                    "Appointment Time: " . $getAppointmentData->TimeSlot . " (Time Format 0-24)<br><br>" .
                     "Our address is " . $getAppointmentData->DoctorOfficeAddress . " If you have any questions, Please reach me at " . $getAppointmentData->DoctorOfficeAddress . " or email me at " . $getAppointmentData->DoctorEmailAddress . "</p>";
 
                 UserModel::sendEmailWithTemplateTwo($getAppointmentData->PatientEmailAddress, "Appointment Request Status", $emailBody);
@@ -1224,10 +1224,10 @@ class DoctorScheduleController extends Controller
             if ($reqStatus == 'rejected') {
                 //create email with template
                 $emailBody = "<p style='width: 800px;'>Dear " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br>" .
-                    "<br>This a confirmation email that the appointment is cancelled by " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . " The following are the appointment details:<br><br>" .
+                    "<br>This is a confirmation email that the appointment is rejected by " . $getAppointmentData->DoctorFirstName . " " . $getAppointmentData->DoctorLastName . ". Following are the appointment details:<br><br>" .
                     "Patient Name: " . $getAppointmentData->PatientFirstName . " " . $getAppointmentData->PatientLastName . "<br><br>" .
                     "Appointment Date: " . $getAppointmentData->ScheduleDate . "<br><br>" .
-                    "Appointment Time: " . $getAppointmentData->TimeSlot . "<br><br>" .
+                    "Appointment Time: " . $getAppointmentData->TimeSlot . " (Time Format 0-24)<br><br>" .
                     "Cancellation Reason: " . $getAppointmentData->RequestStatusReason . "</p>";
 
                 UserModel::sendEmailWithTemplateTwo($getAppointmentData->PatientEmailAddress, "Appointment Request Status", $emailBody);

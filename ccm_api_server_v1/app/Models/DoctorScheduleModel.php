@@ -612,7 +612,9 @@ class DoctorScheduleModel
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
             ->where("app.PatientId", "=", $patientId)
             ->where("app.IsActive", "=", true)
-            ->where("app.RequestStatus", "=", 'accepted')
+            ->where("app.RequestStatus", "=", env('APPOINTMENT_ACCEPTED_REQUEST_STATUS'))
+            ->where("app.AppointmentStatus", "<>", env('APPOINTMENT_CANCELLED_BY_PATIENT'))
+            ->where("app.AppointmentStatus", "<>", env('APPOINTMENT_CANCELLED_BY_DOCTOR'))
             ->where("dcdc.ScheduleDate", ">", $currentDate)
             ->groupBy('app.DoctorScheduleShiftId')
             ->count();
@@ -620,7 +622,7 @@ class DoctorScheduleModel
         return $query;
     }
 
-    static public function getUpcomingAppointmentViaDoctorId($doctorId, $currentDate)
+        static public function getUpcomingAppointmentViaDoctorId($doctorId, $currentDate)
     {
         error_log('in model ' . $currentDate);
 
@@ -629,7 +631,9 @@ class DoctorScheduleModel
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
             ->where("app.DoctorId", "=", $doctorId)
             ->where("app.IsActive", "=", true)
-            ->where("app.RequestStatus", "=", 'accepted')
+            ->where("app.RequestStatus", "=", env('APPOINTMENT_ACCEPTED_REQUEST_STATUS'))
+            ->where("app.AppointmentStatus", "<>", env('APPOINTMENT_CANCELLED_BY_PATIENT'))
+            ->where("app.AppointmentStatus", "<>", env('APPOINTMENT_CANCELLED_BY_DOCTOR'))
             ->where("dcdc.ScheduleDate", ">", $currentDate)
             ->groupBy('app.DoctorScheduleShiftId')
             ->count();
