@@ -472,7 +472,7 @@ class DoctorScheduleModel
         $query = DB::table("doctor_schedule_shift as dcf")
             ->leftjoin('doctor_schedule_detail_copy1 as dcdc', 'dcf.DoctorScheduleDetailId', 'dcdc.Id')
 //            ->select("dcdc.Id", 'DoctorScheduleDetailId', DB::raw('TIME_FORMAT(dcdc.ScheduleDate, "YYYY-MM-DD") as ScheduleDate'))
-            ->select("dcdc.Id", 'DoctorScheduleDetailId', 'dcdc.ScheduleDate as ScheduleDate')
+            ->select("dcdc.Id", 'DoctorScheduleDetailId', 'dcdc.ScheduleDate as ScheduleDate','dcf.StartTime as StartTime')
             ->where("dcf.Id", "=", $doctorScheduleShiftId)
             ->where("dcf.IsActive", "=", true)
             ->first();
