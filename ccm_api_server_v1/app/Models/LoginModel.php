@@ -246,6 +246,7 @@ class LoginModel
         $password = Input::get('Password');
         $hashedPassword = md5($password);
         $date = HelperModel::getDate();
+        $emailBody = "";
         $patientUniqueId = 0;
 
         DB::beginTransaction();
@@ -278,6 +279,9 @@ class LoginModel
                 $inviteUpdate = DB::table('account_invitation')
                     ->where('Token', $checkInviteCode[0]['Token'])
                     ->update($inviteUpdateData);
+
+                error_log("invite update ");
+                error_log($inviteUpdate);
 
                 if ($inviteUpdate > 0) {
                     ## "NOT REQUIRED NOW" ##
@@ -340,10 +344,10 @@ class LoginModel
                         if ($belongTo == "superadmin_doctor") {
 
                             $roleCode = "doctor";
-                            $emailBody = "<p><h3>Hi</h3>$email<br><br>Welcome to the Chronic Care Management system. You are registered as a Doctor into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . ".</p><br><br>";
+                            $emailBody = "<p><h3>Hi</h3>$email<br><br>Welcome to the Chronic Care Management system. You are registered as a Doctor into the connectcareplus. The connectcareplus is a one stop health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . ".</p><br><br>";
                         } else if ($belongTo == "doctor_patient") {
                             $roleCode = "patient";
-                            $emailBody = "<p><h3>Hi</h3>$email<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . " The following will be the facilities. <br><br>" .
+                            $emailBody = "<p><h3>Hi</h3>$email<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . " The following will be the facilities. <br><br>" .
                                 "1. Your health plan directly from the portal.<br>" .
                                 "2. Instantly set a meeting with your provider.<br>" .
                                 "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
@@ -351,7 +355,7 @@ class LoginModel
 
                         } else if ($belongTo == "doctor_facilitator") {
                             $roleCode = "facilitator";
-                            $emailBody = "<p><h3>Hi</h3>$email<br><br>Welcome to the Chronic Care Management system. You are registered as a Facilitator into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . ".</p><br><br>";
+                            $emailBody = "<p><h3>Hi</h3>$email<br><br>Welcome to the Chronic Care Management system. You are registered as a Facilitator into the connectcareplus. The connectcareplus is a one stop health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . ".</p><br><br>";
                         } else {
                             $roleCode = "noRole";
                         }
@@ -384,7 +388,7 @@ class LoginModel
                                 if ($mobileNumber != null) {
                                     $url = env('WEB_URL') . '/#/';
                                     $toNumber = array();
-                                    $mobileNumber =$countryPhoneCode . $mobileNumber;
+                                    $mobileNumber = $countryPhoneCode . $mobileNumber;
                                     array_push($toNumber, $mobileNumber);
 
                                     HelperModel::sendSms($toNumber, 'Welcome to the Chronic Care Management system developed by Business Services Solutions, LLC', $url);
@@ -407,20 +411,16 @@ class LoginModel
                     }
 
                 } else {
-                    return array("status" => "failed", "data" => null, "message" => "Something went wrong");
+                    return array("status" => "failed", "data" => null, "message" => "why Something went wrong");
                 }
             } else {
                 DB::rollBack();
                 return array("status" => "failed", "data" => null, "message" => "Code not found or it is expired");
-
             }
 
         } catch (Exception $e) {
-
-            echo "error";
             DB::rollBack();
-            return array("status" => "error", "data" => null);
-            //   return $e;
+            return array("status" => "error", "data" => $e);
         }
     }
 

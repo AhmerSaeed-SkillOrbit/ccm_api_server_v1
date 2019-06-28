@@ -1259,8 +1259,8 @@ class UserController extends Controller
             //Now sending email
 
             //create email with template
-            $emailBody = "<p><h3>Hi</h3>$emailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a " . $roleName . " into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . "<br><br>" .
-                "use this Password " . $defaultPassword . " to Login<br></p><br>";
+            $emailBody = "<p><h3>Hi</h3>$emailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a " . $roleName . " into the connectcareplus. The connectcareplus is a one stop health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . "<br><br>" .
+                "Use this Password " . $defaultPassword . " to Login<br></p><br>";
             UserModel::sendEmailWithTemplateTwo($emailAddress, "Welcome to CCM", $emailBody);
 
             //Now sending sms
@@ -2327,8 +2327,7 @@ class UserController extends Controller
                             'Role' => $type,
                             'CreatedByRole' => $roleName
                         );
-                    }
-                    else {
+                    } else {
                         error_log("Email Address / Mobile Number should not be empty");
                         return response()->json(['data' => null, 'message' => 'Email Address / Mobile Number should not be empty'], 400);
                     }

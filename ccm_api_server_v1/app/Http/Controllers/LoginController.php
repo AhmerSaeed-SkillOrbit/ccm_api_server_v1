@@ -96,7 +96,6 @@ class LoginController extends Controller
     function register(Request $request)
     {
         try {
-
             error_log("register function");
 
             $invite = $request->input('InviteCode');
@@ -654,7 +653,7 @@ class LoginController extends Controller
 
                     //create email with template
 
-                    $emailBody = "<p><h3>Hi</h3>$request->EmailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop solution health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . "The following will be the facilities. <br><br>" .
+                    $emailBody = "<p><h3>Hi</h3>$request->EmailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . "The following will be the facilities. <br><br>" .
                         "1. Your health plan directly from the portal.<br>" .
                         "2. Instantly set a meeting with your provider.<br>" .
                         "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
