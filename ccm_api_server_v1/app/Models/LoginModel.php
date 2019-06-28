@@ -542,7 +542,7 @@ class LoginModel
         return $result;
     }
 
-    static function checkEmailAndMobileAndUniqueIdAvailable(string $email, string $mobileNumber, string $uniqueId)
+    static function checkEmailAndMobileAndUniqueIdAvailable(string $email, string $mobileNumber, string $uniqueId = null)
     {
         error_log("Here 1");
         error_log($email);
@@ -554,7 +554,6 @@ class LoginModel
 //            ->where('EmailAddress', '=', $email)
 //            ->orWhere('MobileNumber', '=', $mobileNumber)
 //            ->get();
-
         $result = DB::table('user')
             ->select('*')
             ->where('IsActive', '=', 1)

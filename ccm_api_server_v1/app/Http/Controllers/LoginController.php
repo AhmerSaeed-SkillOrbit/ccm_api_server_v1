@@ -554,13 +554,18 @@ class LoginController extends Controller
                         $message = "Email Address already exist";
                         return response()->json(['data' => null, 'message' => $message], 400);
                     }
-                    if ($data[0]->MobileNumber == $request->post('MobileNumber')) {
-                        $message = "Mobile Number already exist";
-                        return response()->json(['data' => null, 'message' => $message], 400);
+                    if ($data[0]->MobileNumber != null || $data[0]->MobileNumber != "") {
+                        if ($data[0]->MobileNumber == $request->post('MobileNumber')) {
+                            $message = "Mobile Number already exist";
+                            return response()->json(['data' => null, 'message' => $message], 400);
+                        }
                     }
-                    if ($data[0]->PatientUniqueId == $request->post('PatientUniqueId')) {
-                        $message = "Patient Unique Id already exist";
-                        return response()->json(['data' => null, 'message' => $message], 400);
+
+                    if ($data[0]->PatientUniqueId != null || $data[0]->PatientUniqueId != "") {
+                        if ($data[0]->PatientUniqueId == $request->post('PatientUniqueId')) {
+                            $message = "Patient Unique Id already exist";
+                            return response()->json(['data' => null, 'message' => $message], 400);
+                        }
                     }
                 }
 
@@ -653,12 +658,12 @@ class LoginController extends Controller
 
                     //create email with template
 
-                    $emailBody = "<p><h3>Hi</h3>$request->EmailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . "The following will be the facilities. <br><br>" .
+                    $emailBody = "<p><h3>Hi</h3>$request->EmailAddress<br><br>Welcome to the Chronic Care Management system. You are registered as a Patient into the connectcareplus. The connectcareplus is a one stop health solution. Please take some time and log into the portal with your registered id " . env('WEB_URL') . " The following will be the facilities. <br><br>" .
                         "1. Your health plan directly from the portal.<br>" .
                         "2. Instantly set a meeting with your provider.<br>" .
                         "3. Raise ticket for your queries. Either from the cell phone or directly from the portal.<br>" .
                         "4. Review your progress against the plan and much more.<br><br>" .
-                        "use this Password " . env('DEFAULT_PWD') . " to Login</p><br>";
+                        "Use this Password " . env('DEFAULT_PWD') . " to Login</p><br>";
 
                     UserModel::sendEmailWithTemplateTwo($request->EmailAddress, "Welcome to CCM", $emailBody);
 

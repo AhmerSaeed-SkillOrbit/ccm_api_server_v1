@@ -2296,9 +2296,16 @@ class UserController extends Controller
 
         if ($data->count() > 0) {
             error_log("count is greater than zero");
+            error_log($data->count());
 
+            print_r($data);
             try {
                 foreach ($data->toArray() as $key => $value) {
+
+                    error_log('mobilenumber');
+                    error_log($value['mobilenumber']);
+                    error_log($value['emailaddress']);
+
                     if (($value['emailaddress'] != null || $value['emailaddress'] != "") && (((string)$value['mobilenumber'] != null) || ((string)$value['mobilenumber'] != ""))) {
 
                         error_log("check mobile number");
