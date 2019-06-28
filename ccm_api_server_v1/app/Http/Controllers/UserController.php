@@ -2278,7 +2278,7 @@ class UserController extends Controller
         $type = $request->post('type');
         $path = $request->file('file')->getRealPath();
         $data = Excel::load($path)->get();
-
+        $insert_data = array();
         $roleData = UserModel::GetRoleNameViaUserId($createdById);
         if (count($roleData) > 0) {
             $roleName = $roleData[0]->CodeName;
@@ -2299,7 +2299,7 @@ class UserController extends Controller
 
             try {
                 foreach ($data->toArray() as $key => $value) {
-                    if ($value['emailaddress'] != null && (string)$value['mobilenumber'] != null) {
+                    if (($value['emailaddress'] != null || $value['emailaddress'] != "") && (((string)$value['mobilenumber'] != null) || ((string)$value['mobilenumber'] != ""))) {
 
                         error_log("check mobile number");
                         error_log((string)$value['mobilenumber']);
@@ -2328,6 +2328,10 @@ class UserController extends Controller
                             'CreatedByRole' => $roleName
                         );
                     }
+                    else {
+                        error_log("Email Address / Mobile Number should not be empty");
+                        return response()->json(['data' => null, 'message' => 'Email Address / Mobile Number should not be empty'], 400);
+                    }
                 }
             } catch (Exception $ex) {
                 error_log("Exception occur in add in temp bulk upload");
@@ -2340,7 +2344,8 @@ class UserController extends Controller
             DB::table('temp_bulk_user')->insert($insert_data);
             return response()->json(['data' => null, 'message' => 'Bulk User file is successfully uploaded,background operation is in process once users are updated you will receive an email on your registered email address'], 200);
         } catch (\Illuminate\Database\QueryException $exception) {
-            return response()->json(['data' => null, 'message' => "Email Address and Mobile Number should be unique"], 500);
+            error_log("IN THIS CATCH");
+            return response()->json(['data' => null, 'message' => "Email Address and Mobile Number should be unique"], 400);
         }
 
         //            Bulk-1
